@@ -22,12 +22,11 @@ Install:
 
 Bare bone application:
 
-`module Application where
-
+```
+module Application where
 import Flame as F
-
 import Flame (Html)
-`
+```
 
 ## License
 
