@@ -14,14 +14,16 @@ See the [examples folder](/examples)
 
 Install:
 
-> npm install snabbdom snabbom-html # for server side rendering
-> bower install purescript-flame
+`npm install snabbdom snabbom-html # for server side rendering`
+
+`bower install purescript-flame`
 
 Bare bone application:
 
-> module Application where
-> import Flame as F
-> import Flame (Html)
+`module Application where
+import Flame as F
+import Flame (Html)
+`
 
 ## License
 
