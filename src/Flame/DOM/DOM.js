@@ -1,0 +1,1 @@
+exports.querySelector_ = document.querySelector.bind(document);

@@ -1,0 +1,14 @@
+{
+  "name": "purescript-flame",
+  "version": "0.1.0",
+  "files": [
+    "package.json"
+  ],
+  "dependencies": {
+    "snabbdom": "^0.7.3",
+    "snabbdom-to-html": "^5.1.1"
+  },
+  "devDependencies": {
+    "pulp": "^12.3.0"
+  }
+}

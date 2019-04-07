@@ -1,0 +1,16 @@
+module Flame.DOM(querySelector) where
+
+import Data.Maybe (Maybe)
+import Data.Nullable (Nullable)
+import Data.Nullable as DN
+import Prelude
+import Effect (Effect)
+import Effect.Uncurried (EffectFn1, runEffectFn1)
+import Flame.Type
+
+foreign import querySelector_ :: EffectFn1 String (Nullable DOMElement)
+
+querySelector :: String -> Effect (Maybe DOMElement)
+querySelector selector = do
+        selected <- runEffectFn1 querySelector_ selector
+        pure $ DN.toMaybe selected
