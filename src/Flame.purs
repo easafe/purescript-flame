@@ -1,33 +1,41 @@
-module Flame (Application, mount, emptyApp, module Exported, updateWith, updateWith') where
+module Flame (Application, mount, emptyApp, module Exported, Update) where
 
 import Flame.Type
 import Prelude
 
+import Control.Monad.Trans.Class (class MonadTrans)
 import Data.Either (Either(..))
 import Data.Either as DE
 import Data.Foldable as DF
-import Effect.Uncurried as EU
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Aff.Class as AC
-import Effect.Exception as EE
 import Effect.Class (liftEffect)
 import Effect.Console as EC
+import Effect.Exception as EE
+import Effect.Ref as ER
 import Effect.Uncurried (EffectFn1)
+import Effect.Uncurried as EU
 import Flame.DOM as HD
-import Flame.Html.Element as HHE
-import Flame.Renderer as HR
+import Flame.Html.Element as FHE
+import Flame.Renderer as FR
 import Flame.Type (Html) as Exported
 import Signal (Signal)
 import Signal as S
 import Signal.Channel as SC
 
+type Update model message = {
+        with :: model -> message -> Aff model,
+        model :: model -> Aff Unit
+}
+
 type Application model message = {
+        --init needs to be the same type as update
         init :: model,
-        update :: model -> message -> Aff model,
+        update :: Update model message -> model -> message -> Aff model,
         view :: model -> Html message,
         inputs :: Array (Signal message)
 }
@@ -35,10 +43,11 @@ type Application model message = {
 emptyApp :: Application Unit Unit
 emptyApp = {
         init: unit,
-        update: flip (const pure),
-        view: const (HHE.createEmptyElement "bs"),
+        update,
+        view: const (FHE.createEmptyElement "bs"),
         inputs : []
 }
+        where update f model message = pure model
 
 mount :: forall model message. String -> Application model message -> Effect Unit
 mount selector application = do
@@ -49,54 +58,40 @@ mount selector application = do
 
 startApplication :: forall model message. DOMElement -> Application model message -> Effect Unit
 startApplication el application = do
-        initialVNode <- HR.renderInitial el (runUpdate application.init) $ application.view application.init
-        setState {
+        state <- ER.new {
                 model: application.init,
-                vNode: initialVNode,
-                update: application.update,
-                view: application.view
+                vNode: FR.emptyVNode
         }
 
+        let     --the function which actually run events
+                runUpdate model message = do
+                        EA.runAff_ (case _ of
+                                Left error -> EC.log $ EE.message error --shouldn't stay like this
+                                Right model' -> render model') $ application.update update model message
+
+                --the function which renders to the dom
+                render model = do
+                        currentVNode <- _.vNode <$> ER.read state
+                        updatedVNode <- FR.render currentVNode (runUpdate model) $ application.view model
+                        ER.write { vNode: updatedVNode, model } state
+
+                --the function application.update uses instead of recursion
+                reUpdate model message = liftEffect $ do
+                        runUpdate model message
+                        _.model <$> ER.read state
+
+                --the function application.update uses to forcefully render
+                reRender model = liftEffect $ render model
+
+                --first parameter of application.update
+                update = { model: \m -> reRender m, with: \m m2 -> reUpdate m m2}
+
+                --wrapper to process signals
+                runUpdate' message = do
+                        model <- _.model <$> ER.read state
+                        runUpdate model message
+
+        initialVNode <- FR.renderInitial el (runUpdate application.init) $ application.view application.init
+        ER.write { model: application.init, vNode: initialVNode } state
+
         DF.traverse_ (S.runSignal <<< map runUpdate') application.inputs
-        where   runUpdate' message = do
-                        state <- getState
-                        runUpdate state.model message
-
-runUpdate :: forall model message. model -> message -> Effect Unit
-runUpdate model message =  do
-        state <- getState
-        EA.runAff_ (case _ of
-                Left error -> EC.log $ EE.message error --shouldnt stay like this
-                Right model' -> render model') $ state.update model message
-
-render :: forall model. model -> Effect Unit
-render model = do
-        state <- getState
-        updatedVNode <- HR.render state.vNode (runUpdate model) $ state.view model
-        setState $ state { vNode = updatedVNode, model = model }
-
-updateWith :: forall model message. model -> message -> Aff model
-updateWith model message = liftEffect $ do
-        runUpdate model message
-        getModel
-
-updateWith' :: forall model. model -> Aff Unit
-updateWith' = liftEffect <<< render
-
-getModel :: forall model. Effect model
-getModel = do
-        state <- getState
-        pure state.model
-
-type ApplicationState model message = {
-        vNode :: VNodeProxy,
-        model :: model,
-        view :: model -> Html message,
-        update :: model -> message -> Aff model
-}
-
-foreign import getState :: forall model message. Effect (ApplicationState model message)
-foreign import setState_ :: forall model message. EffectFn1 (ApplicationState model message) Unit
-
-setState :: forall model message. ApplicationState model message -> Effect Unit
-setState = EU.runEffectFn1 setState_

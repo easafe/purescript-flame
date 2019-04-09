@@ -7,5 +7,5 @@
 /.psc*
 /.purs*
 /.psa*
-/examples/dist
+dist/
 todo

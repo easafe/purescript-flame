@@ -1,6 +1,6 @@
 --adapted from https://github.com/LukaJCB/purescript-snabbdom
 
-module Flame.Renderer(render, renderInitial, toVNodeProxy) where
+module Flame.Renderer(render, renderInitial, toVNodeProxy, emptyVNode) where
 
 import Flame.Type
 import Prelude
@@ -17,6 +17,9 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Type.Data.Boolean (kind Boolean)
 import Web.Event.Internal.Types (Event)
+
+foreign import emptyVNode :: VNodeProxy
+
 
 -- | The insert hook is invoked once the DOM element for a vnode has been inserted into the document and the rest of the patch cycle is done.
 -- | This means that you can do DOM measurements (like using getBoundingClientRect in this hook safely, knowing that no elements will be changed afterwards that could affect the position of the inserted elements.

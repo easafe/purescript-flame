@@ -1,4 +1,4 @@
-module Examples.Counter where
+module Examples.Counter.Main where
 
 import Prelude
 
@@ -16,8 +16,8 @@ data Message = Increment | Decrement
 init :: Model
 init = 0
 
-update :: Model -> Message -> Aff Model
-update model = pure <<< case _ of
+update :: _ -> Model -> Message -> Aff Model
+update _ model = pure <<< case _ of
         Increment -> model + 1
         Decrement -> model - 1
 

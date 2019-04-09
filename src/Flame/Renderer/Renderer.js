@@ -10,6 +10,8 @@ var patch = require('snabbdom').init([
 
 var h = require('snabbdom/h').default;
 
+exports.emptyVNode = h('div');
+
 function transformEff1(fn) {
 	return function (a) {
 		return fn(a)();

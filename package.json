@@ -1,14 +1,18 @@
 {
-  "name": "purescript-flame",
-  "version": "0.1.0",
-  "files": [
-    "package.json"
-  ],
-  "dependencies": {
-    "snabbdom": "^0.7.3",
-    "snabbdom-to-html": "^5.1.1"
-  },
-  "devDependencies": {
-    "pulp": "^12.3.0"
-  }
+        "name": "purescript-flame",
+        "version": "0.1.0",
+        "files": [
+                "package.json"
+        ],
+        "scripts": {
+                "example-affjax": "pulp browserify --main Examples.Affjax.Main --include examples/Affjax --optimise --to examples/Affjax/dist/affjax.js",
+                "example-counter": "pulp browserify --main Examples.Counter.Main --include examples/Counter --optimise --to examples/Counter/dist/counter.js"
+        },
+        "dependencies": {
+                "snabbdom": "^0.7.3",
+                "snabbdom-to-html": "^5.1.1"
+        },
+        "devDependencies": {
+                "pulp": "^12.3.0"
+        }
 }

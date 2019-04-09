@@ -1,13 +1,14 @@
-module Examples.Affjax where
+module Examples.Affjax.Main where
 
 import Prelude
 
 import Effect.Aff (Aff)
 import Affjax as A
+import Data.Maybe(Maybe(..))
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Effect (Effect)
-import Flame (Html)
+import Flame (Html, Update)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Property as HP
@@ -31,11 +32,11 @@ init = {
         result: NotFetched
 }
 
-update :: Model -> Message -> Aff Model
-update model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
-update model (Fetched result) = pure $ model { result = result }
-update model Fetch = do
-        F.updateWith' $ model { result = Fetching }
+update :: Update Model Message -> Model -> Message -> Aff Model
+update _ model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
+update _ model (Fetched result) = pure $ model { result = result }
+update re model Fetch = do
+        re.model $ model { result = Fetching }
         response <- A.get AR.string model.url
         pure $ case response.body of
                 Left error -> model { result = Error $ A.printResponseFormatError error }
@@ -57,5 +58,4 @@ view model = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = do
-        F.mount "main" { init, update, view, inputs : [] }
+main = F.mount "main" { init, update, view, inputs : [] }

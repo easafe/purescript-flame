@@ -24,6 +24,7 @@ Bare bone application:
 
 ```
 module Application where
+
 import Flame as F
 import Flame (Html)
 ```
