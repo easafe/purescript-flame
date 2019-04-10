@@ -4,11 +4,10 @@ import Prelude
 
 import Effect.Aff (Aff)
 import Affjax as A
-import Data.Maybe(Maybe(..))
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Effect (Effect)
-import Flame (Html, Update)
+import Flame (Html, World)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Property as HP
@@ -32,7 +31,7 @@ init = {
         result: NotFetched
 }
 
-update :: Update Model Message -> Model -> Message -> Aff Model
+update :: World Model Message -> Model -> Message -> Aff Model
 update _ model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
 update _ model (Fetched result) = pure $ model { result = result }
 update re model Fetch = do

@@ -1,4 +1,4 @@
-module Examples.Counters where
+module Examples.Counters.Main where
 
 import Prelude
 
@@ -8,8 +8,8 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Examples.Counter as EC
-import Flame (Html)
+import Examples.Counter.Main as EC
+import Flame (Html, World)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -22,15 +22,15 @@ data Message = Add | Remove Int | CounterMsg Int EC.Message
 init :: Model
 init = []
 
-update :: Model -> Message -> Aff Model
-update model Add = pure $ DA.snoc model EC.init
-update model (Remove index) = pure <<< DM.fromMaybe model $ DA.deleteAt index model
-update model (CounterMsg index message) = do
+update :: World Model Message -> Model -> Message -> Aff Model
+update _ model Add = pure $ DA.snoc model EC.init
+update _ model (Remove index) = pure <<< DM.fromMaybe model $ DA.deleteAt index model
+update world model (CounterMsg index message) = do
         let maybeModel = model !! index
         case maybeModel of
                 Nothing -> pure model
                 Just model' -> do
-                        updated <- EC.update model' message
+                        updated <- EC.update world model' message
                         pure $ DM.fromMaybe model $ DA.updateAt index updated model
 
 view :: Model -> Html Message
@@ -44,10 +44,4 @@ view model = HE.main "main" [
                 ]
 
 main :: Effect Unit
-main = do
-        F.mount "main" {
-                init,
-                update,
-                view,
-                inputs: []
-        }
+main =  F.mount "main" { init, update, view, inputs: [] }

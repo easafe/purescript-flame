@@ -52,7 +52,7 @@ toVNodeHookObjectProxy = DFU.runFn1 toVNodeHookObjectProxy_
 -- | The patch function returned by init takes two arguments.
 -- | The first is a DOM element or a vnode representing the current view.
 -- | The second is a vnode representing the new, updated view.
--- | If a DOM element with a parent is passed, newVnode will be turned into a DOM node, and the passed element will be replaced by the created DOM node.
+-- | If a DOM element update a parent is passed, newVnode will be turned into a DOM node, and the passed element will be replaced by the created DOM node.
 -- | If an old vnode is passed, Snabbdom will efficiently modify it to match the description in the new vnode.
 -- | Any old vnode passed must be the resulting vnode from a previous call to patch.
 -- | This is necessary since Snabbdom stores information in the vnode.

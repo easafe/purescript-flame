@@ -5,9 +5,18 @@ import Prelude
 import Control.Monad.State (StateT(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Web.Event.Event (Event)
 import Foreign.Object (Object)
+import Signal (Signal)
 import Web.DOM.Element as WDE
+import Web.Event.Event (Event)
+
+type App model message extension = {
+        --init needs to be a function?
+        init :: model,
+        view :: model -> Html message,
+        inputs :: Array (Signal message)
+        | extension
+}
 
 type DOMElement = WDE.Element
 

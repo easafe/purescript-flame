@@ -124,7 +124,7 @@ main = runTest do
                         html' <- liftEffect $ HS.render html
                         TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><hr><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                test "nested elements with attributes" do
+                test "nested elements update attributes" do
                         let html = HH.html [HA.lang "en"] [
                                 HH.head_ [HH.title_ "title"],
                                 HH.body "content" [
@@ -143,6 +143,6 @@ main = runTest do
                         html' <- liftEffect $ HS.render html
                         TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                -- test "nested elements with properties" do
+                -- test "nested elements update properties" do
 
-                -- test "nested elements with properties and attributes" do
+                -- test "nested elements update properties and attributes" do

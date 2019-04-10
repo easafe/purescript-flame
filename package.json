@@ -6,7 +6,8 @@
         ],
         "scripts": {
                 "example-affjax": "pulp browserify --main Examples.Affjax.Main --include examples/Affjax --optimise --to examples/Affjax/dist/affjax.js",
-                "example-counter": "pulp browserify --main Examples.Counter.Main --include examples/Counter --optimise --to examples/Counter/dist/counter.js"
+                "example-counter": "pulp browserify --main Examples.Counter.Main --include examples/Counter --optimise --to examples/Counter/dist/counter.js",
+                "example-counters": "pulp browserify --main Examples.Counters.Main --include examples/Counters:examples/Counter --optimise --to examples/Counters/dist/counters.js"
         },
         "dependencies": {
                 "snabbdom": "^0.7.3",
