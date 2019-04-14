@@ -9,10 +9,8 @@ import Data.Either (Either(..))
 import Effect (Effect)
 import Flame (Html, World)
 import Flame as F
-import Flame.Html.Attribute as HA
-import Flame.Html.Property as HP
-import Flame.Html.Element as HE
-import Flame.Html.Event as HV
+import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as HE
 
 type Model = {
         url :: String,
@@ -35,7 +33,7 @@ update :: World Model Message -> Model -> Message -> Aff Model
 update _ model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
 update _ model (Fetched result) = pure $ model { result = result }
 update re model Fetch = do
-        re.model $ model { result = Fetching }
+        re.view $ model { result = Fetching }
         response <- A.get AR.string model.url
         pure $ case response.body of
                 Left error -> model { result = Error $ A.printResponseFormatError error }
@@ -43,8 +41,8 @@ update re model Fetch = do
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.input' [HV.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
-        HE.button [HV.onClick Fetch, HP.disabled $ model.result == Fetching] "Fetch",
+        HE.input' [HA.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
+        HE.button [HA.onClick Fetch, HA.disabled $ model.result == Fetching] "Fetch",
         case model.result of
                 NotFetched ->
                         HE.div_ "Not Fetched..."
@@ -57,4 +55,9 @@ view model = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount "main" { init, update, view, inputs : [] }
+main = F.mount "main" {
+        init,
+        update,
+        view,
+        inputs : []
+}

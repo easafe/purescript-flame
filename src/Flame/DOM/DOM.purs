@@ -3,10 +3,10 @@ module Flame.DOM(querySelector) where
 import Data.Maybe (Maybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as DN
-import Prelude
+import Prelude (bind, pure, ($))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
-import Flame.Type
+import Flame.Types (DOMElement)
 
 foreign import querySelector_ :: EffectFn1 String (Nullable DOMElement)
 

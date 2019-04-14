@@ -1,11 +1,13 @@
-module Flame.Html.Property where
+-- | Definition of HTML properties
+module Flame.HTML.Property where
 
-import Prelude
-
-import Flame.Type (ToNodeData, NodeData(..))
+import Flame.Types (ToNodeData, NodeData(..))
 
 type ToProperty = ToNodeData Boolean
 
+-- | Creates a property
+-- |
+-- | A property is a presential (boolean) attribute such as checked or enabled
 createProperty :: forall a. String -> Boolean -> NodeData a
 createProperty = Property
 

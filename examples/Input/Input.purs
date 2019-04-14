@@ -6,8 +6,8 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Flame (Html)
 import Flame as F
-import Flame.Html.Element as HE
-import Flame.Html.Event as HV
+import Flame.HTML.Element as HE
+import Flame.HTML.Event as HV
 import Signal ((~>))
 import Signal as S
 import Signal.DOM (MouseButton(..))

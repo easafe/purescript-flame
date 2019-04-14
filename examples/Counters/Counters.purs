@@ -8,40 +8,42 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Examples.Counter.Main as EC
-import Flame (Html, World)
-import Flame as F
-import Flame.Html.Attribute as HA
-import Flame.Html.Element as HE
-import Flame.Html.Event as HV
+import Examples.Counter.Main as ECM
+import Flame (Html)
+import Flame.Application.NoEffects as FAN
+import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as HE
 
-type Model = Array EC.Model
+type Model = Array ECM.Model
 
-data Message = Add | Remove Int | CounterMsg Int EC.Message
+data Message = Add | Remove Int | CounterMessage Int ECM.Message
 
 init :: Model
 init = []
 
-update :: World Model Message -> Model -> Message -> Aff Model
-update _ model Add = pure $ DA.snoc model EC.init
-update _ model (Remove index) = pure <<< DM.fromMaybe model $ DA.deleteAt index model
-update world model (CounterMsg index message) = do
-        let maybeModel = model !! index
-        case maybeModel of
-                Nothing -> pure model
-                Just model' -> do
-                        updated <- EC.update world model' message
-                        pure $ DM.fromMaybe model $ DA.updateAt index updated model
+update :: Model -> Message -> Model
+update model = case _ of
+        Add -> DA.snoc model ECM.init
+        Remove index -> DM.fromMaybe model $ DA.deleteAt index model
+        CounterMessage index message ->
+                case model !! index of
+                        Nothing -> model
+                        Just model' -> DM.fromMaybe model $ DA.updateAt index (ECM.update model' message) model
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.button [HV.onClick Add] "Add",
+        HE.button [HA.onClick Add] "Add",
         HE.div_ $ DA.mapWithIndex viewCounter model
 ]
         where   viewCounter index model' = HE.div [HA.style { display: "flex" }] [
-                        CounterMsg index <$> EC.view model',
-                        HE.button [HV.onClick $ Remove index] "Remove"
+                        CounterMessage index <$> ECM.view model',
+                        HE.button [HA.onClick $ Remove index] "Remove"
                 ]
 
 main :: Effect Unit
-main =  F.mount "main" { init, update, view, inputs: [] }
+main =  FAN.mount "main" {
+        init,
+        update,
+        view,
+        inputs: []
+}

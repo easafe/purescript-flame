@@ -7,7 +7,10 @@
         "scripts": {
                 "example-affjax": "pulp browserify --main Examples.Affjax.Main --include examples/Affjax --optimise --to examples/Affjax/dist/affjax.js",
                 "example-counter": "pulp browserify --main Examples.Counter.Main --include examples/Counter --optimise --to examples/Counter/dist/counter.js",
-                "example-counters": "pulp browserify --main Examples.Counters.Main --include examples/Counters:examples/Counter --optimise --to examples/Counters/dist/counters.js"
+                "example-counters": "pulp browserify --main Examples.Counters.Main --include examples/Counters:examples/Counter --optimise --to examples/Counters/dist/counters.js",
+                "example-dice": "pulp browserify --main Examples.Dice.Main --include examples/Dice --optimise --to examples/Dice/dist/dice.js",
+                "example-dices": "pulp browserify --main Examples.Dices.Main --include examples/Dices:examples/Dice --optimise --to examples/Dices/dist/dices.js",
+                "build-examples": "npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-dices"
         },
         "dependencies": {
                 "snabbdom": "^0.7.3",

@@ -1,18 +1,16 @@
-module Flame.Html.Element where
+-- | Definition of HTML elements
+module Flame.HTML.Element where
 
 import Prelude
 
 import Data.Array as DA
-import Flame.Type (NodeData, Element(..), Tag)
-import Flame.Html.Attribute as HA
+import Flame.Types (NodeData, Element(..), Tag)
+import Flame.HTML.Attribute.Internal as FHAI
 
---should enable us to do stuff like
--- F.tag [attributes] [children]
--- F.tag_ [children]
--- F.tag "tag id" _
--- F.tag _ "tag text content"
--- F.tag (HA.attribute) _
--- F.tag _ $ HA.tag
+-- | `ToHtml` simplifies element creation by automating common tag operations
+-- | * `tag "my-tag" []` becomes short for `tag [id "my-tag"] []`
+-- | * `tag [] "content"` becomes short for `tag [] [text "content"]`
+-- | * elements with a single attribute or children need not as well to use lists: `tag (enabled True) (tag attrs children)`
 -- blaze like syntax would be nicer but the only ps port available (smolder) seems to be slow and not mantained
 class ToHtml a b c | a -> b where
 	to :: a -> Array (c b)
@@ -27,7 +25,7 @@ instance htmlToHtml :: ToHtml (Element a) a Element where
 	to = DA.singleton
 
 instance stringToElementData :: ToHtml String b NodeData where
-	to = DA.singleton <<< HA.id
+	to = DA.singleton <<< FHAI.id
 
 instance attributeEventToElementData :: ToHtml (NodeData a) a NodeData where
 	to = DA.singleton
@@ -38,18 +36,23 @@ type ToElement_ b h = ToHtml b h Element => b -> Element h
 
 type ToElement' a h = ToHtml a h NodeData => a -> Element h
 
+-- | Creates a HTML element with attributes and children nodes
 createElement :: forall a b h. Tag -> ToElement a b h
 createElement tag attributeEvent = Node tag (to attributeEvent) <<< to
 
+-- | Creates a HTML element with no attributes but children nodes
 createElement_ :: forall b h. Tag -> ToElement_ b h
 createElement_ tag = Node tag [] <<< to
 
+-- | Creates a HTML element with attributes but no children nodes
 createElement' :: forall a h. Tag -> ToElement' a h
 createElement' tag attributeEvent = Node tag (to attributeEvent) []
 
+-- | Creates a HTML element with no attributes and no children nodes
 createEmptyElement :: forall h. Tag -> Element h
 createEmptyElement tag = Node tag [] []
 
+-- | Creates a text node
 text :: forall h. String -> Element h
 text = Text
 
