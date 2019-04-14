@@ -13,10 +13,13 @@
                 "build-examples": "npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-dices"
         },
         "dependencies": {
+                "phantomjs-prebuilt": "^2.1.16",
+                "slimerjs": "^1.0.0",
                 "snabbdom": "^0.7.3",
                 "snabbdom-to-html": "^5.1.1"
         },
         "devDependencies": {
+                "jsdom": "^14.0.0",
                 "pulp": "^12.3.0"
         }
 }
