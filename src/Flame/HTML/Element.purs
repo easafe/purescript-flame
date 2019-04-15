@@ -68,11 +68,14 @@ hr' = createElement' "hr"
 br :: forall h. Element h
 br = createEmptyElement "br"
 
-br_ :: forall b h. ToElement_ b h
-br_ = createElement_ "br"
-
 br' :: forall a h. ToElement' a h
 br' = createElement' "br"
+
+input :: forall a h. ToElement' a h
+input = createElement' "input"
+
+input_ :: forall a h. ToElement_ a h
+input_ = createElement_ "input"
 
 --script generated
 
@@ -495,15 +498,6 @@ iframe_ = createElement_ "iframe"
 
 iframe' :: forall a h. ToElement' a h
 iframe' = createElement' "iframe"
-
-input :: forall a b h. ToElement a b h
-input = createElement "input"
-
-input_ :: forall b h. ToElement_ b h
-input_ = createElement_ "input"
-
-input' :: forall a h. ToElement' a h
-input' = createElement' "input"
 
 ins :: forall a b h. ToElement a b h
 ins = createElement "ins"

@@ -1,4 +1,4 @@
-module Examples.Counter.Main where
+module Examples.NoEffects.Counter.Main where
 
 import Prelude
 

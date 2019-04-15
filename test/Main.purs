@@ -20,8 +20,9 @@ import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
+import Test.EffectList as TE
 
---we use jsdom to provide a brower like enviroment to run tests
+--we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
 -- and headless browers
 foreign import unsafeCreateEnviroment :: Effect Unit
@@ -212,6 +213,30 @@ main = do
                                 dispatchEvent "#increment-button"
                                 current2 <- output
                                 TUA.equal "1" current2
-                        --test "effectlist" do
+                        test "effectlist" do
+                                liftEffect TE.mount
+                                childrenLength <- liftEffect $ do
+                                        mountPoint <- unsafeQuerySelector "main"
+                                        children <- WDP.children $ WDE.toParentNode mountPoint
+                                        WDH.length children
+                                --span, input, input
+                                TUA.equal 3 childrenLength
+                                    --application.update sets the element text content according to the model
+                                let output = liftEffect $ do
+                                        element <- unsafeQuerySelector "#text-output"
+                                        WDN.textContent $ WDE.toNode element
+                                    --events that call application.update
+                                    dispatchEvent event selector = liftEffect $ do
+                                        element <- unsafeQuerySelector selector
+                                        _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
+                                        pure unit
+                                initial <- output
+                                TUA.equal "" initial
+
+                                event <- clickEvent
+                                dispatchEvent event "#cut-button"
+                                current <- output
+                                TUA.equal "" current
+
                         --test "effectful" do
         where unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)

@@ -1,4 +1,4 @@
-module Examples.Counters.Main where
+module Examples.NoEffects.Counters.Main where
 
 import Prelude
 
@@ -7,8 +7,7 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Examples.Counter.Main as ECM
+import Examples.NoEffects.Counter.Main as ECM
 import Flame (Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Attribute as HA
