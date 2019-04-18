@@ -1,9 +1,7 @@
-module Test.EffectList where
+module Test.EffectList (mount) where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Tuple (Tuple)
@@ -28,18 +26,18 @@ update model = case _ of
         ]
         Current text -> text :> []
         where   cut text = do
-                        amount <- liftEffect <<< ER.randomInt 0 $ DSC.length text
+                        amount <- liftEffect <<< ER.randomInt 1 $ DSC.length text
                         pure $ DS.take amount text
 
 view :: Model -> Html Message
 view model = HE.main_ [
         HE.span [HA.id "text-output"] model,
-        HE.input [HA.type' "text", HA.onInput Current],
+        HE.input [HA.id "text-input", HA.type' "text", HA.onInput Current],
         HE.input [HA.id "cut-button", HA.type' "button", HA.onClick Cut]
 ]
 
-main :: Effect Unit
-main = FAE.mount "main" {
+mount :: Effect Unit
+mount = FAE.mount "#mount-point" {
         init: "" :> [],
         update: update,
         view,

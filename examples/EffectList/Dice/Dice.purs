@@ -1,4 +1,4 @@
-module Examples.Dice.Main where
+module Examples.EffectList.Dice.Main where
 
 import Prelude
 
@@ -36,7 +36,7 @@ view model = HE.main "main" [
 
 main :: Effect Unit
 main = FAE.mount "main" {
-        init: init,
+        init: init :> [],
         update: update,
         view,
         inputs:[]

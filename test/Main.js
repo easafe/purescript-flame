@@ -11,3 +11,7 @@ exports.unsafeCreateEnviroment = function () {
 exports.clickEvent = function () {
 	return new window.Event('click');
 }
+
+exports.inputEvent = function () {
+	return new window.Event('input');
+}

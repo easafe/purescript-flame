@@ -3,6 +3,7 @@ module Test.Main where
 import Prelude
 
 import Data.Maybe as DM
+import Data.String.CodeUnits as DS
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Flame.DOM as FD
@@ -10,6 +11,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as HS
 import Partial.Unsafe (unsafePartial)
+import Test.EffectList as TE
 import Test.NoEffects as TN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
@@ -20,17 +22,17 @@ import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
-import Test.EffectList as TE
+import Web.HTML.HTMLInputElement as WHH
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
 -- and headless browers
 foreign import unsafeCreateEnviroment :: Effect Unit
 foreign import clickEvent :: Effect Event
+foreign import inputEvent :: Effect Event
 
 main :: Effect Unit
-main = do
-        unsafeCreateEnviroment
+main =
         runTest do
                 suite "VNode creation" do
                         test "ToHtml instances" do
@@ -126,17 +128,17 @@ main = do
                                         HE.head_ [HE.title_ "title"],
                                         HE.body_ [
                                                 HE.main_ [
-                                        	        HE.button_ "-",
+                                                        HE.button_ "-",
                                                         HE.br,
-                                        	        HE.text "Test",
-                                        	        HE.button_ "+",
+                                                        HE.text "Test",
+                                                        HE.button_ "+",
                                                         HE.hr,
                                                         HE.div_ $ HE.div_ [
                                                                 HE.span_ [ HE.a_ "here" ]
                                                         ]
                                                 ]
                                         ]
-                        	]
+                                ]
                                 html' <- liftEffect $ HS.render html
                                 TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><hr><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
@@ -145,17 +147,17 @@ main = do
                                         HE.head_ [HE.title_ "title"],
                                         HE.body "content" [
                                                 HE.main_ [
-                                        	        HE.button (HA.style { display: "block", width: "20px"}) "-",
+                                                        HE.button (HA.style { display: "block", width: "20px"}) "-",
                                                         HE.br,
-                                        	        HE.text "Test",
-                                        	        HE.button (HA.createAttribute "my-attribute" "myValue") "+",
+                                                        HE.text "Test",
+                                                        HE.button (HA.createAttribute "my-attribute" "myValue") "+",
                                                         HE.hr' [HA.style { border: "200px solid blue"}] ,
                                                         HE.div_ $ HE.div_ [
                                                                 HE.span_ [ HE.a_ "here" ]
                                                         ]
                                                 ]
                                         ]
-                        	]
+                                ]
                                 html' <- liftEffect $ HS.render html
                                 TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
@@ -164,17 +166,17 @@ main = do
                                         HE.head [HA.disabled true] [HE.title_ "title"],
                                         HE.body "content" [
                                                 HE.main_ [
-                                        	        HE.button (HA.style { display: "block", width: "20px"}) "-",
+                                                        HE.button (HA.style { display: "block", width: "20px"}) "-",
                                                         HE.br,
-                                        	        HE.text "Test",
-                                        	        HE.button (HA.createAttribute "my-attribute" "myValue") "+",
+                                                        HE.text "Test",
+                                                        HE.button (HA.createAttribute "my-attribute" "myValue") "+",
                                                         HE.hr' [HA.autocomplete false, HA.style { border: "200px solid blue"}] ,
                                                         HE.div_ $ HE.div_ [
                                                                 HE.span_ [ HE.a [HA.autofocus true] "here" ]
                                                         ]
                                                 ]
                                         ]
-                        	]
+                                ]
                                 html' <- liftEffect $ HS.render html
                                 TUA.equal """<html lang="en"><head disabled="disabled"><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a autofocus="autofocus">here</a></span></div></div></main></body></html>""" html'
 
@@ -185,23 +187,25 @@ main = do
                                 TUA.equal """<a>TEST</a>""" html'
                 suite "test applications" do
                         test "noeffects" do
-                                liftEffect TN.mount
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TN.mount
                                 childrenLength <- liftEffect $ do
                                         mountPoint <- unsafeQuerySelector "main"
                                         children <- WDP.children $ WDE.toParentNode mountPoint
                                         WDH.length children
                                 --button, span, button
                                 TUA.equal 3 childrenLength
-                                    --application.update sets the element text content according to the model
-                                let output = liftEffect $ do
-                                        element <- unsafeQuerySelector "#text-output"
-                                        WDN.textContent $ WDE.toNode element
-                                    --events that call application.update
-                                    dispatchEvent selector = liftEffect $ do
-                                        element <- unsafeQuerySelector selector
-                                        event <- clickEvent
-                                        _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
-                                        pure unit
+                                        --application.update sets the element text content according to the model
+                                let     output = liftEffect $ do
+                                                element <- unsafeQuerySelector "#text-output"
+                                                WDN.textContent $ WDE.toNode element
+                                        --events that call application.update
+                                        dispatchEvent selector = liftEffect $ do
+                                                element <- unsafeQuerySelector selector
+                                                event <- clickEvent
+                                                _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
+                                                pure unit
                                 initial <- output
                                 TUA.equal "0" initial
 
@@ -214,29 +218,43 @@ main = do
                                 current2 <- output
                                 TUA.equal "1" current2
                         test "effectlist" do
-                                liftEffect TE.mount
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TE.mount
                                 childrenLength <- liftEffect $ do
                                         mountPoint <- unsafeQuerySelector "main"
                                         children <- WDP.children $ WDE.toParentNode mountPoint
                                         WDH.length children
                                 --span, input, input
                                 TUA.equal 3 childrenLength
-                                    --application.update sets the element text content according to the model
-                                let output = liftEffect $ do
-                                        element <- unsafeQuerySelector "#text-output"
-                                        WDN.textContent $ WDE.toNode element
-                                    --events that call application.update
-                                    dispatchEvent event selector = liftEffect $ do
-                                        element <- unsafeQuerySelector selector
-                                        _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
-                                        pure unit
+                                        --application.update sets the element text content according to the model
+                                let     output = liftEffect $ do
+                                                element <- unsafeQuerySelector "#text-output"
+                                                WDN.textContent $ WDE.toNode element
+                                        setInput text = liftEffect $ do
+                                                element <- unsafeQuerySelector "#text-input"
+                                                WHH.setValue text $ unsafePartial (DM.fromJust $ WHH.fromElement element)
+                                        --events that call application.update
+                                        dispatchEvent event selector = liftEffect $ do
+                                                element <- unsafeQuerySelector selector
+                                                _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
+                                                pure unit
                                 initial <- output
                                 TUA.equal "" initial
 
-                                event <- clickEvent
+                                event <- liftEffect clickEvent
                                 dispatchEvent event "#cut-button"
                                 current <- output
                                 TUA.equal "" current
+
+                                setInput "test"
+                                secondEvent <- liftEffect inputEvent
+                                dispatchEvent secondEvent "#text-input"
+                                thirdEvent <- liftEffect clickEvent
+                                dispatchEvent thirdEvent "#cut-button"
+                                cut <- output
+                                --always remove at least one character
+                                TUA.assert "cut text" $ DS.length cut < 4
 
                         --test "effectful" do
         where unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
