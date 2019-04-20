@@ -11,7 +11,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as HS
 import Partial.Unsafe (unsafePartial)
-import Test.EffectList as TE
+import Test.EffectList as TEL
 import Test.NoEffects as TN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
@@ -23,6 +23,7 @@ import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLInputElement as WHH
+import Test.Effectful as TE
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
@@ -190,71 +191,91 @@ main =
                                 liftEffect $ do
                                         unsafeCreateEnviroment
                                         TN.mount
-                                childrenLength <- liftEffect $ do
-                                        mountPoint <- unsafeQuerySelector "main"
-                                        children <- WDP.children $ WDE.toParentNode mountPoint
-                                        WDH.length children
+                                childrenLength <- childrenNodeLength
                                 --button, span, button
                                 TUA.equal 3 childrenLength
-                                        --application.update sets the element text content according to the model
-                                let     output = liftEffect $ do
-                                                element <- unsafeQuerySelector "#text-output"
-                                                WDN.textContent $ WDE.toNode element
-                                        --events that call application.update
-                                        dispatchEvent selector = liftEffect $ do
-                                                element <- unsafeQuerySelector selector
-                                                event <- clickEvent
-                                                _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
-                                                pure unit
-                                initial <- output
+
+                                initial <- textContent "#text-output"
                                 TUA.equal "0" initial
 
-                                dispatchEvent "#decrement-button"
-                                current <- output
+                                dispatchEvent clickEvent "#decrement-button"
+                                current <- textContent "#text-output"
                                 TUA.equal "-1" current
 
-                                dispatchEvent "#increment-button"
-                                dispatchEvent "#increment-button"
-                                current2 <- output
+                                dispatchEvent clickEvent "#increment-button"
+                                dispatchEvent clickEvent "#increment-button"
+                                current2 <- textContent "#text-output"
                                 TUA.equal "1" current2
                         test "effectlist" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TE.mount
-                                childrenLength <- liftEffect $ do
-                                        mountPoint <- unsafeQuerySelector "main"
-                                        children <- WDP.children $ WDE.toParentNode mountPoint
-                                        WDH.length children
+                                        TEL.mount
+                                childrenLength <- childrenNodeLength
                                 --span, input, input
                                 TUA.equal 3 childrenLength
-                                        --application.update sets the element text content according to the model
-                                let     output = liftEffect $ do
-                                                element <- unsafeQuerySelector "#text-output"
-                                                WDN.textContent $ WDE.toNode element
-                                        setInput text = liftEffect $ do
+
+                                let     setInput text = liftEffect $ do
                                                 element <- unsafeQuerySelector "#text-input"
                                                 WHH.setValue text $ unsafePartial (DM.fromJust $ WHH.fromElement element)
-                                        --events that call application.update
-                                        dispatchEvent event selector = liftEffect $ do
-                                                element <- unsafeQuerySelector selector
-                                                _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
-                                                pure unit
-                                initial <- output
+                                initial <- textContent "#text-output"
                                 TUA.equal "" initial
 
-                                event <- liftEffect clickEvent
-                                dispatchEvent event "#cut-button"
-                                current <- output
+                                dispatchEvent clickEvent "#cut-button"
+                                current <- textContent "#text-output"
                                 TUA.equal "" current
 
                                 setInput "test"
-                                secondEvent <- liftEffect inputEvent
-                                dispatchEvent secondEvent "#text-input"
-                                thirdEvent <- liftEffect clickEvent
-                                dispatchEvent thirdEvent "#cut-button"
-                                cut <- output
+                                dispatchEvent inputEvent "#text-input"
+                                dispatchEvent clickEvent "#cut-button"
+                                cut <- textContent "#text-output"
                                 --always remove at least one character
                                 TUA.assert "cut text" $ DS.length cut < 4
 
-                        --test "effectful" do
-        where unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
+                        test "effectful" do
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TE.mount
+                                childrenLength <- childrenNodeLength
+                                --span, span, span, br, button, button
+                                TUA.equal 6 childrenLength
+
+                                currentIncrement <- textContent "#text-output-increment"
+                                currentDecrement <- textContent "#text-output-decrement"
+                                currentLuckyNumber <- textContent "#text-output-lucky-number"
+                                TUA.equal "-1" currentDecrement
+                                TUA.equal "0" currentIncrement
+                                TUA.equal "2" currentLuckyNumber
+
+                                dispatchEvent clickEvent "#decrement-button"
+                                currentIncrement2 <- textContent "#text-output-increment"
+                                currentDecrement2 <- textContent "#text-output-decrement"
+                                currentLuckyNumber2 <- textContent "#text-output-lucky-number"
+                                TUA.equal "-2" currentDecrement2
+                                TUA.equal "0" currentIncrement2
+                                TUA.equal "2" currentLuckyNumber2
+
+                                dispatchEvent clickEvent "#increment-button"
+                                dispatchEvent clickEvent "#increment-button"
+                                currentIncrement3 <- textContent "#text-output-increment"
+                                currentDecrement3 <- textContent "#text-output-decrement"
+                                currentLuckyNumber3 <- textContent "#text-output-lucky-number"
+                                TUA.equal "2" currentIncrement3
+                                TUA.equal "-2" currentDecrement3
+                                TUA.equal "2" currentLuckyNumber3
+        where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
+
+                childrenNodeLength = liftEffect $ do
+                        mountPoint <- unsafeQuerySelector "main"
+                        children <- WDP.children $ WDE.toParentNode mountPoint
+                        WDH.length children
+
+                textContent selector = liftEffect $ do
+                        element <- unsafeQuerySelector selector
+                        WDN.textContent $ WDE.toNode element
+
+                dispatchEvent eventFunction selector = liftEffect $ do
+                        element <- unsafeQuerySelector selector
+                        event <- eventFunction
+                        _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
+                        pure unit
+

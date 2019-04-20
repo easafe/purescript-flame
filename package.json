@@ -5,7 +5,7 @@
                 "package.json"
         ],
         "scripts": {
-                "example-affjax": "pulp browserify --main Examples.Affjax.Main --include examples/Affjax --optimise --to examples/Affjax/dist/affjax.js",
+                "example-affjax": "pulp browserify --main Examples.Effectful.Affjax.Main --include examples/Effectful/Affjax --optimise --to examples/Effectful/Affjax/dist/affjax.js",
                 "example-counter": "pulp browserify --main Examples.NoEffects.Counter.Main --include examples/NoEffects/Counter --optimise --to examples/NoEffects/Counter/dist/counter.js",
                 "example-counters": "pulp browserify --main Examples.NoEffects.Counters.Main --include examples/NoEffects/Counters:examples/NoEffects/Counter --optimise --to examples/NoEffects/Counters/dist/counters.js",
                 "example-dice": "pulp browserify --main Examples.EffectList.Dice.Main --include examples/EffectList/Dice --optimise --to examples/EffectList/Dice/dist/dice.js",

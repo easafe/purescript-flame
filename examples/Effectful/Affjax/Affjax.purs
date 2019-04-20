@@ -1,13 +1,14 @@
-module Examples.Affjax.Main where
+module Examples.Effectful.Affjax.Main where
 
 import Prelude
 
-import Effect.Aff (Aff)
 import Affjax as A
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Flame (Html, World)
+import Effect.Aff (Aff)
+import Flame (Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -41,7 +42,7 @@ update re model Fetch = do
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.input' [HA.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
+        HE.input [HA.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
         HE.button [HA.onClick Fetch, HA.disabled $ model.result == Fetching] "Fetch",
         case model.result of
                 NotFetched ->
@@ -56,7 +57,7 @@ view model = HE.main "main" [
 
 main :: Effect Unit
 main = F.mount "main" {
-        init,
+        init: init :> Nothing,
         update,
         view,
         inputs : []

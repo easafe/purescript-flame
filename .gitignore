@@ -9,3 +9,5 @@
 /.psa*
 dist/
 todo
+
+npm-debug.log
