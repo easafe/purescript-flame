@@ -10,7 +10,7 @@
                 "example-counters": "pulp browserify --main Examples.NoEffects.Counters.Main --include examples/NoEffects/Counters:examples/NoEffects/Counter --optimise --to examples/NoEffects/Counters/dist/counters.js",
                 "example-dice": "pulp browserify --main Examples.EffectList.Dice.Main --include examples/EffectList/Dice --optimise --to examples/EffectList/Dice/dist/dice.js",
 
-                "build-examples": "npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-dices"
+                "build-examples": "npm run example-affjax && npm run example-counter && npm run example-counters"
         },
         "dependencies": {
                 "phantomjs-prebuilt": "^2.1.16",
