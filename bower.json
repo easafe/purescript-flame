@@ -1,29 +1,33 @@
 {
-  "name": "purescript-flame",
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "output"
-  ],
-  "dependencies": {
-    "purescript-prelude": "^4.1.0",
-    "purescript-console": "^4.2.0",
-    "purescript-effect": "^2.0.1",
-    "purescript-web-events": "^2.0.0",
-    "purescript-web-dom": "^2.0.0",
-    "purescript-web-html": "^2.0.0",
-    "purescript-nullable": "^4.1.1",
-    "purescript-aff": "^5.1.0",
-    "purescript-signal": "^10.1.0",
-    "purescript-foreign-object": "^2.0.1"
-  },
-  "devDependencies": {
-    "purescript-psci-support": "^4.0.0",
-    "purescript-random": "^4.0.0",
-    "purescript-integers": "^4.0.0",
-    "purescript-affjax": "^7.0.0",
-    "purescript-test-unit": "^14.0.0"
-  }
+        "name": "purescript-flame",
+        "license": "MIT",
+        "ignore": [
+                "**/.*",
+                "node_modules",
+                "bower_components",
+                "output"
+        ],
+        "dependencies": {
+                "purescript-prelude": "^4.1.0",
+                "purescript-console": "^4.2.0",
+                "purescript-effect": "^2.0.1",
+                "purescript-web-events": "^2.0.0",
+                "purescript-web-dom": "^2.0.0",
+                "purescript-web-html": "^2.0.0",
+                "purescript-nullable": "^4.1.1",
+                "purescript-aff": "^5.1.0",
+                "purescript-signal": "^10.1.0",
+                "purescript-foreign-object": "^2.0.1"
+        },
+        "devDependencies": {
+                "purescript-psci-support": "^4.0.0",
+                "purescript-random": "^4.0.0",
+                "purescript-integers": "^4.0.0",
+                "purescript-affjax": "^7.0.0",
+                "purescript-test-unit": "^14.0.0"
+        },
+        "repository": {
+                "type": "git",
+                "url": "https://github.com/easafe/purescript-flame.git"
+        }
 }
