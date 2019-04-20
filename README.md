@@ -19,10 +19,10 @@ npm install snabbdom snabbom-html # for server side rendering
 bower install purescript-flame
 ```
 
-Bare bone application:
+Bare bones app:
 
 ```purescript
-module Application.Main where
+module App.Main where
 
 import Prelude
 
