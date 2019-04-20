@@ -4,9 +4,7 @@ Flame is a fast & simple framework for building web applications in PureScript i
 
 ## Documentation
 
-See the [project page](https://purescript-flame.github.io)
-
-API docs: [https://pursuit.purescript.org/packages/purescript-flame/0.1.1](https://pursuit.purescript.org/packages/purescript-flame/0.1.1)
+See the [project page](https://purescript-flame.github.io) or [pursuit](https://pursuit.purescript.org/packages/purescript-flame)
 
 ## Examples
 

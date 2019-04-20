@@ -1,5 +1,6 @@
 {
   "name": "purescript-flame",
+  "license": "MIT",
   "ignore": [
     "**/.*",
     "node_modules",

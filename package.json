@@ -1,6 +1,5 @@
 {
         "name": "purescript-flame",
-        "version": "0.1.0",
         "files": [
                 "package.json"
         ],
