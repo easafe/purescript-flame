@@ -24,7 +24,7 @@ npm install snabbdom snabbom-html # for server side rendering
 bower install purescript-flame
 ```
 
-Bare bones .purs file:
+Example counter appp:
 
 ```haskell
 module App.Main where

@@ -105,10 +105,12 @@ a.direction, .menu a:not(.project-name) {
         padding: 0;
 }
 
+.previous {
+        display: inline-block;
+        margin-right: 20px;
+}
+
 @media (max-width:600px)  {
-        .menu {
-                text-align: center
-        }
         body {
                 display: block;
         }
