@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Main concepts
-permalink: /concepts/
+permalink: /concepts
 ---
 
 

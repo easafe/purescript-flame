@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Defining views
-permalink: /views/
+permalink: /views
 ---
 
 

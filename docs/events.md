@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Handling events
-permalink: /events/
+permalink: /events
 ---
 
 

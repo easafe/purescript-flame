@@ -88,7 +88,7 @@ a.direction, .menu a:not(.project-name) {
         font-size: 1.1em;
 }
 
-.content a:not(.direction), .menu a:hover {
+.content a:not(.direction), .menu a.current, .menu a:hover {
         color:  #d72922;
         background-color: #191b1b;
 }
@@ -109,6 +109,10 @@ a.direction, .menu a:not(.project-name) {
         display: inline-block;
         margin-right: 20px;
         margin-bottom: 20px;
+}
+
+.current {
+        border-bottom: 3px solid  #d72922;
 }
 
 @media (max-width:600px)  {

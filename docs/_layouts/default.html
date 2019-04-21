@@ -10,12 +10,12 @@
                 <div>
                         <div class=menu>
                                 <h1><a href=/index class=project-name>flame</a></h1>
-                                <ul>
-                                        <li><a href=/index >Getting started</a></li>
-                                        <li><a href=/concepts>Main concepts</a></li>
-                                        <li><a href=/views>Defining views</a></li>
-                                        <li><a href=/events>Handling events</a></li>
-                                        <li><a href=/rendering>Rendering the app</a></li>
+                                <ul id=guide>
+                                        <li><a href=/index/ >Getting started</a></li>
+                                        <li><a href=/concepts/ >Main concepts</a></li>
+                                        <li><a href=/views/ >Defining views</a></li>
+                                        <li><a href=/events/ >Handling events</a></li>
+                                        <li><a href=/rendering/ >Rendering the app</a></li>
                                 </ul>
                                 <br>
                                 <ul>
@@ -29,5 +29,14 @@
                 <div class=content>
                         {{ content }}
                 </div>
+                <script type=text/javascript>
+                        var as = [].slice.call(document.querySelectorAll('#guide li a'));
+
+                        for (var i = 0; i < as.length; ++i)
+                                if (location.href == as[i].href) {
+                                        as[i].classList.add('current');
+                                        break
+                                }
+                </script>
         </body>
 </html>
