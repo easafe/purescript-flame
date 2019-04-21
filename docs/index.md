@@ -24,9 +24,9 @@ npm install snabbdom snabbom-html # for server side rendering
 bower install purescript-flame
 ```
 
-Bare bones app:
+Bare bones .purs file:
 
-```purescript
+```haskell
 module App.Main where
 
 import Prelude
@@ -72,4 +72,4 @@ main = FAN.mount "main" {
 }
 ```
 
-[Next: Main concepts](concepts)
+<a href="/concepts" class="direction">Next: Main concepts</a>
