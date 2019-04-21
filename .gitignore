@@ -11,3 +11,6 @@ dist/
 todo
 
 npm-debug.log
+
+.sass-cache/
+_site/
