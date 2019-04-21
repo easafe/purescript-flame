@@ -108,9 +108,14 @@ a.direction, .menu a:not(.project-name) {
 .previous {
         display: inline-block;
         margin-right: 20px;
+        margin-bottom: 20px;
 }
 
 @media (max-width:600px)  {
+        .menu, .content {
+                padding: 3px;
+        }
+
         body {
                 display: block;
         }
