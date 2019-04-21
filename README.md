@@ -1,6 +1,6 @@
 # Flame
 
-Flame is a fast & simple framework for building web applications in PureScript inspired by [purescript-hedwig](https://github.com/utkarshkukreti/purescript-hedwig)
+Flame is a fast & simple framework for building web applications in PureScript inspired by [purescript-hedwig](https://github.com/utkarshkukreti/purescript-hedwig) and Elm
 
 ## Documentation
 
