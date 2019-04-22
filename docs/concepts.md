@@ -10,14 +10,14 @@ A Flame application consists of the following record
 ```haskell
 {
         init :: model,
-        view :: model -> Html model,
+        view :: model -> Html message,
         update :: model -> message -> model,
         inputs :: Array Signal
 }
 ```
 The type variable `model` refers to the **state** of the application. `message`, on the other hand, describe the kind of **events** the application handles.
 
-1. Application state
+### Application state
 
 In the counter example we set our state as a simple type alias
 ```haskell
@@ -32,7 +32,7 @@ init = 0
 ```
 The first time the application is rendered, Flame will call the view function with `init`.
 
-2. Application markup
+### Application markup
 
 The `view` function maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.
 
@@ -49,7 +49,7 @@ The `Message`s raised as events will be used to signal how the application state
 
 See [defining views](views) for an in depth look at views.
 
-3. State updating
+### State updating
 
 The `update` function handles events, returning an updated model. In a Flame application, we reify native events as a custom data type. In the counter example, we are interested in the following events:
 ```haskell
@@ -65,9 +65,20 @@ update model = case _ of
 
 See [Handling events](events) for an in depth look at update strategies.
 
-4. External event handling
+### External event handling
 
 Finally, the last field in a Flame application record is `inputs`. It contains a list of [signals](https://pursuit.purescript.org/packages/purescript-signal/), which can be used to raise messages from events outside of our view. This includes `window` or `document` events, such as resize or websockets, and custom events, which will then be handled as usual by the application `update` function.
+
+In the counter example, no external events are handled, so we define inputs as the empty array
+```haskell
+main :: Effect Unit
+main = FAN.mount "main" {
+        init,
+        update,
+        view,
+        inputs: []
+}
+```
 
 See [Handling external events](events#external) for an in depth look at input signals.
 
