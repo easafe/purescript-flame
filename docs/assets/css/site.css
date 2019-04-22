@@ -71,7 +71,9 @@ ul li {
 }
 
 .content {
-        padding: 45px;
+        padding: 60px;
+        width: 1024px;
+        text-align: justify
 }
 
 .content a {
