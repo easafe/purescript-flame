@@ -119,6 +119,7 @@ a.direction, .menu a:not(.project-name) {
 
 @media (max-width:600px)  {
         .menu, .content {
+                width: 100%;
                 padding: 3px;
         }
 
