@@ -32,11 +32,14 @@
                 <script type=text/javascript>
                         var as = [].slice.call(document.querySelectorAll('#guide li a'));
 
-                        for (var i = 0; i < as.length; ++i)
-                                if (location.href == as[i].href) {
-                                        as[i].classList.add('current');
-                                        break
-                                }
+                        if (location.pathname == '/')
+                                as[0].classList.add('current');
+                        else
+                                for (var i = 0; i < as.length; ++i)
+                                        if (location.href == as[i].href) {
+                                                as[i].classList.add('current');
+                                                break;
+                                        }
                 </script>
         </body>
 </html>
