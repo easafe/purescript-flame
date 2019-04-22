@@ -196,3 +196,10 @@ a.direction, .menu a:not(.project-name) {
 .highlight .gu { color: #75715e; } /* Generic.Subheading & Diff Unified/Comment? */
 .highlight .gd { color: #f92672; } /* Generic.Deleted & Diff Deleted */
 .highlight .gi { color: #a6e22e; } /* Generic.Inserted & Diff Inserted */
+
+code.highlighter-rouge {
+        border: 1px solid rgba(255, 255, 255, .1);
+        padding: 0 .3em;
+        border-radius: 3px;
+        font-size: 1.1em;
+}
