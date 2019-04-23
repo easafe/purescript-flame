@@ -73,14 +73,28 @@ In the counter example, no external events are handled, so we define inputs as t
 ```haskell
 main :: Effect Unit
 main = FAN.mount "main" {
+        ...
+        inputs: []
+}
+```
+
+See [Handling external events](events#external) for an in depth look at input signals.
+
+### Rendering
+
+Having all pieces put together, we can either render the application to the DOM
+```haskell
+main :: Effect Unit
+main = FAN.mount "main" {
         init,
         update,
         view,
         inputs: []
 }
 ```
+or as a `String` with `Flame.Renderer.StringRenderer.render`, which can be used server-side.
 
-See [Handling external events](events#external) for an in depth look at input signals.
+See [Rendering the app](rendering) for an in depth look at rendering.
 
 <a href="/index" class="direction previous">Previous: Getting started</a>
 <a href="/views" class="direction">Next: Defining views</a>

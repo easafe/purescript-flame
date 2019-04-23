@@ -34,7 +34,16 @@ The module `Flame.HTML.Attribute` exports
 
 * Events, such as `onClick` or `onInput`, expecting a `message` type constructor
 
-See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of attributes. In the case you need to define your own attributes, Flame provides the combinator `HA.createAttibute`.
+See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of attributes. In the case you need to define your own attributes, Flame provides the combinators
+
+```haskell
+HA.createAttibute
+
+HA.createEvent
+HA.createRawEvent
+
+HA.createProperty
+```
 
 ### Elements
 
@@ -42,13 +51,42 @@ The module `Flame.HTML.Element` exports HTML elements, such as `div`, `body`, et
 
 * Functions named `element` expects attributes and children elements
 
-* Functions named `element_` (trailing dash) expects children elements but no attributes
+```haskell
+HE.div [HA.id "my-div"] [HE.text "text content"] --renders <div id="my-div">text content</div>
+```
+
+* Functions named `element_` (trailing underscore) expects children elements but no attributes
+
+```haskell
+HE.div_ [HE.text "text content"] --renders <div>text content</div>
+```
 
 * Functions named `element'` (trailing quote) expects attributes but no children elements
 
+```haskell
+HE.div' [HA.id "my-div"] --renders <div>text content</div>
+```
+
 (a few elements that usually have no children like br or input have `element` behave as `element'`)
 
-Attributes and children elements are passed as arrays but the markup DSL also defines a few convenience type classes so we can write
+Attributes and children elements are passed as arrays
+
+```haskell
+HE.div [HA.id "my-div", HA.disabled False, HA.title "div tite"] [
+        HE.span' [HA.id "special-span"],
+        HE.br,
+        HE.span_ [HA.id "regular-span"] [HE.text "I am regular"],
+]
+{- renders
+<div id="my-div" title="div title">
+        <span id="special-span"></span>
+        <br>
+        <span id="regular-span">I am regular</span>
+</div>
+-}
+```
+
+But for some common cases, the markup DSL also defines convenience type classes so we can write
 
 * `HE.element "my-element" _` instead of `HE.element [HA.id "my-element"] _` to declare an element with an id attribute
 
@@ -57,22 +95,6 @@ Attributes and children elements are passed as arrays but the markup DSL also de
 * `HE.element (HA.attribute _) _` instead of `HE.element [HA.attribute _] _` to declare elements with a single attribute
 
 * `HE.element _ $ HE.element _ _` instead of `HE.element _ [HE.Element _ _]` to declare elements with a single child element
-
-The following example defines a `main` tag with a few children elements
-```haskell
-HE.main "content" [
-        HE.div [HA.id "my-div"] [
-                HE.text $ show model,
-                HE.span'
-        ],
-        HE.span_ "Read me"
-        HE.div' $ HA.disabled true,
-        HE.br,
-        HE.input [HA.type' "text", HA.onInput MessageInput],
-        HE.button [HA.onClick MessageClick],
-        HE.div [HA.class {name: false}] "Another div"
-]
-```
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of elements. In the case you need to define your own elements, Flame provides a few combinators
 ```haskell
