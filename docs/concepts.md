@@ -82,7 +82,7 @@ See [Handling external events](events#external) for an in depth look at input si
 
 ### Rendering
 
-Having all pieces put together, we can either render the application to the DOM
+Having all pieces put together, we can either render the application to the DOM, as in the case of the counter example
 ```haskell
 main :: Effect Unit
 main = FAN.mount "main" {
