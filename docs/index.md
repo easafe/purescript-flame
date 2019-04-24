@@ -7,13 +7,13 @@ title: Getting started
 
 Flame is a PureScript frontend framework inspired by [purescript-hedwig](https://github.com/utkarshkukreti/purescript-hedwig) and Elm with focus on simplicity and performance. Featuring:
 
-* Different strategies for state updating -- see [event handling](events)
+* Different strategies for state updating -- see [Handling events](events)
 
 * Signal based interface for handling window or document events
 
 * Performance comparable to native JavaScript frameworks -- see [benchmarks](benchmarks)
 
-* Server side rendering -- see [rendering the app](rendering)
+* Server side rendering -- see [Rendering the app](rendering)
 
 ## Quick start
 
