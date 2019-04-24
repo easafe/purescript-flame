@@ -47,7 +47,7 @@ view model = HE.main "main" [
 ```
 The `Message`s raised as events will be used to signal how the application state should be updated.
 
-See [defining views](views) for an in depth look at views.
+See [Defining views](views) for an in depth look at views.
 
 ### State updating
 
