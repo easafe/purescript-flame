@@ -17,12 +17,12 @@ In the application record
 ```
 the `view` field maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.
 
-A custom DSL, defined by the type `Html`, is used to write markup. You will probably want to qualify imports as such
+A custom DSL, defined by the type `Html`, is used to write markup. You will need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes, properties and events
+
 ```haskell
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
 ```
-using the prefix HE for HTML elements and HA for HTML attributes, properties and events.
 
 ### Attributes, properties and events
 
