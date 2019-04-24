@@ -106,7 +106,49 @@ HE.createEmptyElement
 
 ### View logic
 
-A `view` is just a regular PureScript function, meaning we can compose it, pass it around as any other value. We will talk again more about "components" in the next section, [Handling events](events),
+A `view` is just a regular PureScript function, meaning we can compose it, pass it around as any other value. For granted, we can use the model in attributes
+```haskell
+newtype Model = Model { done :: Int, enabled :: Boolean }
+
+type Message = Do
+
+view :: Model -> Html Message
+view model =
+        HE.div [HA.class' { usefulClass: model.enabled }] $ HE.button [HA.value "Do thing number " <> show $ model.done, HA.onClick Do]
+```
+or to selective alter the markup
+```haskell
+type Name = String
+
+type Model = Just Name
+
+type Message = Update Name | Greet
+
+view :: Model -> Html Message
+view = case _ of
+        Nothing -> HE.div' [
+                HE.input [HA.type' "text", HA.onInput Update],
+                HE.button [HA.value "Greet!", HA.onClick Greet]
+        ]
+        Just name -> "Greetings, " <> name <> "!"
+```
+but perhaps more interesting is the ability to create "partial views" without any special syntax support. We will talk again more about how to structure applications in the next section, [Handling events](events), but creating reusable views is remarkably simple.
+```haskell
+header :: forall model message. model -> Html message
+header = ...
+
+footer :: forall model message. model -> Html message
+footer = ...
+
+view :: Model -> Html Message
+view model = HE.content' [
+        header,
+        ...
+        footer
+]
+```
+
+See the [counters](https://github.com/easafe/purescript-flame/tree/master/examples/NoEffects/Counters) and [TODO List](https://github.com/easafe/purescript-flame/tree/master/examples/EffectList/Todo) test applications for more examples of how to compose views.
 
 <a href="/concepts" class="direction previous">Previous: Main concepts</a>
 <a href="/events" class="direction">Next: Handling events</a>
