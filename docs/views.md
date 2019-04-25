@@ -8,11 +8,11 @@ permalink: /views
 
 In the application record
 ```haskell
-{
+type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array Signal
+        inputs :: Array (Signal message)
 }
 ```
 the `view` field maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.
@@ -114,7 +114,7 @@ type Message = Do
 
 view :: Model -> Html Message
 view model =
-        HE.div [HA.class' { usefulClass: model.enabled }] $ HE.button [HA.value "Do thing number " <> show $ model.done, HA.onClick Do]
+        HE.div [HA.class' { usefulClass: model.enabled }] $ HE.input [HA.type' "button", HA.value "Do thing number " <> show $ model.done, HA.onClick Do]
 ```
 or to selective alter the markup
 ```haskell
@@ -128,7 +128,7 @@ view :: Model -> Html Message
 view = case _ of
         Nothing -> HE.div' [
                 HE.input [HA.type' "text", HA.onInput Update],
-                HE.button [HA.value "Greet!", HA.onClick Greet]
+                HE.input [HA.type' "button", HA.value "Greet!", HA.onClick Greet]
         ]
         Just name -> "Greetings, " <> name <> "!"
 ```

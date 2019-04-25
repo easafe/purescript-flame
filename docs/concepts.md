@@ -8,11 +8,11 @@ permalink: /concepts
 
 A Flame application consists of the following record
 ```haskell
-{
+type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array Signal
+        inputs :: Array (Signal message)
 }
 ```
 The type variable `model` refers to the **state** of the application. `message`, on the other hand, describe the kind of **events** the application handles.
