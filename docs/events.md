@@ -191,9 +191,9 @@ See all [effectful examples](https://github.com/easafe/purescript-flame/tree/mas
 
 ## Event handling and components
 
-If you have used React, Vue.js, or just worried how complete state updating could become, you might be wondering how to struct Flame in "components". That is, to isolate state and business logic to individual modules that can be reused.
+If you have used React, Vue.js, or are just worried how complex state updating could become, you might be wondering how to struct Flame in "components". That is, to isolate state and business logic to individual modules that can be reused.
 
-Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, split a big application into several smaller ones and create type mappings for the model, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application managable.
+Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, break down a big application into several smaller ones and create type mappings for the model, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application managable.
 
 <a href="/views" class="direction previous">Previous: Defining views</a>
 <a href="/rendering" class="direction">Next: Rendering the app</a>
