@@ -54,12 +54,12 @@ caseify name'
 -- | Creates a HTML attribute
 -- |
 -- | Attributes have name and value opposed to properties, which are presential only
-createAttribute :: forall a. String -> String -> NodeData a
+createAttribute :: forall message. String -> String -> NodeData message
 createAttribute = Attribute
 
 --script generated
 
-id :: forall a. String -> NodeData a
+id :: ToStringAttribute
 id = createAttribute "id"
 
 content :: ToStringAttribute

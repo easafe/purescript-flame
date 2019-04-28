@@ -8,7 +8,7 @@ type ToProperty = ToNodeData Boolean
 -- | Creates a property
 -- |
 -- | A property is a presential (boolean) attribute such as checked or enabled
-createProperty :: forall a. String -> Boolean -> NodeData a
+createProperty :: forall message. String -> Boolean -> NodeData message
 createProperty = Property
 
 autocomplete :: ToProperty
