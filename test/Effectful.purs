@@ -35,8 +35,9 @@ view model = HE.main_ [
         HE.span "text-output-decrement" $ show model.decrements,
         HE.span "text-output-lucky-number" $ show model.luckyNumber,
         HE.br,
-        HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
-        HE.button [HA.id "increment-button", HA.onClick Increment] "+"
+        --we add extra events for each button to test if the correct message is used
+        HE.button [HA.id "decrement-button", HA.onClick Decrement, HA.onFocus Increment, HA.onDrag Increment] "-",
+        HE.button [HA.id "increment-button", HA.onClick Increment, HA.onFocus Decrement, HA.onDrag Bogus] "+"
 ]
 
 mount :: Effect Unit

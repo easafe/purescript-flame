@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <meta charset="utf-8">
+                <title>Test</title>
+        </head>
+        <body>
+		<main>
+
+                </main>
+                <br>
+                -------------------------
+                <br>
+                <main id=main>
+                        <input type=text id=test-1>
+                        <span id=test-2></span>
+                </main>
+	</body>
+        <script src="dist/scratchpad.js"></script>
+        <script type=text/javascript>
+                let b = 0;
+                let e = document.querySelector('#test-1');
+                let f = document.querySelector('#test-2');
+
+                e.addEventListener('focus', ev => {
+                        console.log('focus')
+                        f.textContent = ++b;
+
+                });
+
+                e.addEventListener('blur', ev => {
+                        console.log('blur')
+                        f.textContent = --b ;
+                });
+
+        </script>
+</html>

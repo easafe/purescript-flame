@@ -32,8 +32,9 @@ update model = case _ of
 view :: Model -> Html Message
 view model = HE.main_ [
         HE.span [HA.id "text-output"] model,
-        HE.input [HA.id "text-input", HA.type' "text", HA.onInput Current],
-        HE.input [HA.id "cut-button", HA.type' "button", HA.onClick Cut]
+        --we add extra events for each input to test if the correct message is used
+        HE.input [HA.id "text-input", HA.type' "text", HA.onInput Current, HA.onFocus Cut],
+        HE.input [HA.id "cut-button", HA.type' "button", HA.onClick Cut, HA.onFocus (Current "")]
 ]
 
 mount :: Effect Unit

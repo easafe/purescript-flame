@@ -4,7 +4,7 @@ exports.nodeValue_ = function (event) {
 
 exports.checkedValue_ = function (event) {
 	if (event.target.tagName === "INPUT" && (event.target.type === "checkbox" || event.target.type === "radio"))
-		return event.target.check;
+		return event.target.checked;
 
 	return false;
 }

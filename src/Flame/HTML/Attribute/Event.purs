@@ -80,6 +80,18 @@ onFocus = createEvent "focus"
 onFocus' :: forall message. ToRawEvent message
 onFocus' = createEventMessage "focus"
 
+onFocusin :: forall message. ToEvent message
+onFocusin = createEvent "focusin"
+
+onFocusin' :: forall message. ToRawEvent message
+onFocusin' = createEventMessage "focusin"
+
+onFocusout :: forall message. ToEvent message
+onFocusout = createEvent "focusout"
+
+onFocusout' :: forall message. ToRawEvent message
+onFocusout' = createEventMessage "focusout"
+
 onBlur :: forall message. ToEvent message
 onBlur = createEvent "blur"
 

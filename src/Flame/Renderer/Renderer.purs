@@ -10,9 +10,6 @@ module Flame.Renderer(
         emptyVNode
 ) where
 
-import Flame.Types (DOMElement, Element(..), NodeData(..), VNodeData, VNodeEvents, VNode)
-import Prelude (Unit, bind, discard, map, pure, ($), (<<<))
-
 import Data.Foldable as DF
 import Data.Function.Uncurried (Fn1, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
@@ -20,8 +17,10 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
+import Flame.Types (DOMElement, Element(..), NodeData(..), VNodeData, VNodeEvents, VNode)
 import Foreign.Object (Object)
 import Foreign.Object as FO
+import Prelude (Unit, bind, discard, map, pure, show, unit, ($), (<<<))
 import Type.Data.Boolean (kind Boolean)
 import Web.Event.Internal.Types (Event)
 
