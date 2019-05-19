@@ -21,7 +21,10 @@ import Flame.Application.EffectList as FAE
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
 -- | * `inputs` – an array of signals
-type Application model message = App model message ( init :: model, update :: model -> message -> model )
+type Application model message = App model message (
+        init :: model,
+        update :: model -> message -> model
+)
 
 -- | A bare bones application
 emptyApp :: Application Unit Unit

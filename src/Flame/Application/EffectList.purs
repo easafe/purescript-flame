@@ -9,9 +9,6 @@ module Flame.Application.EffectList(
 )
 where
 
-import Flame.Types (App, DOMElement)
-import Prelude (Unit, bind, const, discard, map, show, unit, ($), (<$>), (<<<), (<>))
-
 import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
@@ -25,6 +22,8 @@ import Effect.Ref as ER
 import Flame.DOM as FD
 import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
+import Flame.Types (App, DOMElement)
+import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
 
 -- | `Application` contains
@@ -32,7 +31,10 @@ import Signal as S
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
 -- | * `inputs` – an array of signals
-type Application model message = App model message ( init :: Tuple model (Array (Aff message)), update :: model -> message -> Tuple model (Array (Aff message)))
+type Application model message = App model message (
+        init :: Tuple model (Array (Aff (Maybe message))),
+        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+)
 
 -- | Infix tuple constructor
 infixr 6 Tuple as :>
@@ -74,7 +76,8 @@ run el application = do
                 runMessages affs =
                         DF.for_ affs $ EA.runAff_ (case _ of
                                                Left error -> EC.log $ EE.message error --shouldn't stay like this
-                                               Right message -> runUpdate message)
+                                               Right (Just message) -> runUpdate message
+                                               _ -> pure unit)
 
                 --the function which renders to the dom
                 render model = do

@@ -34,7 +34,10 @@ import Web.Event.Internal.Types (Event)
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
 -- | * `inputs` – an array of signals
-type Application model message = App model message ( init :: Tuple model (Maybe message), update :: World model message -> model -> message -> Aff model )
+type Application model message = App model message (
+        init :: Tuple model (Maybe message),
+        update :: World model message -> model -> message -> Aff model
+)
 
 -- | `World` contains context information for `Application.update`
 -- | * `update` – recurse `Application.update` with given model and message

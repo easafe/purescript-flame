@@ -12,3 +12,10 @@ exports.checkedValue_ = function (event) {
 exports.preventDefault_ = function(event) {
 	event.preventDefault();
 }
+
+exports.key_ = function(event) {
+	if (event.type == "keyup" || event.type == "keydown" || event.type == "keypress")
+		return event.key;
+
+	return "";
+}

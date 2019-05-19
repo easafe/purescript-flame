@@ -3,11 +3,14 @@ module Flame.HTML.Event where
 
 import Prelude
 
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as FU
 import Flame.Types (NodeData(..))
 import Web.Event.Event (Event)
+
+type Key = String
 
 type EventName = String
 
@@ -21,6 +24,7 @@ type ToSpecialEvent message t = (t -> message) -> NodeData message
 foreign import nodeValue_ :: EffectFn1 Event String
 foreign import checkedValue_ :: EffectFn1 Event Boolean
 foreign import preventDefault_ :: EffectFn1 Event Unit
+foreign import key_ :: EffectFn1 Event Key
 
 nodeValue :: Event -> Effect String
 nodeValue = FU.runEffectFn1 nodeValue_
@@ -30,6 +34,9 @@ checkedValue = FU.runEffectFn1 checkedValue_
 
 preventDefault :: Event -> Effect Unit
 preventDefault = FU.runEffectFn1 preventDefault_
+
+key :: Event -> Effect String
+key = FU.runEffectFn1 key_
 
 -- | Raises the given `message` for the given event
 createEvent :: forall message. EventName -> message -> NodeData message
@@ -104,23 +111,29 @@ onReset = createEvent "reset"
 onReset' :: forall message. ToRawEvent message
 onReset' = createEventMessage "reset"
 
-onKeydown :: forall message. ToEvent message
-onKeydown = createEvent "keydown"
+onKeydown :: forall message. ToSpecialEvent message (Tuple Key String)
+onKeydown constructor = createRawEvent "keydown" (keyInput constructor)
 
 onKeydown' :: forall message. ToRawEvent message
 onKeydown' = createEventMessage "keydown"
 
-onKeypress :: forall message. ToEvent message
-onKeypress = createEvent "keypress"
+onKeypress :: forall message. ToSpecialEvent message (Tuple Key String)
+onKeypress constructor = createRawEvent "keypress" (keyInput constructor)
 
 onKeypress' :: forall message. ToRawEvent message
 onKeypress' = createEventMessage "keypress"
 
-onKeyup :: forall message. ToEvent message
-onKeyup = createEvent "keyup"
+onKeyup :: forall message. ToSpecialEvent message (Tuple Key String)
+onKeyup constructor = createRawEvent "keyup" (keyInput constructor)
 
 onKeyup' :: forall message. ToRawEvent message
 onKeyup' = createEventMessage "keyup"
+
+keyInput :: forall message . (Tuple Key String -> message) -> Event -> Effect message
+keyInput constructor event = do
+        down <- key event
+        value <- nodeValue event
+        pure <<< constructor $ Tuple down value
 
 onContextmenu :: forall message. ToEvent message
 onContextmenu = createEvent "contextmenu"
