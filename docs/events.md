@@ -45,9 +45,9 @@ See all [no effects examples](https://github.com/easafe/purescript-flame/tree/ma
 In the effect list strategy, our update function is still "pure", but we also return an array of effects to be performed
 ```haskell
 type Application model message = {
-        init :: Tuple model (Array (Aff message)),
+        init :: Tuple model (Array (Aff (Maybe message))),
         view :: model -> Html message,
-        update :: model -> message -> Tuple model (Array (Aff message)),
+        update :: model -> message -> Tuple model (Array (Aff (Maybe message))),
         inputs :: Array (Signal message)
 }
 ```
@@ -57,10 +57,10 @@ type Model = Maybe Int
 
 data Message = Roll | Update Int
 
-update :: Model -> Message -> Tuple Model (Array (Aff Message))
+update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
         Roll -> model :> [
-                Update <$> liftEffect (ER.randomInt 1 6)
+                Just <<< Update <$> liftEffect (ER.randomInt 1 6)
         ]
         Update int -> Just int :> []
 
@@ -87,14 +87,14 @@ useResponse = ...
 useDifferentResponse :: Model -> String -> Aff Model
 useDifferentResponse = ...
 
-update :: Model -> Message -> Tuple Model (Array (Aff Message))
+update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
         Loading -> model { isLoading = true } :> [
-                Response <$> performAJAX "url",
-                DifferentResponse <$> performAJAX "url2",
-                Response <$> performAJAX "url3",
-                DifferentResponse <$> performAJAX "url4",
-                pure $ Finish "Performed all"
+                Just <<< Response <$> performAJAX "url",
+                Just <<< DifferentResponse <$> performAJAX "url2",
+                Just <<< Response <$> performAJAX "url3",
+                Just <<< DifferentResponse <$> performAJAX "url4",
+                pure <<< Just $ Finish "Performed all"
         ]
         Response contents -> useResponse model contents :> []
         Finish contents -> model { isLoading = false, response = model.response <> contents } :> []
@@ -110,15 +110,15 @@ view model = HE.main "main" [
 ```
 Same way, here every call to `performAJAX` will also cause `update` to be called again with a new `Response` or `DifferentResponse` until we get a `Finish` message.
 
-Notice that the type of `init` is also defined as `Tuple model (Array (Aff message))`. This enables us to run effects at the startup of the application. Suppose we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` for the previous example as follows
+Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Maybe message)))`. This enables us to run effects at the startup of the application. Suppose we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` for the previous example as follows
 ```haskell
-init :: Tuple Model (Array (Aff Message))
+init :: Tuple Model (Array (Aff (Maybe Message)))
 init = model :> [
-                Response <$> performAJAX "url",
-                DifferentResponse <$> performAJAX "url2",
-                Response <$> performAJAX "url3",
-                DifferentResponse <$> performAJAX "url4",
-                pure $ Finish "Performed all"
+                Just <<< Response <$> performAJAX "url",
+                Just <<< DifferentResponse <$> performAJAX "url2",
+                Just <<< Response <$> performAJAX "url3",
+                Just <<< DifferentResponse <$> performAJAX "url4",
+                pure <<< Just $ Finish "Performed all"
 ]
 ```
 which has the same expected behavior of calling `update` for entry in the array.
@@ -159,7 +159,7 @@ type World model message = {
         previousMessage :: Maybe message
 }
 ```
-`World.update` may be thought of a way to recurse the update function -- it is used to process different messages. `World.view`, on the other hand, allows arbitraty rerendering of the view without a raising a different message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
+`World.update` may be thought of a way to recurse the update function -- it is used to process different messages. `World.view`, on the other hand, allows arbitraty rerendering of the view without raising a different message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
 
 Using `World` we can write the AJAX example as
 ```haskell
@@ -193,7 +193,7 @@ See all [effectful examples](https://github.com/easafe/purescript-flame/tree/mas
 
 If you have used React, Vue.js, or are just worried how complex state updating could become, you might be wondering how to struct Flame in "components". That is, to isolate state and business logic to individual modules that can be reused.
 
-Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, break down a big application into several smaller ones and create type mappings for the model, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application managable.
+Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, break down a big application into several smaller ones and create type mappings for the model, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application manageable.
 
 <a href="/views" class="direction previous">Previous: Defining views</a>
 <a href="/rendering" class="direction">Next: Rendering the app</a>
