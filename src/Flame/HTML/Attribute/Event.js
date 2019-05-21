@@ -14,8 +14,15 @@ exports.preventDefault_ = function(event) {
 }
 
 exports.key_ = function(event) {
-	if (event.type == "keyup" || event.type == "keydown" || event.type == "keypress")
+	if (event.type === "keyup" || event.type === "keydown" || event.type === "keypress")
 		return event.key;
+
+	return "";
+}
+
+exports.selection_ = function(event) {
+	if (event.target.tagName === "INPUT" && event.target.type == "text" || event.target.tagName === "TEXTAREA")
+		return event.target.value.substring(event.target.selectionStart, event.target.selectionEnd);
 
 	return "";
 }

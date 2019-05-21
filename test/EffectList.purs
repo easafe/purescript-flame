@@ -2,6 +2,7 @@ module Test.EffectList (mount) where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Tuple (Tuple)
@@ -19,10 +20,10 @@ type Model = String
 
 data Message = Current String | Cut
 
-update :: Model -> Message -> Tuple Model (Array (Aff Message))
+update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
         Cut -> model :> [
-                Current <$> cut model
+                Just <<< Current <$> cut model
         ]
         Current text -> text :> []
         where   cut text = do
@@ -40,7 +41,7 @@ view model = HE.main_ [
 mount :: Effect Unit
 mount = FAE.mount "#mount-point" {
         init: "" :> [],
-        update: update,
+        update,
         view,
         inputs:[]
 }

@@ -230,7 +230,6 @@ main =
                                 cut <- textContent "#text-output"
                                 --always remove at least one character
                                 TUA.assert "cut text" $ DS.length cut < 4
-
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment

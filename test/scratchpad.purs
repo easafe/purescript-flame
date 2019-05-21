@@ -12,33 +12,25 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
 -- | The model represents the state of the app
-type Model = Int
+type Model = String
 
 -- | This datatype is used to signal events to `update`
-data Message = Increment | Decrement | D Boolean | I Boolean
+data Message = Selection String
 
 -- | Initial state of the app
 init :: Model
-init = 0
+init = ""
 
 -- | `update` is called to handle events
 update :: Model -> Message -> Model
 update model = case _ of
-        I b-> if b then model + 1 else model - 1
-        Increment -> const (model + 1) $ unsafePerformEffect (log "increment")
-        D b -> const (if b then model + 1 else model - 1) $ unsafePerformEffect (log (show b))
-        Decrement -> const (model - 1) $ unsafePerformEffect (log "decrement")
+        Selection s -> s
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
 view model = HE.main "main" [
-        --HE.button [HA.onClick Decrement] "-",
-        -- HE.input [HA.type' "checkbox",HA.onFocus Decrement, HA.onCheck D],
-        -- HE.input [HA.type' "radio", HA.onFocus Increment, HA.name "name1", HA.onCheck I],
-        -- HE.input [HA.type' "radio", HA.name "name1", HA.onFocus Increment, HA.onCheck I],
-        HE.input [HA.type' "test", HA.onFocus Increment, HA.onBlur Decrement ],
-        HE.text $ show model
-        --HE.button [HA.onClick Increment] "+"
+        HE.input [HA.type' "test", HA.onSelect Selection ],
+        HE.text $ "You have selected " <> model
 ]
 
 -- | Mount the application on the given selector
