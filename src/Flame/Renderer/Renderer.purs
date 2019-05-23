@@ -10,9 +10,6 @@ module Flame.Renderer(
         emptyVNode
 ) where
 
-import Flame.Types (DOMElement, Element(..), NodeData(..), VNodeData, VNodeEvents, VNode)
-import Prelude (Unit, bind, discard, map, pure, ($), (<<<))
-
 import Data.Foldable as DF
 import Data.Function.Uncurried (Fn1, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
@@ -20,8 +17,10 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
+import Flame.Types (DOMElement, Element(..), NodeData(..), VNodeData, VNodeEvents, VNode)
 import Foreign.Object (Object)
 import Foreign.Object as FO
+import Prelude (Unit, bind, discard, map, pure, show, unit, ($), (<<<))
 import Type.Data.Boolean (kind Boolean)
 import Web.Event.Internal.Types (Event)
 
@@ -71,10 +70,10 @@ render oldVNode updater element = do
 -- | Transforms an Element into a VNode
 toVNodeProxy :: forall message. (message -> Maybe Event -> Effect Unit) -> Element message -> VNode
 toVNodeProxy updater (Text value) = text value
-toVNodeProxy updater (Node tag attributesEvents children) = h tag vNodeData $ map (toVNodeProxy updater) children
-        where   toVNodeData {attributes, events} =
+toVNodeProxy updater (Node tag nodeData children) = h tag vNodeData $ map (toVNodeProxy updater) children
+        where   toVNodeData {attributesProperties, events} =
                         {
-                                attrs : attributes,
+                                props : attributesProperties,
                                 on : toVNodeEvents events
                         }
 
@@ -82,13 +81,13 @@ toVNodeProxy updater (Node tag attributesEvents children) = h tag vNodeData $ ma
                         message <- handler event
                         updater message (Just event)
 
-                unions record@{attributes, events} =
+                unions record@{attributesProperties, events} =
                         case _ of
-                                Attribute name value -> record { attributes = FO.insert name value attributes }
+                                Attribute name value -> record { attributesProperties = FO.insert name value attributesProperties }
                                 Property name value ->
-                                        if value then record { attributes = FO.insert name name attributes }
+                                        if value then record { attributesProperties = FO.insert name name attributesProperties }
                                          else record
                                 Event name message -> record { events = FO.insert name (updater message <<< Just) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
 
-                vNodeData = toVNodeData $ DF.foldl unions { attributes: FO.empty, events: FO.empty } attributesEvents
+                vNodeData = toVNodeData $ DF.foldl unions { attributesProperties: FO.empty, events: FO.empty } nodeData

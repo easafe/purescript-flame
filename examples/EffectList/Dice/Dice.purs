@@ -21,10 +21,10 @@ init = Nothing
 
 data Message = Roll | Update Int
 
-update :: Model -> Message -> Tuple Model (Array (Aff Message))
+update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
         Roll -> model :> [
-                Update <$> liftEffect (ER.randomInt 1 6)
+                Just <<< Update <$> liftEffect (ER.randomInt 1 6)
         ]
         Update int -> Just int :> []
 
@@ -37,7 +37,7 @@ view model = HE.main "main" [
 main :: Effect Unit
 main = FAE.mount "main" {
         init: init :> [],
-        update: update,
+        update,
         view,
         inputs:[]
 }
