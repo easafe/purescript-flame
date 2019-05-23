@@ -15,7 +15,9 @@ foreign import data VNodeEvents :: Type
 -- | Data (properties, attributes, events) attached to a VNode
 -- something missing here is the support for thunks
 type VNodeData = {
-        attrs :: Object String,
+        --snabbdom has both attrs (which use setAttribute) and props; props seem to work for all cases
+        -- I am not sure whether this distinction will matter
+        props :: Object String,
         on :: VNodeEvents
 }
 

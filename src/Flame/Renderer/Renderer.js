@@ -1,7 +1,7 @@
 // adapted from https://github.com/LukaJCB/purescript-snabbdom
 
 var patch = require('snabbdom').init([
-	require('snabbdom/modules/attributes').default,
+	require('snabbdom/modules/props').default,
 	require('snabbdom/modules/eventlisteners').default,
 ]);
 var h = require('snabbdom/h').default;
