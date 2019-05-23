@@ -12,6 +12,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as HS
 import Partial.Unsafe (unsafePartial)
 import Test.EffectList as TEL
+import Test.Effectful as TE
 import Test.NoEffects as TN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
@@ -23,7 +24,6 @@ import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLInputElement as WHH
-import Test.Effectful as TE
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification

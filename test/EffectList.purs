@@ -28,7 +28,7 @@ update model = case _ of
         Current text -> text :> []
         where   cut text = do
                         amount <- liftEffect <<< ER.randomInt 1 $ DSC.length text
-                        pure $ DS.take amount text
+                        pure $ DS.drop amount text
 
 view :: Model -> Html Message
 view model = HE.main_ [
