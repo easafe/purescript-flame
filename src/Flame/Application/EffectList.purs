@@ -30,7 +30,7 @@ import Signal as S
 -- | * `init` – the initial model and a list of messages to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `inputs` – an array of signals
+-- | * `signals` – an array of signals
 type Application model message = App model message (
         init :: Tuple model (Array (Aff (Maybe message))),
         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
@@ -45,7 +45,7 @@ emptyApp = {
         init: unit :> [],
         update,
         view: const (FHE.createEmptyElement "bs"),
-        inputs : []
+        signals : []
 }
         where update model message = model :> []
 
@@ -91,4 +91,4 @@ run el application = do
         runMessages initialAffs
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map runUpdate) application.inputs
+        DF.traverse_ (S.runSignal <<< map runUpdate) application.signals

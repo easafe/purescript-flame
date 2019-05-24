@@ -20,7 +20,7 @@ import Flame.Application.EffectList as FAE
 -- | * `init` – the initial model
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `inputs` – an array of signals
+-- | * `signals` – an array of signals
 type Application model message = App model message (
         init :: model,
         update :: model -> message -> model
@@ -32,7 +32,7 @@ emptyApp = {
         init: unit,
         update: const <<< const unit,
         view: const (FHE.createEmptyElement "bs"),
-        inputs : []
+        signals : []
 }
 
 -- | Mount a Flame application in the given selector

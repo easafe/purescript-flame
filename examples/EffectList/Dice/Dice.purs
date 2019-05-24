@@ -39,5 +39,5 @@ main = FAE.mount "main" {
         init: init :> [],
         update,
         view,
-        inputs:[]
+        signals:[]
 }

@@ -12,7 +12,7 @@ type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
 }
 ```
 is the `update` function. This is where we define our business logic by matching event messages and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function. These are called **update strategies**.
@@ -33,7 +33,7 @@ type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
 }
 ```
 This is enough for toy examples or small modules, but probably not sufficient to build an user facing application. If we want to do any sort of effectul computation we need to look into the next update strategies.
@@ -48,7 +48,7 @@ type Application model message = {
         init :: Tuple model (Array (Aff (Maybe message))),
         view :: model -> Html message,
         update :: model -> message -> Tuple model (Array (Aff (Maybe message))),
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
 }
 ```
 For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
@@ -135,7 +135,7 @@ type Application model message = {
         init :: Tuple model (Maybe message),
         view :: model -> Html message,
         update :: World model message -> model -> message -> Aff model,
-        inputs ::  Array (Signal message)
+        signals ::  Array (Signal message)
 }
 ```
 Here instead of returning a list of effects, we perform them directly in the `Aff` monad. ``init` also only receives a single optional start up message.

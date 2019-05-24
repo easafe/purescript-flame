@@ -44,5 +44,5 @@ main =  FAN.mount "main" {
         init,
         update,
         view,
-        inputs: []
+        signals: []
 }

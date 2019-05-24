@@ -32,5 +32,5 @@ mount = FAN.mount "#mount-point" {
         init,
         update,
         view,
-        inputs: []
+        signals: []
 }

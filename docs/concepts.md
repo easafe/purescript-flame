@@ -12,7 +12,7 @@ type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
 }
 ```
 The type variable `model` refers to the **state** of the application. `message`, on the other hand, describe the kind of **events** the application handles.
@@ -67,14 +67,14 @@ See [Handling events](events) for an in depth look at update strategies.
 
 ### External event handling
 
-Finally, the last field in a Flame application record is `inputs`. It contains a list of [signals](https://pursuit.purescript.org/packages/purescript-signal/), which can be used to raise messages from events outside of our view. This includes `window` or `document` events, such as resize or websockets, and custom events, which will then be handled as usual by the application `update` function.
+Finally, the last field in a Flame application record is `signals`. It contains a list of [signals](https://pursuit.purescript.org/packages/purescript-signal/), which can be used to raise messages from events outside of our view. This includes `window` or `document` events, such as resize or websockets, and custom events, which will then be handled as usual by the application `update` function.
 
-In the counter example, no external events are handled, so we define inputs as the empty array
+In the counter example, no external events are handled, so we define signals as the empty array
 ```haskell
 main :: Effect Unit
 main = FAN.mount "main" {
         ...
-        inputs: []
+        signals: []
 }
 ```
 
@@ -89,7 +89,7 @@ main = FAN.mount "main" {
         init,
         update,
         view,
-        inputs: []
+        signals: []
 }
 ```
 or as a `String` with `Flame.Renderer.StringRenderer.render`, which can be used server-side.

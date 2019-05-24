@@ -45,5 +45,5 @@ mount = F.mount "#mount-point" {
         init: init :> Just Decrement,
         update,
         view,
-        inputs: []
+        signals: []
 }

@@ -54,6 +54,12 @@ createRawEvent = RawEvent
 createEventMessage :: forall message. EventName -> (Event -> message) -> NodeData message
 createEventMessage eventName constructor = createRawEvent eventName (pure <<< constructor)
 
+onScroll :: forall message. ToEvent message
+onScroll = createEvent "scroll"
+
+onScroll' :: forall message. ToRawEvent message
+onScroll' = createEventMessage "scroll"
+
 onClick :: forall message. ToEvent message
 onClick = createEvent "click"
 
@@ -193,7 +199,6 @@ onMouseup = createEvent "mouseup"
 onMouseup' :: forall message. ToRawEvent message
 onMouseup' = createEventMessage "mouseup"
 
---TODO this needs to return the selected text
 onSelect :: forall message. ToSpecialEvent message String
 onSelect constructor = createRawEvent "select" handler
         where   handler event = constructor <$> selection event

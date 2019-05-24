@@ -32,7 +32,7 @@ newtype VNode = VNode
 -- App abstracts over common fields of an `Application`
 type App model message extension = {
         view :: model -> Html message,
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
         | extension
 }
 

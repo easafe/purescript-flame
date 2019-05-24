@@ -43,5 +43,5 @@ mount = FAE.mount "#mount-point" {
         init: "" :> [],
         update,
         view,
-        inputs:[]
+        signals:[]
 }

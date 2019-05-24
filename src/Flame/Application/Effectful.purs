@@ -33,7 +33,7 @@ import Web.Event.Internal.Types (Event)
 -- | * `init` – the initial model and an optional message to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `inputs` – an array of signals
+-- | * `signals` – an array of signals
 type Application model message = App model message (
         init :: Tuple model (Maybe message),
         update :: World model message -> model -> message -> Aff model
@@ -59,7 +59,7 @@ emptyApp = {
         init: unit :> Nothing,
         update,
         view: const (FHE.createEmptyElement "bs"),
-        inputs : []
+        signals : []
 }
         where update f model message = pure model
 
@@ -131,4 +131,4 @@ run el application = do
                 Just message -> runUpdate initialModel message Nothing
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map runUpdate') application.inputs
+        DF.traverse_ (S.runSignal <<< map runUpdate') application.signals

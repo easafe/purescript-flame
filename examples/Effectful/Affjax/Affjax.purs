@@ -60,5 +60,5 @@ main = F.mount "main" {
         init: init :> Nothing,
         update,
         view,
-        inputs : []
+        signals : []
 }

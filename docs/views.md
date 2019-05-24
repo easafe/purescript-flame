@@ -12,7 +12,7 @@ type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
 }
 ```
 the `view` field maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.

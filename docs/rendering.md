@@ -12,7 +12,7 @@ type Application model message = {
         init :: model,
         view :: model -> Html message,
         update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        signals :: Array (Signal message)
 }
 ```
 let's talk about actually rendering the application.
