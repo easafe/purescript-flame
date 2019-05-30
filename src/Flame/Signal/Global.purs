@@ -1,13 +1,34 @@
 --the version of Flame.HTML.Event that works on the window/document using signals
 module Flame.Signal.Global where
 
--- scroll
+import Effect (Effect)
+import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried as EU
+import Signal (Signal)
+import Signal as S
+import Web.Event.Internal.Types (Event)
 
--- onClick :: forall message. ToEvent message
--- onClick = createEvent "click"
+type ToEventSignal message = message -> Effect (Signal message)
+
+type ToEventSignal_ message = EffectFn2 (message -> Signal message) message (Signal message)
+
+type ToRawEventSignal_ constructor = EffectFn2 (Event -> Signal Event) (Event -> constructor Event) (Signal (constructor Event))
+
+createEventSignal :: forall message. ToEventSignal_ message -> message -> Effect (Signal message)
+createEventSignal ffi = EU.runEffectFn2 ffi S.constant
+
+foreign import onClick_ :: forall message. ToEventSignal_ message
+
+onClick :: forall message. ToEventSignal message
+onClick = createEventSignal onClick_
 
 -- onClick' :: forall message. ToRawEvent message
 -- onClick' = createEventMessage "click"
+
+-- onKeydown :: forall message. ToSpecialEvent message (Tuple Key String)
+-- onKeydown constructor = createRawEvent "keydown" (keyInput constructor)
+
+-- scroll
 
 -- onFocus :: forall message. ToEvent message
 -- onFocus = createEvent "focus"
@@ -21,8 +42,7 @@ module Flame.Signal.Global where
 -- onBlur' :: forall message. ToRawEvent message
 -- onBlur' = createEventMessage "blur"
 
--- onKeydown :: forall message. ToSpecialEvent message (Tuple Key String)
--- onKeydown constructor = createRawEvent "keydown" (keyInput constructor)
+
 
 -- onKeydown' :: forall message. ToRawEvent message
 -- onKeydown' = createEventMessage "keydown"

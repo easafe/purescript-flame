@@ -3,7 +3,7 @@
 -- as user supplied signals
 module Flame.Signal (module Exported) where
 
-import Flame.Signal.Window as Exported
-import Flame.Signal.Global as Exported
+--import Flame.Signal.Window as Exported
+import Flame.Signal.Global hiding (ToEventSignal_,ToRawEventSignal_,onClick_) as Exported
 
 
