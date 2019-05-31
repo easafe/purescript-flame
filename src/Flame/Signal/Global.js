@@ -7,3 +7,13 @@ exports.onClick_ = function (constant, message) {
 
         return out;
 }
+
+exports.onClick__ = function (constant, constructor) {
+        var out = constant(constructor(undefined));
+
+        document.addEventListener('click', function (event) {
+                out.set(constructor(event));
+        });
+
+        return out;
+}

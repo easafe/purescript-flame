@@ -1,4 +1,4 @@
-module Test.Effectful (mount) where
+module Test.World.Effectful (mount) where
 
 import Prelude
 

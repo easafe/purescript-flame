@@ -11,9 +11,9 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as HS
 import Partial.Unsafe (unsafePartial)
-import Test.EffectList as TEL
-import Test.Effectful as TE
-import Test.NoEffects as TN
+import Test.Basic.EffectList as TBEL
+import Test.Basic.Effectful as TBE
+import Test.Basic.NoEffects as TBN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -186,7 +186,7 @@ main =
                                 html' <- liftEffect $ HS.render html
                                 --events are part of virtual dom data and do not show up on the rendered markup
                                 TUA.equal """<a>TEST</a>""" html'
-                suite "test applications" do
+                suite "basic test applications" do
                         test "noeffects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -209,7 +209,7 @@ main =
                         test "effectlist" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TEL.mount
+                                        TBEL.mount
                                 childrenLength <- childrenNodeLength
                                 --span, input, input
                                 TUA.equal 3 childrenLength
@@ -233,7 +233,7 @@ main =
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TE.mount
+                                        TBE.mount
                                 childrenLength <- childrenNodeLength
                                 --span, span, span, br, button, button
                                 TUA.equal 6 childrenLength
@@ -261,6 +261,12 @@ main =
                                 TUA.equal "2" currentIncrement3
                                 TUA.equal "-2" currentDecrement3
                                 TUA.equal "2" currentLuckyNumber3
+                suite "world parameter test applications"
+                        test "effectlist" do
+                                TUA.equal 2 3
+                suite "signal test applications" do
+                        test "effectlist" do
+                                TUA.equal 2 3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do

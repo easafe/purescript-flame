@@ -14,28 +14,29 @@ import Flame.HTML.Element as HE
 import Flame.Signal as FS
 
 -- | The model represents the state of the app
-type Model = Int
+type Model = {times :: Int, key :: String}
 
 -- | This datatype is used to signal events to `update`
-data Message = Click
+data Message = Click | Key String
 
 -- | Initial state of the app
 init :: Model
-init = 0
+init = { times :  0, key : "" }
 
 -- | `update` is called to handle events
 update :: Model -> Message -> Model
 update model = case _ of
-        Click -> model + 1
+        Click ->  model {times = model.times + 1}
+        Key key -> model {key = key}
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main "main" $ "You have clicked " <> show model <> " times"
+view model = HE.main "main" [HE.text $ "You have clicked " <> show model.times <> " times", HE.br, HE.text $ "You have pressed " <> model.key  ]
 
 -- | Mount the application on the given selector
 main :: Effect Unit
 main = do
-        signals <- DT.sequence [FS.onClick Click]
+        signals <- DT.sequence [FS.onClick Click, FS.onKeydown Key]
         FAN.mount "main" {
                 init,
                 update,

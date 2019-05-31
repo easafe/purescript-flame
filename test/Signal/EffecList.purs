@@ -1,4 +1,4 @@
-module Test.EffectList (mount) where
+module Test.Signal.EffectList (mount) where
 
 import Prelude
 

@@ -1,4 +1,4 @@
-module Test.NoEffects (mount) where
+module Test.Basic.NoEffects (mount) where
 
 import Prelude
 
