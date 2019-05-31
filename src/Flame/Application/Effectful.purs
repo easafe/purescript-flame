@@ -75,6 +75,7 @@ mount selector application = do
 run :: forall model message. DOMElement -> Application model message -> Effect Unit
 run el application = do
         let Tuple initialModel initialMessage = application.init
+        firstTime <- ER.new true
         state <- ER.new {
                 previousModel: initialModel,
                 previousMessage: initialMessage,
@@ -119,6 +120,15 @@ run el application = do
                         --it might be that we can get the event from the signal?
                         runUpdate model message Nothing
 
+                 --no way around this hack?
+                initializeSignal message = do
+                        --do not call runUpdate on the starting value of a signal
+                        isFirstTime <- ER.read firstTime
+                        if isFirstTime then do
+                                ER.write false firstTime
+                                pure unit
+                         else runUpdate' message
+
                 modifyState st = do
                         _ <- ER.modify st state
                         pure unit
@@ -131,4 +141,4 @@ run el application = do
                 Just message -> runUpdate initialModel message Nothing
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map runUpdate') application.signals
+        DF.traverse_ (S.runSignal <<< map initializeSignal) application.signals

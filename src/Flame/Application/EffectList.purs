@@ -25,6 +25,7 @@ import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
+import Signal.Effect as SE
 
 -- | `Application` contains
 -- | * `init` – the initial model and a list of messages to invoke `update` with
@@ -61,6 +62,7 @@ mount selector application = do
 run :: forall model message. DOMElement -> Application model message -> Effect Unit
 run el application = do
         let Tuple initialModel initialAffs = application.init
+        firstTime <- ER.new true
         state <- ER.new {
                 model: initialModel,
                 vNode: FR.emptyVNode
@@ -85,10 +87,19 @@ run el application = do
                         updatedVNode <- FR.render currentVNode (const <<< runUpdate) $ application.view model
                         ER.write { model, vNode: updatedVNode } state
 
+                --no way around this hack?
+                initializeSignal message = do
+                        --do not call runUpdate on the starting value of a signal
+                        isFirstTime <- ER.read firstTime
+                        if isFirstTime then do
+                                ER.write false firstTime
+                                pure unit
+                         else runUpdate message
+
         initialVNode <- FR.renderInitial el (const <<< runUpdate) $ application.view initialModel
         ER.write { model: initialModel, vNode: initialVNode } state
 
         runMessages initialAffs
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map runUpdate) application.signals
+        DF.traverse_ (S.runSignal <<< map initializeSignal) application.signals
