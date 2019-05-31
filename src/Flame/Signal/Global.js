@@ -5,7 +5,5 @@ exports.onClick_ = function (constant, message) {
                 out.set(message);
         });
 
-        return function () {
-                return out;
-        };
+        return out;
 }
