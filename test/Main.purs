@@ -190,7 +190,7 @@ main =
                         test "noeffects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TN.mount
+                                        TBN.mount
                                 childrenLength <- childrenNodeLength
                                 --button, span, button
                                 TUA.equal 3 childrenLength
@@ -261,7 +261,7 @@ main =
                                 TUA.equal "2" currentIncrement3
                                 TUA.equal "-2" currentDecrement3
                                 TUA.equal "2" currentLuckyNumber3
-                suite "world parameter test applications"
+                suite "world parameter test applications" do
                         test "effectlist" do
                                 TUA.equal 2 3
                 suite "signal test applications" do

@@ -7,10 +7,8 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as FU
-import Flame.Types (NodeData(..))
+import Flame.Types (NodeData(..), Key)
 import Web.Event.Event (Event)
-
-type Key = String
 
 type EventName = String
 

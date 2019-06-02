@@ -46,6 +46,8 @@ type ToNodeData message = forall b. message -> NodeData b
 
 type Tag = String
 
+type Key = String
+
 -- | Convenience wrapper around `VNode`
 data Element message =
           Node Tag (Array (NodeData message)) (Array (Element message))

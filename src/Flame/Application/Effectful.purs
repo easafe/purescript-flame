@@ -124,9 +124,7 @@ run el application = do
                 initializeSignal message = do
                         --do not call runUpdate on the starting value of a signal
                         isFirstTime <- ER.read firstTime
-                        if isFirstTime then do
-                                ER.write false firstTime
-                                pure unit
+                        if isFirstTime then pure unit
                          else runUpdate' message
 
                 modifyState st = do
@@ -142,3 +140,4 @@ run el application = do
 
         --signals are used for some dom events as well user supplied custom events
         DF.traverse_ (S.runSignal <<< map initializeSignal) application.signals
+        ER.write false firstTime
