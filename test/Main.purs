@@ -261,12 +261,12 @@ main =
                                 TUA.equal "2" currentIncrement3
                                 TUA.equal "-2" currentDecrement3
                                 TUA.equal "2" currentLuckyNumber3
-                suite "world parameter test applications" do
-                        test "effectlist" do
-                                TUA.equal 2 3
-                suite "signal test applications" do
-                        test "effectlist" do
-                                TUA.equal 2 3
+                -- suite "world parameter test applications" do
+                --         test "effectlist" do
+                --                 TUA.equal 2 3
+                -- suite "signal test applications" do
+                --         test "effectlist" do
+                --                 TUA.equal 2 3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do

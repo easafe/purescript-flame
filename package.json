@@ -12,7 +12,9 @@
 
                 "build-examples": "npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
 
-                "scratch": "pulp --watch browserify --main Test.Test --include test --optimise --to test/dist/scratchpad.js"
+                "scratch": "pulp --watch browserify --main Test.Test --include test --optimise --to test/dist/scratchpad.js",
+
+                "test" : "pulp test && npm run build-examples"
         },
         "dependencies": {
                 "phantomjs-prebuilt": "^2.1.16",
