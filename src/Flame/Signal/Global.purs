@@ -32,7 +32,38 @@ createSpecialEventSignal ffi = EU.runEffectFn2 ffi S.constant
 
 foreign import onClick_ :: forall message. ToEventSignal_ message
 foreign import onClick__ :: forall message. ToRawEventSignal_ message
+foreign import onScroll_ :: forall message. ToEventSignal_ message
+foreign import onScroll__ :: forall message. ToRawEventSignal_ message
+foreign import onFocus_ :: forall message. ToEventSignal_ message
+foreign import onFocus__ :: forall message. ToRawEventSignal_ message
+foreign import onBlur_ :: forall message. ToEventSignal_ message
+foreign import onBlur__ :: forall message. ToRawEventSignal_ message
 foreign import onKeydown_ :: forall message. ToSpecialEventSignal_ message Key
+foreign import onKeydown__ :: forall message. ToRawEventSignal_ message
+foreign import onKeypress_ :: forall message. ToSpecialEventSignal_ message Key
+foreign import onKeypress__ :: forall message. ToRawEventSignal_ message
+foreign import onKeyup_ :: forall message. ToSpecialEventSignal_ message Key
+foreign import onKeyup__ :: forall message. ToRawEventSignal_ message
+foreign import onContextmenu_ :: forall message. ToEventSignal_ message
+foreign import onContextmenu__ :: forall message. ToRawEventSignal_ message
+foreign import onDblclick_ :: forall message. ToEventSignal_ message
+foreign import onDblclick__ :: forall message. ToRawEventSignal_ message
+foreign import onWheel_ :: forall message. ToEventSignal_ message
+foreign import onWheel__ :: forall message. ToRawEventSignal_ message
+foreign import onDrag_ :: forall message. ToEventSignal_ message
+foreign import onDrag__ :: forall message. ToRawEventSignal_ message
+foreign import onDragend_ :: forall message. ToEventSignal_ message
+foreign import onDragend__ :: forall message. ToRawEventSignal_ message
+foreign import onDragenter_ :: forall message. ToEventSignal_ message
+foreign import onDragenter__ :: forall message. ToRawEventSignal_ message
+foreign import onDragstart_ :: forall message. ToEventSignal_ message
+foreign import onDragstart__ :: forall message. ToRawEventSignal_ message
+foreign import onDragleave_ :: forall message. ToEventSignal_ message
+foreign import onDragleave__ :: forall message. ToRawEventSignal_ message
+foreign import onDragover_ :: forall message. ToEventSignal_ message
+foreign import onDragover__ :: forall message. ToRawEventSignal_ message
+foreign import onDrop_ :: forall message. ToEventSignal_ message
+foreign import onDrop__ :: forall message. ToRawEventSignal_ message
 
 onClick :: forall message. ToEventSignal message
 onClick = createEventSignal onClick_
@@ -40,102 +71,98 @@ onClick = createEventSignal onClick_
 onClick' :: forall message. ToRawEventSignal message
 onClick' = createRawEventSignal onClick__
 
+onScroll :: forall message. ToEventSignal message
+onScroll = createEventSignal onScroll_
+
+onScroll' :: forall message. ToRawEventSignal message
+onScroll' = createRawEventSignal onScroll__
+
+onFocus :: forall message. ToEventSignal message
+onFocus = createEventSignal onFocus_
+
+onFocus' :: forall message. ToRawEventSignal message
+onFocus' = createRawEventSignal onFocus__
+
+onBlur :: forall message. ToEventSignal message
+onBlur = createEventSignal onBlur_
+
+onBlur' :: forall message. ToRawEventSignal message
+onBlur' = createRawEventSignal onBlur__
+
 onKeydown :: forall message. ToSpecialEventSignal message Key
 onKeydown = createSpecialEventSignal onKeydown_
 
--- scroll
+onKeydown' :: forall message. ToRawEventSignal message
+onKeydown' = createRawEventSignal onKeydown__
 
--- onFocus :: forall message. ToEvent message
--- onFocus = createEvent "focus"
+onKeypress :: forall message. ToSpecialEventSignal message Key
+onKeypress = createSpecialEventSignal onKeypress_
 
--- onFocus' :: forall message. ToRawEvent message
--- onFocus' = createEventMessage "focus"
+onKeypress' :: forall message. ToRawEventSignal message
+onKeypress' = createRawEventSignal onKeypress__
 
--- onBlur :: forall message. ToEvent message
--- onBlur = createEvent "blur"
+onKeyup :: forall message. ToSpecialEventSignal message Key
+onKeyup = createSpecialEventSignal onKeyup_
 
--- onBlur' :: forall message. ToRawEvent message
--- onBlur' = createEventMessage "blur"
+onKeyup' :: forall message. ToRawEventSignal message
+onKeyup' = createRawEventSignal onKeyup__
 
+onContextmenu :: forall message. ToEventSignal message
+onContextmenu = createEventSignal onContextmenu_
 
+onContextmenu' :: forall message. ToRawEventSignal message
+onContextmenu' = createRawEventSignal onContextmenu__
 
--- onKeydown' :: forall message. ToRawEvent message
--- onKeydown' = createEventMessage "keydown"
+onDblclick :: forall message. ToEventSignal message
+onDblclick = createEventSignal onDblclick_
 
--- onKeypress :: forall message. ToSpecialEvent message (Tuple Key String)
--- onKeypress constructor = createRawEvent "keypress" (keyInput constructor)
+onDblclick' :: forall message. ToRawEventSignal message
+onDblclick' = createRawEventSignal onDblclick__
 
--- onKeypress' :: forall message. ToRawEvent message
--- onKeypress' = createEventMessage "keypress"
+onWheel :: forall message. ToEventSignal message
+onWheel = createEventSignal onWheel_
 
--- onKeyup :: forall message. ToSpecialEvent message (Tuple Key String)
--- onKeyup constructor = createRawEvent "keyup" (keyInput constructor)
+onWheel' :: forall message. ToRawEventSignal message
+onWheel' = createRawEventSignal onWheel__
 
--- onKeyup' :: forall message. ToRawEvent message
--- onKeyup' = createEventMessage "keyup"
+onDrag :: forall message. ToEventSignal message
+onDrag = createEventSignal onDrag_
 
--- keyInput :: forall message . (Tuple Key String -> message) -> Event -> Effect message
--- keyInput constructor event = do
---         down <- key event
---         value <- nodeValue event
---         pure <<< constructor $ Tuple down value
+onDrag' :: forall message. ToRawEventSignal message
+onDrag' = createRawEventSignal onDrag__
 
--- onContextmenu :: forall message. ToEvent message
--- onContextmenu = createEvent "contextmenu"
+onDragend :: forall message. ToEventSignal message
+onDragend = createEventSignal onDragend_
 
--- onContextmenu' :: forall message. ToRawEvent message
--- onContextmenu' = createEventMessage "contextmenu"
+onDragend' :: forall message. ToRawEventSignal message
+onDragend' = createRawEventSignal onDragend__
 
--- onDblclick :: forall message. ToEvent message
--- onDblclick = createEvent "dblclick"
+onDragenter :: forall message. ToEventSignal message
+onDragenter = createEventSignal onDragenter_
 
--- onDblclick' :: forall message. ToRawEvent message
--- onDblclick' = createEventMessage "dblclick"
+onDragenter' :: forall message. ToRawEventSignal message
+onDragenter' = createRawEventSignal onDragenter__
 
--- onWheel :: forall message. ToEvent message
--- onWheel = createEvent "wheel"
+onDragstart :: forall message. ToEventSignal message
+onDragstart = createEventSignal onDragstart_
 
--- onWheel' :: forall message. ToRawEvent message
--- onWheel' = createEventMessage "wheel"
+onDragstart' :: forall message. ToRawEventSignal message
+onDragstart' = createRawEventSignal onDragstart__
 
--- onDrag :: forall message. ToEvent message
--- onDrag = createEvent "drag"
+onDragleave :: forall message. ToEventSignal message
+onDragleave = createEventSignal onDragleave_
 
--- onDrag' :: forall message. ToRawEvent message
--- onDrag' = createEventMessage "drag"
+onDragleave' :: forall message. ToRawEventSignal message
+onDragleave' = createRawEventSignal onDragleave__
 
--- onDragend :: forall message. ToEvent message
--- onDragend = createEvent "dragend"
+onDragover :: forall message. ToEventSignal message
+onDragover = createEventSignal onDragover_
 
--- onDragend' :: forall message. ToRawEvent message
--- onDragend' = createEventMessage "dragend"
+onDragover' :: forall message. ToRawEventSignal message
+onDragover' = createRawEventSignal onDragover__
 
--- onDragenter :: forall message. ToEvent message
--- onDragenter = createEvent "dragenter"
+onDrop :: forall message. ToEventSignal message
+onDrop = createEventSignal onDrop_
 
--- onDragenter' :: forall message. ToRawEvent message
--- onDragenter' = createEventMessage "dragenter"
-
--- onDragstart :: forall message. ToEvent message
--- onDragstart = createEvent "dragstart"
-
--- onDragstart' :: forall message. ToRawEvent message
--- onDragstart' = createEventMessage "dragstart"
-
--- onDragleave :: forall message. ToEvent message
--- onDragleave = createEvent "dragleave"
-
--- onDragleave' :: forall message. ToRawEvent message
--- onDragleave' = createEventMessage "dragleave"
-
--- onDragover :: forall message. ToEvent message
--- onDragover = createEvent "dragover"
-
--- onDragover' :: forall message. ToRawEvent message
--- onDragover' = createEventMessage "dragover"
-
--- onDrop :: forall message. ToEvent message
--- onDrop = createEvent "drop"
-
--- onDrop' :: forall message. ToRawEvent message
--- onDrop' = createEventMessage "drop"
+onDrop' :: forall message. ToRawEventSignal message
+onDrop' = createRawEventSignal onDrop__

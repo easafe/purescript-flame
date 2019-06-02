@@ -14,6 +14,7 @@ import Partial.Unsafe (unsafePartial)
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
+import Test.World.Effectful as TWE
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -261,12 +262,17 @@ main =
                                 TUA.equal "2" currentIncrement3
                                 TUA.equal "-2" currentDecrement3
                                 TUA.equal "2" currentLuckyNumber3
-                -- suite "world parameter test applications" do
-                --         test "effectlist" do
-                --                 TUA.equal 2 3
-                -- suite "signal test applications" do
-                --         test "effectlist" do
-                --                 TUA.equal 2 3
+                suite "world parameter test application" do
+                        test "effectful" do
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TWE.mount
+                                TUA.equal "2" "3"
+                suite "signal test applications" do
+                        test "effectlist" do
+                                TUA.equal 2 3
+                        test "effectlful" do
+                                TUA.equal 2 3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do
