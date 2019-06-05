@@ -1,4 +1,4 @@
-module Test.World.Effectful (mount) where
+module Test.World.Effectful (mount, EMessage(..), einit, EModel(..)) where
 
 import Prelude
 
@@ -7,49 +7,63 @@ import Data.Maybe (Maybe(..), fromJust)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Flame (Html, World, (:>))
+import Data.Generic.Rep (class Generic)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Partial.Unsafe (unsafePartial)
 import Web.Event.Internal.Types (Event)
+import Data.Generic.Rep.Show as DGRS
 
-newtype Model = Model {
+newtype EModel = EModel {
         times :: Int,
-        previousMessages:: Array Message,
-        savedPreviousMessages:: Array Message,
-        previousModel :: Maybe Model,
-        event :: Maybe Event
+        previousMessages:: Array EMessage,
+        savedPreviousMessages:: Array EMessage,
+        previousModel :: Maybe EModel
 }
 
-data Message = Increment | Decrement | Bogus
+data EMessage = Increment | Decrement | Bogus
 
-init :: Model
-init = Model {
+derive instance genericMessage :: Generic EMessage _
+
+instance showMessage :: Show EMessage where
+	show = DGRS.genericShow
+
+derive instance genericModel :: Generic EModel _
+
+instance showModel :: Show EModel where
+	show a = DGRS.genericShow a
+
+einit :: EModel
+einit = EModel {
         times : 0,
-        previousMessages : [Decrement],
+        previousMessages : [],
         savedPreviousMessages : [],
-        previousModel : Nothing,
-        event : Nothing
+        previousModel : Nothing
 }
 
-update :: World Model Message -> Model -> Message -> Aff Model
-update re (Model model) message = pure $ Model $ model {
+update :: World EModel EMessage -> EModel -> EMessage -> Aff EModel
+update re (EModel model) message = pure $ EModel $ model {
         times = model.times + 1,
         previousMessages = DA.snoc model.previousMessages message,
         savedPreviousMessages = model.savedPreviousMessages <> [unsafePartial (fromJust re.previousMessage), message],
-        previousModel = Just re.previousModel,
-        event = re.event
+        previousModel = Just re.previousModel
 }
 
-view :: Model -> Html Message
-view model = HE.main_ [
+view :: EModel -> Html EMessage
+view (EModel model) = HE.main_ [
+        HE.span "times-span" $ show $ model.times,
+        HE.span "previous-messages-span" $ show $ model.previousMessages,
+        HE.span "saved-previous-messages-span" $ show $ model.savedPreviousMessages,
+        HE.span "previous-model-span" $ show $ model.previousModel,
+
         HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
         HE.button [HA.id "increment-button", HA.onClick Increment] "+"
 ]
 
 mount :: Effect Unit
 mount = F.mount "#mount-point" {
-        init: init :> Just Decrement,
+        init: einit :> Just Decrement,
         update,
         view,
         signals: []

@@ -2,8 +2,12 @@ module Test.Main where
 
 import Prelude
 
+import Data.Array as DA
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.CodeUnits as DS
+import Data.Traversable as DF
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Flame.DOM as FD
@@ -14,10 +18,11 @@ import Partial.Unsafe (unsafePartial)
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
-import Test.World.Effectful as TWE
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
+import Test.World.Effectful (EMessage(..), einit)
+import Test.World.Effectful as TWE
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
 import Web.DOM.Node as WDN
@@ -267,7 +272,10 @@ main =
                                 liftEffect $ do
                                         unsafeCreateEnviroment
                                         TWE.mount
-                                TUA.equal "2" "3"
+                                spans <- textContentAll ["#times-span", "#previous-messages-span", "#saved-previous-messages-span", "#previous-model-span"]
+                                let getSpans = unsafePartial \sp@[times, previousMessages, savedPreviousMessages, previousModel] -> sp
+                                equalAll ["1", show [Decrement], show [Decrement, Decrement], show $ Just einit] $ getSpans spans
+                                TUA.equal 2 3
                 suite "signal test applications" do
                         test "effectlist" do
                                 TUA.equal 2 3
@@ -279,6 +287,10 @@ main =
                         mountPoint <- unsafeQuerySelector "main"
                         children <- WDP.children $ WDE.toParentNode mountPoint
                         WDH.length children
+
+                textContentAll = DF.traverse textContent
+
+                equalAll expected = DF.traverse_ (\(Tuple a b) -> TUA.equal a b) <<< DA.zip expected
 
                 textContent selector = liftEffect $ do
                         element <- unsafeQuerySelector selector
