@@ -272,10 +272,14 @@ main =
                                 liftEffect $ do
                                         unsafeCreateEnviroment
                                         TWE.mount
-                                spans <- textContentAll ["#times-span", "#previous-messages-span", "#saved-previous-messages-span", "#previous-model-span"]
-                                let getSpans = unsafePartial \sp@[times, previousMessages, savedPreviousMessages, previousModel] -> sp
-                                equalAll ["1", show [Decrement], show [Decrement, Decrement], show $ Just einit] $ getSpans spans
-                                TUA.equal 2 3
+                                let     ids = ["#times-span", "#previous-messages-span", "#previous-model-span"]
+                                        getSpans = unsafePartial \sp@[times, previousMessages, previousModel] -> sp
+                                spans <- textContentAll ids
+                                equalAll ["1", show [Nothing, Just Decrement], show $ Just einit] $ getSpans spans
+                                dispatchEvent clickEvent "#increment-button"
+                                spans2 <- textContentAll ids
+                                -- there is a bug with previousModel
+                                equalAll ["2", show [Nothing, Just Decrement, Just Decrement, Just Increment], show $ Just einit] $ getSpans spans2
                 suite "signal test applications" do
                         test "effectlist" do
                                 TUA.equal 2 3

@@ -3,22 +3,23 @@ module Test.World.Effectful (mount, EMessage(..), einit, EModel(..)) where
 import Prelude
 
 import Data.Array as DA
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show as DGRS
 import Data.Maybe (Maybe(..), fromJust)
 import Effect (Effect)
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Effect.Class.Console (log)
 import Flame (Html, World, (:>))
-import Data.Generic.Rep (class Generic)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Partial.Unsafe (unsafePartial)
 import Web.Event.Internal.Types (Event)
-import Data.Generic.Rep.Show as DGRS
 
 newtype EModel = EModel {
         times :: Int,
-        previousMessages:: Array EMessage,
-        savedPreviousMessages:: Array EMessage,
+        previousMessages:: Array (Maybe EMessage),
         previousModel :: Maybe EModel
 }
 
@@ -38,26 +39,23 @@ einit :: EModel
 einit = EModel {
         times : 0,
         previousMessages : [],
-        savedPreviousMessages : [],
         previousModel : Nothing
 }
 
 update :: World EModel EMessage -> EModel -> EMessage -> Aff EModel
-update re (EModel model) message = pure $ EModel $ model {
-        times = model.times + 1,
-        previousMessages = DA.snoc model.previousMessages message,
-        savedPreviousMessages = model.savedPreviousMessages <> [unsafePartial (fromJust re.previousMessage), message],
-        previousModel = Just re.previousModel
+update re (EModel model) message = do
+        pure $ EModel $ model {
+                times = model.times + 1,
+                previousMessages = model.previousMessages <> [re.previousMessage, Just message],
+                previousModel = Just re.previousModel
 }
 
 view :: EModel -> Html EMessage
 view (EModel model) = HE.main_ [
         HE.span "times-span" $ show $ model.times,
         HE.span "previous-messages-span" $ show $ model.previousMessages,
-        HE.span "saved-previous-messages-span" $ show $ model.savedPreviousMessages,
         HE.span "previous-model-span" $ show $ model.previousModel,
 
-        HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
         HE.button [HA.id "increment-button", HA.onClick Increment] "+"
 ]
 

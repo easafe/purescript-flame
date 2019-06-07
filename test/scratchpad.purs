@@ -3,6 +3,8 @@ module Test.Test where
 
 import Prelude
 
+import Data.Map as DM
+import Data.Maybe (fromJust)
 import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Class.Console (log)
@@ -12,6 +14,7 @@ import Flame.Application.NoEffects as FAN
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Signal as FS
+import Partial.Unsafe (unsafePartial)
 import Web.Event.Internal.Types (Event)
 
 -- | The model represents the state of the app

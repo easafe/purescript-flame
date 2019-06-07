@@ -17,6 +17,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
+import Effect.Class.Console (log)
 import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
@@ -28,6 +29,9 @@ import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
 import Web.Event.Internal.Types (Event)
+
+
+foreign import sss :: forall a. a -> Effect Unit
 
 -- | `Application` contains
 -- | * `init` – the initial model and an optional message to invoke `update` with
@@ -78,7 +82,7 @@ run el application = do
         firstTime <- ER.new true
         state <- ER.new {
                 previousModel: initialModel,
-                previousMessage: initialMessage,
+                previousMessage: Nothing,
                 model: initialModel,
                 vNode: FR.emptyVNode
         }
@@ -86,16 +90,22 @@ run el application = do
         let     --the function which actually run events
                 runUpdate model message event = do
                         st <- ER.read state
+                        sss st.previousModel
                         let world = createWorld st.previousModel st.previousMessage event
                         EA.runAff_ (case _ of
                                 Left error -> EC.log $ EE.message error --shouldn't stay like this
-                                Right model' -> render model') $ application.update world model message
+                                Right model' -> render (Just message) model') $ application.update world model message
 
                 --the function which renders to the dom
-                render model = do
+                render previousMessage model = do
                         currentVNode <- _.vNode <$> ER.read state
                         updatedVNode <- FR.render currentVNode (runUpdate model) $ application.view model
-                        modifyState (\st -> st { previousModel = st.model, model = model, vNode = updatedVNode })
+                        modifyState (\st -> st {
+                                previousModel = st.model,
+                                previousMessage = previousMessage,
+                                model = model,
+                                vNode = updatedVNode
+                        })
 
                 --the function application.update uses instead of recursion
                 reUpdate model message event = liftEffect $ do
@@ -103,7 +113,7 @@ run el application = do
                         _.model <$> ER.read state
 
                 --the function application.update uses to forcefully render
-                reRender model = liftEffect $ render model
+                reRender model = liftEffect $ render Nothing model
 
                 --first parameter of application.update
                 createWorld previousModel previousMessage event = {
