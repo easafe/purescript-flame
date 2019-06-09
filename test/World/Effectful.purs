@@ -47,7 +47,7 @@ update re (EModel model) message = do
         pure $ EModel $ model {
                 times = model.times + 1,
                 previousMessages = model.previousMessages <> [re.previousMessage, Just message],
-                previousModel = Just re.previousModel
+                previousModel = re.previousModel
 }
 
 view :: EModel -> Html EMessage

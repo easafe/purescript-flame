@@ -53,7 +53,7 @@ type World model message = {
         update :: model -> message -> Aff model,
         view :: model -> Aff Unit,
         event :: Maybe Event,
-        previousModel :: model,
+        previousModel :: Maybe model,
         previousMessage :: Maybe message
 }
 
@@ -81,7 +81,7 @@ run el application = do
         let Tuple initialModel initialMessage = application.init
         firstTime <- ER.new true
         state <- ER.new {
-                previousModel: initialModel,
+                previousModel: Nothing,
                 previousMessage: Nothing,
                 model: initialModel,
                 vNode: FR.emptyVNode
@@ -90,7 +90,6 @@ run el application = do
         let     --the function which actually run events
                 runUpdate model message event = do
                         st <- ER.read state
-                        sss st.previousModel
                         let world = createWorld st.previousModel st.previousMessage event
                         EA.runAff_ (case _ of
                                 Left error -> EC.log $ EE.message error --shouldn't stay like this
@@ -101,7 +100,7 @@ run el application = do
                         currentVNode <- _.vNode <$> ER.read state
                         updatedVNode <- FR.render currentVNode (runUpdate model) $ application.view model
                         modifyState (\st -> st {
-                                previousModel = st.model,
+                                previousModel = Just st.model,
                                 previousMessage = previousMessage,
                                 model = model,
                                 vNode = updatedVNode

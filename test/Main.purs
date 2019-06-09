@@ -21,7 +21,7 @@ import Test.Basic.NoEffects as TBN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
-import Test.World.Effectful (EMessage(..), einit)
+import Test.World.Effectful (EMessage(..), EModel(..), einit)
 import Test.World.Effectful as TWE
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
@@ -275,11 +275,13 @@ main =
                                 let     ids = ["#times-span", "#previous-messages-span", "#previous-model-span"]
                                         getSpans = unsafePartial \sp@[times, previousMessages, previousModel] -> sp
                                 spans <- textContentAll ids
-                                equalAll ["1", show [Nothing, Just Decrement], show $ Just einit] $ getSpans spans
+                                equalAll ["1", show [Nothing, Just Decrement], show (Nothing :: Maybe EModel)] $ getSpans spans
                                 dispatchEvent clickEvent "#increment-button"
                                 spans2 <- textContentAll ids
-                                -- there is a bug with previousModel
                                 equalAll ["2", show [Nothing, Just Decrement, Just Decrement, Just Increment], show $ Just einit] $ getSpans spans2
+                                dispatchEvent clickEvent "#increment-button"
+                                spans3 <- textContentAll ids
+                                equalAll ["3", show [Nothing, Just Decrement, Just Decrement, Just Increment, Just Increment, Just Increment], show <<< Just $ EModel { previousMessages: [Nothing,(Just Decrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
                 suite "signal test applications" do
                         test "effectlist" do
                                 TUA.equal 2 3
