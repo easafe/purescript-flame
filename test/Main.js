@@ -19,3 +19,11 @@ exports.inputEvent = function () {
 exports.keydownEvent = function () {
 	return new window.Event('keydown');
 }
+
+exports.errorEvent = function () {
+	return new window.Event('error');
+}
+
+exports.offlineEvent = function () {
+	return new window.Event('offline');
+}

@@ -19,6 +19,7 @@ import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
 import Test.Signal.NoEffects as TSN
+import Test.Signal.Effectful as TSE
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -42,6 +43,8 @@ foreign import unsafeCreateEnviroment :: Effect Unit
 foreign import clickEvent :: Effect Event
 foreign import inputEvent :: Effect Event
 foreign import keydownEvent :: Effect Event
+foreign import errorEvent :: Effect Event
+foreign import offlineEvent :: Effect Event
 
 main :: Effect Unit
 main =
@@ -304,8 +307,22 @@ main =
                                 dispatchDocumentEvent keydownEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "2" output3
-                        test "effectlful" do
-                                TUA.equal 2 3
+                        test "effectful" do
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TSE.mount
+                                output <- textContent "#text-output"
+                                TUA.equal "5" output
+
+                                dispatchWindowEvent errorEvent
+                                dispatchWindowEvent errorEvent
+                                dispatchWindowEvent errorEvent
+                                output2 <- textContent "#text-output"
+                                TUA.equal "2" output2
+
+                                dispatchWindowEvent offlineEvent
+                                output3 <- textContent "#text-output"
+                                TUA.equal "3" output3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do
@@ -332,5 +349,11 @@ main =
                         document <- WHW.document window
                         event <- eventFunction
                         _ <- WEE.dispatchEvent event $ WDD.toEventTarget document
+                        pure unit
+
+                dispatchWindowEvent eventFunction = liftEffect $ do
+                        window <- WH.window
+                        event <- eventFunction
+                        _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
                         pure unit
 
