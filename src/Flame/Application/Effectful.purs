@@ -30,9 +30,6 @@ import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (
 import Signal as S
 import Web.Event.Internal.Types (Event)
 
-
-foreign import sss :: forall a. a -> Effect Unit
-
 -- | `Application` contains
 -- | * `init` – the initial model and an optional message to invoke `update` with
 -- | * `view` – a function to update your markup
