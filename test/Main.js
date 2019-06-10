@@ -15,3 +15,7 @@ exports.clickEvent = function () {
 exports.inputEvent = function () {
 	return new window.Event('input');
 }
+
+exports.keydownEvent = function () {
+	return new window.Event('keydown');
+}

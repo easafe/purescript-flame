@@ -18,6 +18,7 @@ import Partial.Unsafe (unsafePartial)
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
+import Test.Signal.NoEffects as TSN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -29,7 +30,10 @@ import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
+import Web.HTML.Window as WHW
+import Web.HTML.HTMLDocument as WDD
 import Web.HTML.HTMLInputElement as WHH
+import Web.HTML as WH
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
@@ -37,6 +41,7 @@ import Web.HTML.HTMLInputElement as WHH
 foreign import unsafeCreateEnviroment :: Effect Unit
 foreign import clickEvent :: Effect Event
 foreign import inputEvent :: Effect Event
+foreign import keydownEvent :: Effect Event
 
 main :: Effect Unit
 main =
@@ -72,7 +77,7 @@ main =
                                 html2' <- liftEffect $ HS.render html2
                                 TUA.equal """<a class="test2 test3">TEST</a>""" html2'
 
-                        test "Inline style" do
+                        test "inline style" do
                                 let html = HE.a (HA.style { mystyle: "test" }) [HE.text "TEST"]
                                 html' <- liftEffect $ HS.render html
                                 TUA.equal """<a style="mystyle:test">TEST</a>""" html'
@@ -192,7 +197,7 @@ main =
                                 html' <- liftEffect $ HS.render html
                                 --events are part of virtual dom data and do not show up on the rendered markup
                                 TUA.equal """<a>TEST</a>""" html'
-                suite "basic test applications" do
+                suite "Basic test applications" do
                         test "noeffects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -267,7 +272,7 @@ main =
                                 TUA.equal "2" currentIncrement3
                                 TUA.equal "-2" currentDecrement3
                                 TUA.equal "2" currentLuckyNumber3
-                suite "world parameter test application" do
+                suite "World parameter test application" do
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -282,9 +287,23 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 spans3 <- textContentAll ids
                                 equalAll ["3", show [Nothing, Just Decrement, Just Decrement, Just Increment, Just Increment, Just Increment], show <<< Just $ EModel { previousMessages: [Nothing,(Just Decrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
-                suite "signal test applications" do
+                suite "Signal test applications" do
                         test "effectlist" do
-                                TUA.equal 2 3
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TSN.mount
+                                output <- textContent "#text-output"
+                                TUA.equal "0" output
+
+                                dispatchDocumentEvent clickEvent
+                                output2 <- textContent "#text-output"
+                                TUA.equal "-1" output2
+
+                                dispatchDocumentEvent keydownEvent
+                                dispatchDocumentEvent keydownEvent
+                                dispatchDocumentEvent keydownEvent
+                                output3 <- textContent "#text-output"
+                                TUA.equal "2" output3
                         test "effectlful" do
                                 TUA.equal 2 3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
@@ -306,5 +325,12 @@ main =
                         element <- unsafeQuerySelector selector
                         event <- eventFunction
                         _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
+                        pure unit
+
+                dispatchDocumentEvent eventFunction = liftEffect $ do
+                        window <- WH.window
+                        document <- WHW.document window
+                        event <- eventFunction
+                        _ <- WEE.dispatchEvent event $ WDD.toEventTarget document
                         pure unit
 
