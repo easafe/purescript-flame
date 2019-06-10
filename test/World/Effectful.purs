@@ -2,20 +2,15 @@ module Test.World.Effectful (mount, EMessage(..), einit, EModel(..)) where
 
 import Prelude
 
-import Data.Array as DA
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
-import Data.Maybe (Maybe(..), fromJust)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
 import Flame (Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Partial.Unsafe (unsafePartial)
-import Web.Event.Internal.Types (Event)
 
 newtype EModel = EModel {
         times :: Int,

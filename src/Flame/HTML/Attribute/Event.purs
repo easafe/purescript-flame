@@ -251,3 +251,9 @@ onDrop = createEvent "drop"
 
 onDrop' :: forall message. ToRawEvent message
 onDrop' = createEventMessage "drop"
+
+onError :: forall message. ToEvent message
+onError = createEvent "error"
+
+onError' :: forall message. ToRawEvent message
+onError' = createEventMessage "error"

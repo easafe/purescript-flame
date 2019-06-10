@@ -1,26 +1,53 @@
 module Flame.Signal.Window where
 
---window events
+import Flame.Signal.Signal
 
--- error
---     Fired when when a resource failed to load, or can't be used. For example, if a script has an execution error or an image can't be found or is invalid.
---     Also available via the onerror property.
+foreign import onError_ :: forall message. ToEventSignal_ message
+foreign import onError__ :: forall message. ToRawEventSignal_ message
+foreign import onResize_ :: forall message. ToEventSignal_ message
+foreign import onResize__ :: forall message. ToRawEventSignal_ message
+foreign import onOffline_ :: forall message. ToEventSignal_ message
+foreign import onOffline__ :: forall message. ToRawEventSignal_ message
+foreign import onOnline_ :: forall message. ToEventSignal_ message
+foreign import onOnline__ :: forall message. ToRawEventSignal_ message
+foreign import onLoad_ :: forall message. ToEventSignal_ message
+foreign import onLoad__ :: forall message. ToRawEventSignal_ message
+foreign import onUnload_ :: forall message. ToEventSignal_ message
+foreign import onUnload__ :: forall message. ToRawEventSignal_ message
 
--- resize
---     Fired when the window has been resized.
---     Also available via the onresize property.
+onError :: forall message. ToEventSignal message
+onError = createEventSignal onError_
 
--- offline
---     Fired when the browser has lost access to the network and the value of navigator.onLine has switched to false.
---     Also available via the onoffline property.
--- online
---     Fired when the browser has gained access to the network and the value of navigator.onLine has switched to true.
---     Also available via the ononline property.
+onError' :: forall message. ToRawEventSignal message
+onError' = createRawEventSignal onError__
 
--- load
---     Fired when the whole page has loaded, including all dependent resources such as stylesheets images.
---     Also available via the onload property.
--- unload
---     Fired when the document or a child resource is being unloaded.
---     Also available via the onunload property.
+onResize :: forall message. ToEventSignal message
+onResize = createEventSignal onResize_
+
+onResize' :: forall message. ToRawEventSignal message
+onResize' = createRawEventSignal onResize__
+
+onOffline :: forall message. ToEventSignal message
+onOffline = createEventSignal onOffline_
+
+onOffline' :: forall message. ToRawEventSignal message
+onOffline' = createRawEventSignal onOffline__
+
+onOnline :: forall message. ToEventSignal message
+onOnline = createEventSignal onOnline_
+
+onOnline' :: forall message. ToRawEventSignal message
+onOnline' = createRawEventSignal onOnline__
+
+onLoad :: forall message. ToEventSignal message
+onLoad = createEventSignal onLoad_
+
+onLoad' :: forall message. ToRawEventSignal message
+onLoad' = createRawEventSignal onLoad__
+
+onUnload :: forall message. ToEventSignal message
+onUnload = createEventSignal onUnload_
+
+onUnload' :: forall message. ToRawEventSignal message
+onUnload' = createRawEventSignal onUnload__
 
