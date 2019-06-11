@@ -170,9 +170,8 @@ exports.onDrop__ = function (constant, constructor) {
         return constantRawHandler(constant, constructor, 'drop');
 }
 
-exports.onClick2_ = function (message, channel, send) {
+exports.onClick2_ = function (message, channel) {
         document.addEventListener('click', function (_) {
-                console.log('here')
-                send(channel, message);
+                channel.set(message)              ;
         });
 }

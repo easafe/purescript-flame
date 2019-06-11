@@ -15,6 +15,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Signal as FS
 import Partial.Unsafe (unsafePartial)
+import Signal.Channel as SC
 import Web.Event.Internal.Types (Event)
 
 -- | The model represents the state of the app
