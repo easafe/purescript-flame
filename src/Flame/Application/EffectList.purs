@@ -24,7 +24,10 @@ import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
+import Signal (Signal)
 import Signal as S
+import Signal.Channel (Channel)
+import Signal.Channel as SC
 import Signal.Effect as SE
 
 -- | `Application` contains
@@ -51,18 +54,17 @@ emptyApp = {
         where update model message = model :> []
 
 -- | Mount a Flame application in the given selector
-mount :: forall model message. String -> Application model message -> Effect Unit
+mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
 mount selector application = do
         maybeEl <- FD.querySelector selector
         case maybeEl of
                 Just el -> run el application
-                Nothing -> EC.log $ "No element matching selector " <> show selector <> " found!"
+                Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
-run :: forall model message. DOMElement -> Application model message -> Effect Unit
+run :: forall model message. DOMElement -> Application model message -> Effect (Channel (Array message))
 run el application = do
         let Tuple initialModel initialAffs = application.init
-        firstTime <- ER.new true
         state <- ER.new {
                 model: initialModel,
                 vNode: FR.emptyVNode
@@ -87,18 +89,12 @@ run el application = do
                         updatedVNode <- FR.render currentVNode (const <<< runUpdate) $ application.view model
                         ER.write { model, vNode: updatedVNode } state
 
-                --no way around this hack?
-                initializeSignal message = do
-                        --do not call runUpdate on the starting value of a signal
-                        isFirstTime <- ER.read firstTime
-                        if isFirstTime then pure unit
-                         else runUpdate message
-
         initialVNode <- FR.renderInitial el (const <<< runUpdate) $ application.view initialModel
         ER.write { model: initialModel, vNode: initialVNode } state
 
         runMessages initialAffs
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map initializeSignal) application.signals
-        ER.write false firstTime
+        channel <- SC.channel []
+        S.runSignal <<< map (DF.traverse_ runUpdate) $ SC.subscribe channel
+        pure channel

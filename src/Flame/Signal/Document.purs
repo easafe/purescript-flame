@@ -2,7 +2,14 @@
 module Flame.Signal.Global where
 
 import Flame.Signal.Signal
-import Flame.Types(Key)
+import Prelude
+
+import Effect (Effect)
+import Effect.Uncurried (EffectFn3)
+import Effect.Uncurried as EU
+import Flame.Types (Key)
+import Signal.Channel (Channel)
+import Signal.Channel as SC
 
 foreign import onClick_ :: forall message. ToEventSignal_ message
 foreign import onClick__ :: forall message. ToRawEventSignal_ message
@@ -38,6 +45,11 @@ foreign import onDragover_ :: forall message. ToEventSignal_ message
 foreign import onDragover__ :: forall message. ToRawEventSignal_ message
 foreign import onDrop_ :: forall message. ToEventSignal_ message
 foreign import onDrop__ :: forall message. ToRawEventSignal_ message
+
+foreign import onClick2_ :: forall message. EffectFn3 (Array message) (Channel (Array message)) (Channel (Array message) -> (Array message) -> Effect Unit) Unit
+
+onClick2 :: forall message. message -> Channel (Array message) -> Effect Unit
+onClick2 message channel = EU.runEffectFn3 onClick2_ [message] channel SC.send
 
 onClick :: forall message. ToEventSignal message
 onClick = createEventSignal onClick_

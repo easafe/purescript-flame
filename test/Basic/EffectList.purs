@@ -39,9 +39,11 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = FAE.mount "#mount-point" {
-        init: "" :> [],
-        update,
-        view,
-        signals:[]
-}
+mount = do
+        FAE.mount "#mount-point" {
+                init: "" :> [],
+                update,
+                view,
+                signals:[]
+        }
+        pure unit

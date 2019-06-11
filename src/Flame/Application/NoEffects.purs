@@ -8,13 +8,13 @@ module Flame.Application.NoEffects(
 )
 where
 
-import Flame.Types (App)
-import Prelude (Unit, const, unit, ($), (<<<))
-
 import Effect (Effect)
-import Flame.HTML.Element as FHE
 import Flame.Application.EffectList ((:>))
 import Flame.Application.EffectList as FAE
+import Flame.HTML.Element as FHE
+import Flame.Types (App)
+import Prelude (Unit, const, unit, ($), (<<<))
+import Signal.Channel (Channel)
 
 -- | `Application` contains
 -- | * `init` – the initial model
@@ -36,6 +36,6 @@ emptyApp = {
 }
 
 -- | Mount a Flame application in the given selector
-mount :: forall model message. String -> Application model message -> Effect Unit
+mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
 mount selector application = FAE.mount selector $ application { init = application.init :> [], update = update' }
         where update' model message = application.update model message :> []

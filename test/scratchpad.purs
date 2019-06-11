@@ -21,7 +21,7 @@ import Web.Event.Internal.Types (Event)
 type Model = {times :: Int, key :: String}
 
 -- | This datatype is used to signal events to `update`
-data Message = Click Event | Key String
+data Message = Click  | Key String
 
 -- | Initial state of the app
 init :: Model
@@ -30,7 +30,7 @@ init = { times :  0, key : "" }
 -- | `update` is called to handle events
 update :: Model -> Message -> Model
 update model = case _ of
-        Click event -> model {times = model.times + 1}
+        Click  -> model {times = model.times + 1}
         Key key -> model {key = key}
 
 -- | `view` is called whenever the model is updated
@@ -40,10 +40,10 @@ view model = HE.main "main" [HE.text $ "You have clicked " <> show model.times <
 -- | Mount the application on the given selector
 main :: Effect Unit
 main = do
-        signals <- DT.sequence [FS.onClick' Click, FS.onKeydown Key]
-        FAN.mount "main" {
+        channel <- FAN.mount "main" {
                 init,
                 update,
                 view,
-                signals
-}
+                signals: []
+        }
+        FS.onClick2 Click channel

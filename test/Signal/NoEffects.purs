@@ -33,9 +33,10 @@ view model = HE.main "main" [
 mount :: Effect Unit
 mount = do
         signals <- DT.sequence [FS.onClick' Decrement, FS.onKeydown Increment]
-        FAN.mount "#mount-point" {
+        _ <- FAN.mount "#mount-point" {
                 init : 0,
                 update,
                 view,
                 signals
-}
+        }
+        pure unit
