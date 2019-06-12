@@ -17,7 +17,7 @@ exports.inputEvent = function () {
 }
 
 exports.keydownEvent = function () {
-	return new window.Event('keydown');
+	return new window.KeyboardEvent('keydown', {key: 'q'});
 }
 
 exports.errorEvent = function () {

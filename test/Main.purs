@@ -310,36 +310,36 @@ main =
                                 dispatchDocumentEvent keydownEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "2" output3
-                        -- test "effectlist" do
-                        --         channel <- liftEffect $ do
-                        --                 unsafeCreateEnviroment
-                        --                 TSEL.mount
-                        --         output <- textContent "#text-output"
-                        --         TUA.equal "0" output
+                        test "effectlist" do
+                                channel <- liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TSEL.mount
+                                output <- textContent "#text-output"
+                                TUA.equal "0" output
 
-                        --         liftEffect $ SC.send channel [TSELDecrement]
-                        --         output2 <- textContent "#text-output"
-                        --         TUA.equal "-1" output2
+                                liftEffect $ SC.send channel [TSELDecrement]
+                                output2 <- textContent "#text-output"
+                                TUA.equal "-1" output2
 
-                        --         liftEffect $ SC.send channel [TSELIncrement]
-                        --         output3 <- textContent "#text-output"
-                        --         TUA.equal "0" output3
-                        -- test "effectful" do
-                        --         liftEffect $ do
-                        --                 unsafeCreateEnviroment
-                        --                 TSE.mount
-                        --         output <- textContent "#text-output"
-                        --         TUA.equal "5" output
+                                liftEffect $ SC.send channel [TSELIncrement]
+                                output3 <- textContent "#text-output"
+                                TUA.equal "0" output3
+                        test "effectful" do
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TSE.mount
+                                output <- textContent "#text-output"
+                                TUA.equal "5" output
 
-                        --         dispatchWindowEvent errorEvent
-                        --         dispatchWindowEvent errorEvent
-                        --         dispatchWindowEvent errorEvent
-                        --         output2 <- textContent "#text-output"
-                        --         TUA.equal "2" output2
+                                dispatchWindowEvent errorEvent
+                                dispatchWindowEvent errorEvent
+                                dispatchWindowEvent errorEvent
+                                output2 <- textContent "#text-output"
+                                TUA.equal "2" output2
 
-                        --         dispatchWindowEvent offlineEvent
-                        --         output3 <- textContent "#text-output"
-                        --         TUA.equal "3" output3
+                                dispatchWindowEvent offlineEvent
+                                output3 <- textContent "#text-output"
+                                TUA.equal "3" output3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do
@@ -368,9 +368,9 @@ main =
                         _ <- WEE.dispatchEvent event $ WDD.toEventTarget document
                         pure unit
 
-                -- dispatchWindowEvent eventFunction = liftEffect $ do
-                --         window <- WH.window
-                --         event <- eventFunction
-                --         _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
-                --         pure unit
+                dispatchWindowEvent eventFunction = liftEffect $ do
+                        window <- WH.window
+                        event <- eventFunction
+                        _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
+                        pure unit
 

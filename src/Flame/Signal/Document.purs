@@ -1,15 +1,8 @@
 --the version of Flame.HTML.Event that works on the window/document using signals
-module Flame.Signal.Global where
+module Flame.Signal.Document where
 
 import Flame.Signal.Signal
-import Prelude
-
-import Effect (Effect)
-import Effect.Uncurried (EffectFn2, EffectFn3)
-import Effect.Uncurried as EU
 import Flame.Types (Key)
-import Signal.Channel (Channel)
-import Signal.Channel as SC
 
 foreign import onClick_ :: forall message. ToEventSignal_ message
 foreign import onClick__ :: forall message. ToRawEventSignal_ message
