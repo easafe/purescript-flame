@@ -37,5 +37,5 @@ mount = do
                 update,
                 view
         }
-        FS.send [FS.onClick' Decrement, FS.onKeydown Increment] channel
+        FS.send [FS.onClick' [Decrement], FS.onKeydown [Increment]] channel
         pure unit

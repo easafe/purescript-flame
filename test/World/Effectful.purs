@@ -1,4 +1,4 @@
-module Test.World.Effectful (mount, EMessage(..), einit, EModel(..)) where
+module Test.World.Effectful (mount, TWEMessage(..), einit, TWEModel(..)) where
 
 import Prelude
 
@@ -12,51 +12,51 @@ import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
-newtype EModel = EModel {
+newtype TWEModel = TWEModel {
         times :: Int,
-        previousMessages:: Array (Maybe EMessage),
-        previousModel :: Maybe EModel
+        previousMessages:: Array (Maybe TWEMessage),
+        previousModel :: Maybe TWEModel
 }
 
-data EMessage = Increment | Decrement | Bogus
+data TWEMessage = TWEIncrement | TWEDecrement | TWEBogus
 
-derive instance genericMessage :: Generic EMessage _
+derive instance genericMessage :: Generic TWEMessage _
 
-instance showMessage :: Show EMessage where
+instance showMessage :: Show TWEMessage where
 	show = DGRS.genericShow
 
-derive instance genericModel :: Generic EModel _
+derive instance genericModel :: Generic TWEModel _
 
-instance showModel :: Show EModel where
+instance showModel :: Show TWEModel where
 	show a = DGRS.genericShow a
 
-einit :: EModel
-einit = EModel {
+einit :: TWEModel
+einit = TWEModel {
         times : 0,
         previousMessages : [],
         previousModel : Nothing
 }
 
-update :: World EModel EMessage -> EModel -> EMessage -> Aff EModel
-update re (EModel model) message = do
-        pure $ EModel $ model {
+update :: World TWEModel TWEMessage -> TWEModel -> TWEMessage -> Aff TWEModel
+update re (TWEModel model) message = do
+        pure $ TWEModel $ model {
                 times = model.times + 1,
                 previousMessages = model.previousMessages <> [re.previousMessage, Just message],
                 previousModel = re.previousModel
 }
 
-view :: EModel -> Html EMessage
-view (EModel model) = HE.main_ [
+view :: TWEModel -> Html TWEMessage
+view (TWEModel model) = HE.main_ [
         HE.span "times-span" $ show $ model.times,
         HE.span "previous-messages-span" $ show $ model.previousMessages,
         HE.span "previous-model-span" $ show $ model.previousModel,
 
-        HE.button [HA.id "increment-button", HA.onClick Increment] "+"
+        HE.button [HA.id "increment-button", HA.onClick TWEIncrement] "+"
 ]
 
 mount :: Effect Unit
 mount = F.mount_ "#mount-point" {
-                init: einit :> Just Decrement,
+                init: einit :> Just TWEDecrement,
                 update,
                 view
         }

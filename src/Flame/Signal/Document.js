@@ -7,6 +7,7 @@ function channelHandler(message, channel, eventName) {
 
 function channelRawHandler(constructor, channel, eventName) {
         document.addEventListener(eventName, function (event) {
+                console.log(constructor)
                 channel.set(constructor(event));
         });
 }

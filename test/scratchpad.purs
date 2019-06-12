@@ -22,7 +22,7 @@ import Web.Event.Internal.Types (Event)
 type Model = {times :: Int, key :: String}
 
 -- | This datatype is used to signal events to `update`
-data Message = Click  | Key String
+data Message = Click Event | Key String
 
 -- | Initial state of the app
 init :: Model
@@ -31,7 +31,7 @@ init = { times :  0, key : "" }
 -- | `update` is called to handle events
 update :: Model -> Message -> Model
 update model = case _ of
-        Click  -> model {times = model.times + 1}
+        Click _ -> model {times = model.times + 1}
         Key key -> model {key = key}
 
 -- | `view` is called whenever the model is updated
@@ -46,4 +46,4 @@ main = do
                 update,
                 view
         }
-        FS.onClick Click channel
+        FS.onClick' [Click] channel

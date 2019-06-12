@@ -1,12 +1,12 @@
 //there is no purescript solution to reusing code in foreign files
 function channelHandler(message, channel, eventName) {
-        document.addEventListener(eventName, function (_) {
+        window.addEventListener(eventName, function (_) {
                 channel.set(message);
         });
 }
 
 function channelRawHandler(constructor, channel, eventName) {
-        document.addEventListener(eventName, function (event) {
+        window.addEventListener(eventName, function (event) {
                 channel.set(constructor(event));
         });
 }

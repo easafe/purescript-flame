@@ -9,15 +9,17 @@ import Effect.Uncurried as EU
 import Signal.Channel (Channel)
 import Web.Event.Internal.Types (Event)
 
-type ToEventSignal message = forall f. message -> Channel (f message) -> Effect Unit
+--need to map the messages
 
-type ToSpecialEventSignal message parameter = forall f. (parameter -> message) -> Channel (f message) -> Effect Unit
+type ToEventSignal message = message -> Channel message -> Effect Unit
+
+type ToSpecialEventSignal message parameter = forall f. f (parameter -> message) -> Channel (f message) -> Effect Unit
 
 type ToRawEventSignal constructor = ToSpecialEventSignal constructor Event
 
-type ToEventSignal_ message = forall f. EffectFn2 message (Channel (f message)) Unit
+type ToEventSignal_ message = EffectFn2 message (Channel message) Unit
 
-type ToSpecialEventSignal_ message parameter = forall f. EffectFn2 (parameter -> message) (Channel (f message)) Unit
+type ToSpecialEventSignal_ message parameter = forall f. EffectFn2 (f (parameter -> message)) (Channel (f message)) Unit
 
 type ToRawEventSignal_ constructor = ToSpecialEventSignal_ constructor Event
 

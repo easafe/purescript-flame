@@ -15,15 +15,18 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as HS
 import Partial.Unsafe (unsafePartial)
+import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
-import Test.Signal.NoEffects as TSN
 import Test.Signal.Effectful as TSE
+import Test.Signal.NoEffects as TSN
+import Test.Signal.EffectList as TSEL
+import Test.Signal.EffectList (TSELMessage(..))
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
-import Test.World.Effectful (EMessage(..), EModel(..), einit)
+import Test.World.Effectful (TWEMessage(..), TWEModel(..), einit)
 import Test.World.Effectful as TWE
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
@@ -31,10 +34,10 @@ import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
-import Web.HTML.Window as WHW
+import Web.HTML as WH
 import Web.HTML.HTMLDocument as WDD
 import Web.HTML.HTMLInputElement as WHH
-import Web.HTML as WH
+import Web.HTML.Window as WHW
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
@@ -283,15 +286,15 @@ main =
                                 let     ids = ["#times-span", "#previous-messages-span", "#previous-model-span"]
                                         getSpans = unsafePartial \sp@[times, previousMessages, previousModel] -> sp
                                 spans <- textContentAll ids
-                                equalAll ["1", show [Nothing, Just Decrement], show (Nothing :: Maybe EModel)] $ getSpans spans
+                                equalAll ["1", show [Nothing, Just TWEDecrement], show (Nothing :: Maybe TWEModel)] $ getSpans spans
                                 dispatchEvent clickEvent "#increment-button"
                                 spans2 <- textContentAll ids
-                                equalAll ["2", show [Nothing, Just Decrement, Just Decrement, Just Increment], show $ Just einit] $ getSpans spans2
+                                equalAll ["2", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement], show $ Just einit] $ getSpans spans2
                                 dispatchEvent clickEvent "#increment-button"
                                 spans3 <- textContentAll ids
-                                equalAll ["3", show [Nothing, Just Decrement, Just Decrement, Just Increment, Just Increment, Just Increment], show <<< Just $ EModel { previousMessages: [Nothing,(Just Decrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
+                                equalAll ["3", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement, Just TWEIncrement, Just TWEIncrement], show <<< Just $ TWEModel { previousMessages: [Nothing,(Just TWEDecrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
                 suite "Signal test applications" do
-                        test "effectlist" do
+                        test "noeffects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
                                         TSN.mount
@@ -307,22 +310,36 @@ main =
                                 dispatchDocumentEvent keydownEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "2" output3
-                        test "effectful" do
-                                liftEffect $ do
-                                        unsafeCreateEnviroment
-                                        TSE.mount
-                                output <- textContent "#text-output"
-                                TUA.equal "5" output
+                        -- test "effectlist" do
+                        --         channel <- liftEffect $ do
+                        --                 unsafeCreateEnviroment
+                        --                 TSEL.mount
+                        --         output <- textContent "#text-output"
+                        --         TUA.equal "0" output
 
-                                dispatchWindowEvent errorEvent
-                                dispatchWindowEvent errorEvent
-                                dispatchWindowEvent errorEvent
-                                output2 <- textContent "#text-output"
-                                TUA.equal "2" output2
+                        --         liftEffect $ SC.send channel [TSELDecrement]
+                        --         output2 <- textContent "#text-output"
+                        --         TUA.equal "-1" output2
 
-                                dispatchWindowEvent offlineEvent
-                                output3 <- textContent "#text-output"
-                                TUA.equal "3" output3
+                        --         liftEffect $ SC.send channel [TSELIncrement]
+                        --         output3 <- textContent "#text-output"
+                        --         TUA.equal "0" output3
+                        -- test "effectful" do
+                        --         liftEffect $ do
+                        --                 unsafeCreateEnviroment
+                        --                 TSE.mount
+                        --         output <- textContent "#text-output"
+                        --         TUA.equal "5" output
+
+                        --         dispatchWindowEvent errorEvent
+                        --         dispatchWindowEvent errorEvent
+                        --         dispatchWindowEvent errorEvent
+                        --         output2 <- textContent "#text-output"
+                        --         TUA.equal "2" output2
+
+                        --         dispatchWindowEvent offlineEvent
+                        --         output3 <- textContent "#text-output"
+                        --         TUA.equal "3" output3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do
@@ -351,9 +368,9 @@ main =
                         _ <- WEE.dispatchEvent event $ WDD.toEventTarget document
                         pure unit
 
-                dispatchWindowEvent eventFunction = liftEffect $ do
-                        window <- WH.window
-                        event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
-                        pure unit
+                -- dispatchWindowEvent eventFunction = liftEffect $ do
+                --         window <- WH.window
+                --         event <- eventFunction
+                --         _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
+                --         pure unit
 

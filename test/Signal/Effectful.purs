@@ -41,4 +41,4 @@ mount = do
                 update,
                 view
         }
-        FS.send [FS.onError' Decrement, FS.onOffline Increment] channel
+        FS.send [FS.onError' (Just Decrement), FS.onOffline (Just Increment)] channel
