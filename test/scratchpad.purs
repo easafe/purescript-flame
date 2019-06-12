@@ -44,7 +44,6 @@ main = do
         channel <- FAN.mount "main" {
                 init,
                 update,
-                view,
-                signals: []
+                view
         }
-        FS.onClick2 Click channel
+        FS.onClick Click channel

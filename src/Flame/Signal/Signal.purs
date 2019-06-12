@@ -1,29 +1,35 @@
 module Flame.Signal.Signal where
 
+import Prelude
+
+import Data.Foldable as DF
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Signal (Signal)
-import Signal as S
+import Signal.Channel (Channel)
 import Web.Event.Internal.Types (Event)
 
-type ToEventSignal message = message -> Effect (Signal message)
+type ToEventSignal message = forall f. message -> Channel (f message) -> Effect Unit
 
-type ToSpecialEventSignal constructor parameter = (parameter -> constructor) -> Effect (Signal constructor)
+type ToSpecialEventSignal message parameter = forall f. (parameter -> message) -> Channel (f message) -> Effect Unit
 
 type ToRawEventSignal constructor = ToSpecialEventSignal constructor Event
 
-type ToEventSignal_ message = EffectFn2 (message -> Signal message) message (Signal message)
+type ToEventSignal_ message = forall f. EffectFn2 message (Channel (f message)) Unit
 
-type ToSpecialEventSignal_ constructor parameter = EffectFn2 (constructor -> Signal constructor) (parameter -> constructor) (Signal constructor)
+type ToSpecialEventSignal_ message parameter = forall f. EffectFn2 (parameter -> message) (Channel (f message)) Unit
 
 type ToRawEventSignal_ constructor = ToSpecialEventSignal_ constructor Event
 
-createEventSignal :: forall message. ToEventSignal_ message -> message -> Effect (Signal message)
-createEventSignal ffi = EU.runEffectFn2 ffi S.constant
+createEventSignal :: forall message. ToEventSignal_ message -> ToEventSignal message
+createEventSignal ffi = EU.runEffectFn2 ffi
 
-createRawEventSignal :: forall constructor. ToRawEventSignal_ constructor -> (Event -> constructor) -> Effect (Signal constructor)
-createRawEventSignal ffi = EU.runEffectFn2 ffi S.constant
+createRawEventSignal :: forall constructor. ToRawEventSignal_ constructor -> ToRawEventSignal constructor
+createRawEventSignal ffi = EU.runEffectFn2 ffi
 
-createSpecialEventSignal :: forall constructor parameter. ToSpecialEventSignal_ constructor parameter -> (parameter -> constructor) -> Effect (Signal constructor)
-createSpecialEventSignal ffi = EU.runEffectFn2 ffi S.constant
+createSpecialEventSignal :: forall constructor parameter. ToSpecialEventSignal_ constructor parameter -> ToSpecialEventSignal constructor parameter
+createSpecialEventSignal ffi = EU.runEffectFn2 ffi
+
+send :: forall message f. Array (Channel (f message) -> Effect Unit) -> Channel (f message) -> Effect Unit
+send events channel = DF.traverse_ apply events
+        where apply handler = handler channel

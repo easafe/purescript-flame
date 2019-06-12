@@ -4,7 +4,8 @@
 module Flame.Application.NoEffects(
         Application,
         emptyApp,
-        mount
+        mount,
+        mount_
 )
 where
 
@@ -13,14 +14,13 @@ import Flame.Application.EffectList ((:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Element as FHE
 import Flame.Types (App)
-import Prelude (Unit, const, unit, ($), (<<<))
+import Prelude (Unit, const, unit, ($), (<<<), bind, pure)
 import Signal.Channel (Channel)
 
 -- | `Application` contains
 -- | * `init` – the initial model
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `signals` – an array of signals
 type Application model message = App model message (
         init :: model,
         update :: model -> message -> model
@@ -31,11 +31,16 @@ emptyApp :: Application Unit Unit
 emptyApp = {
         init: unit,
         update: const <<< const unit,
-        view: const (FHE.createEmptyElement "bs"),
-        signals : []
+        view: const (FHE.createEmptyElement "bs")
 }
 
 -- | Mount a Flame application in the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
 mount selector application = FAE.mount selector $ application { init = application.init :> [], update = update' }
         where update' model message = application.update model message :> []
+
+-- | Mount a Flame application in the given selector
+mount_ :: forall model message. String -> Application model message -> Effect Unit
+mount_ selector application = do
+        _ <- mount selector application
+        pure unit

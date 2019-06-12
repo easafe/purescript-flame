@@ -31,8 +31,7 @@ newtype VNode = VNode
 
 -- App abstracts over common fields of an `Application`
 type App model message extension = {
-        view :: model -> Html message,
-        signals :: Array (Signal message)
+        view :: model -> Html message
         | extension
 }
 

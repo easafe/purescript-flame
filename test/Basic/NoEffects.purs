@@ -28,11 +28,8 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = do
-        FAN.mount "#mount-point" {
+mount = FAN.mount_ "#mount-point" {
                 init,
                 update,
-                view,
-                signals: []
+                view
         }
-        pure unit

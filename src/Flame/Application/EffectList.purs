@@ -5,6 +5,7 @@ module Flame.Application.EffectList(
         Application,
         emptyApp,
         mount,
+        mount_,
         (:>)
 )
 where
@@ -24,17 +25,14 @@ import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
-import Signal (Signal)
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
-import Signal.Effect as SE
 
 -- | `Application` contains
 -- | * `init` – the initial model and a list of messages to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `signals` – an array of signals
 type Application model message = App model message (
         init :: Tuple model (Array (Aff (Maybe message))),
         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
@@ -48,8 +46,7 @@ emptyApp :: Application Unit Unit
 emptyApp = {
         init: unit :> [],
         update,
-        view: const (FHE.createEmptyElement "bs"),
-        signals : []
+        view: const (FHE.createEmptyElement "bs")
 }
         where update model message = model :> []
 
@@ -60,6 +57,12 @@ mount selector application = do
         case maybeEl of
                 Just el -> run el application
                 Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+
+-- | Mount a Flame application in the given selector, discarding the message Channel
+mount_ :: forall model message. String -> Application model message -> Effect Unit
+mount_ selector application = do
+        _ <- mount selector application
+        pure unit
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
 run :: forall model message. DOMElement -> Application model message -> Effect (Channel (Array message))

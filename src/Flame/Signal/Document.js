@@ -1,177 +1,160 @@
-function constantHandler(constantSignal, message, eventName) {
-        var out = constantSignal(message);
-
+//we are relying on a dependency implementation detail, which is not good for obvious reasons
+function channelHandler(message, channel, eventName) {
         document.addEventListener(eventName, function (_) {
-                out.set(message);
+                channel.set(message);
         });
-
-        return out;
 }
 
-function constantRawHandler(constantSignal, constructor, eventName) {
-        var out = constantSignal(constructor(undefined));
-
+function channelRawHandler(constructor, channel, eventName) {
         document.addEventListener(eventName, function (event) {
-                out.set(constructor(event));
+                channel.set(constructor(event));
         });
-
-        return out;
 }
 
-function constantSpecialHandler(constantSignal, constructor, eventName, transformer) {
-        var out = constantSignal(constructor(undefined));
-
+function channelSpecialHandler(constructor, channel, eventName, transformer) {
         document.addEventListener(eventName, function (event) {
-                out.set(constructor(transformer(event)));
+                channel.set(constructor(transformer(event)));
         });
-
-        return out;
 }
 
-exports.onClick_ = function (constant, message) {
-        return constantHandler(constant, message, 'click');
+exports.onClick_ = function(message, channel) {
+        channelHandler(message, channel, 'click');
 }
 
-exports.onClick__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'click');
+exports.onClick__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'click');
 }
 
-exports.onScroll_ = function (constant, message) {
-        return constantHandler(constant, message, 'scroll');
+exports.onScroll_ = function(message, channel) {
+        channelHandler(message, channel, 'scroll');
 }
 
-exports.onScroll__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'scroll');
+exports.onScroll__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'scroll');
 }
 
-exports.onFocus_ = function (constant, message) {
-        return constantHandler(constant, message, 'focus');
+exports.onFocus_ = function(message, channel) {
+        channelHandler(message, channel, 'focus');
 }
 
-exports.onFocus__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'focus');
+exports.onFocus__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'focus');
 }
 
-exports.onBlur_ = function (constant, message) {
-        return constantHandler(constant, message, 'blur');
+exports.onBlur_ = function(message, channel) {
+        channelHandler(message, channel, 'blur');
 }
 
-exports.onBlur__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'blur');
+exports.onBlur__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'blur');
 }
 
-exports.onKeydown_ = function (constant, constructor) {
-        return constantSpecialHandler(constant, constructor, 'keydown', function (event) {
+exports.onKeydown_ = function(constructor, channel) {
+        channelSpecialHandler(constructor, channel, 'keydown', function (event) {
                 return event.key;
         });
 }
 
-exports.onKeydown__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'keydown');
+exports.onKeydown__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'keydown');
 }
 
-exports.onKeypress_ = function (constant, message) {
-        return constantSpecialHandler(constant, constructor, 'keypress', function (event) {
+exports.onKeypress_ = function(message, channel) {
+        channelSpecialHandler(constructor, channel, 'keypress', function (event) {
                 return event.key;
         });
 }
 
-exports.onKeypress__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'keypress');
+exports.onKeypress__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'keypress');
 }
 
-exports.onKeyup_ = function (constant, message) {
-        return constantSpecialHandler(constant, constructor, 'keyup', function (event) {
+exports.onKeyup_ = function(message, channel) {
+        channelSpecialHandler(constructor, channel, 'keyup', function (event) {
                 return event.key;
         });
 }
 
-exports.onKeyup__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'keyup');
+exports.onKeyup__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'keyup');
 }
 
-exports.onContextmenu_ = function (constant, message) {
-        return constantHandler(constant, message, 'contextmenu');
+exports.onContextmenu_ = function(message, channel) {
+        channelHandler(message, channel, 'contextmenu');
 }
 
-exports.onContextmenu__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'contextmenu');
+exports.onContextmenu__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'contextmenu');
 }
 
-exports.onDblclick_ = function (constant, message) {
-        return constantHandler(constant, message, 'dblclick');
+exports.onDblclick_ = function(message, channel) {
+        channelHandler(message, channel, 'dblclick');
 }
 
-exports.onDblclick__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'dblclick');
+exports.onDblclick__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'dblclick');
 }
 
-exports.onWheel_ = function (constant, message) {
-        return constantHandler(constant, message, 'wheel');
+exports.onWheel_ = function(message, channel) {
+        channelHandler(message, channel, 'wheel');
 }
 
-exports.onWheel__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'wheel');
+exports.onWheel__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'wheel');
 }
 
-exports.onDrag_ = function (constant, message) {
-        return constantHandler(constant, message, 'drag');
+exports.onDrag_ = function(message, channel) {
+        channelHandler(message, channel, 'drag');
 }
 
-exports.onDrag__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'drag');
+exports.onDrag__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'drag');
 }
 
-exports.onDragend_ = function (constant, message) {
-        return constantHandler(constant, message, 'dragend');
+exports.onDragend_ = function(message, channel) {
+        channelHandler(message, channel, 'dragend');
 }
 
-exports.onDragend__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'dragend');
+exports.onDragend__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'dragend');
 }
 
-exports.onDragenter_ = function (constant, message) {
-        return constantHandler(constant, message, 'dragenter');
+exports.onDragenter_ = function(message, channel) {
+        channelHandler(message, channel, 'dragenter');
 }
 
-exports.onDragenter__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'dragenter');
+exports.onDragenter__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'dragenter');
 }
 
-exports.onDragstart_ = function (constant, message) {
-        return constantHandler(constant, message, 'dragstart');
+exports.onDragstart_ = function(message, channel) {
+        channelHandler(message, channel, 'dragstart');
 }
 
-exports.onDragstart__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'dragstart');
+exports.onDragstart__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'dragstart');
 }
 
-exports.onDragleave_ = function (constant, message) {
-        return constantHandler(constant, message, 'dragleave');
+exports.onDragleave_ = function(message, channel) {
+        channelHandler(message, channel, 'dragleave');
 }
 
-exports.onDragleave__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'dragleave');
+exports.onDragleave__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'dragleave');
 }
 
-exports.onDragover_ = function (constant, message) {
-        return constantHandler(constant, message, 'dragover');
+exports.onDragover_ = function(message, channel) {
+        channelHandler(message, channel, 'dragover');
 }
 
-exports.onDragover__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'dragover');
+exports.onDragover__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'dragover');
 }
 
-exports.onDrop_ = function (constant, message) {
-        return constantHandler(constant, message, 'drop');
+exports.onDrop_ = function(message, channel) {
+        channelHandler(message, channel, 'drop');
 }
 
-exports.onDrop__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'drop');
-}
-
-exports.onClick2_ = function (message, channel) {
-        document.addEventListener('click', function (_) {
-                channel.set(message)              ;
-        });
+exports.onDrop__ = function(constructor, channel) {
+        channelRawHandler(constructor, channel, 'drop');
 }

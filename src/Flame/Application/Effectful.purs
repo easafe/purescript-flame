@@ -5,6 +5,7 @@ module Flame.Application.Effectful(
         Application,
         emptyApp,
         mount,
+        mount_,
         World
 )
 where
@@ -12,12 +13,12 @@ where
 import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
 import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
@@ -28,13 +29,14 @@ import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
+import Signal.Channel (Channel)
+import Signal.Channel as SC
 import Web.Event.Internal.Types (Event)
 
 -- | `Application` contains
 -- | * `init` – the initial model and an optional message to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `signals` – an array of signals
 type Application model message = App model message (
         init :: Tuple model (Maybe message),
         update :: World model message -> model -> message -> Aff model
@@ -59,24 +61,28 @@ emptyApp :: Application Unit Unit
 emptyApp = {
         init: unit :> Nothing,
         update,
-        view: const (FHE.createEmptyElement "bs"),
-        signals : []
+        view: const (FHE.createEmptyElement "bs")
 }
         where update f model message = pure model
 
 -- | Mount a Flame application in the given selector
-mount :: forall model message. String -> Application model message -> Effect Unit
+mount :: forall model message. String -> Application model message -> Effect (Channel (Maybe message))
 mount selector application = do
         maybeEl <- FD.querySelector selector
         case maybeEl of
                 Just el -> run el application
-                Nothing -> EC.log $ "No element matching selector " <> show selector <> " found!"
+                Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+
+-- | Mount a Flame application in the given selector, discarding the message Channel
+mount_ :: forall model message. String -> Application model message -> Effect Unit
+mount_ selector application = do
+        _ <- mount selector application
+        pure unit
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
-run :: forall model message. DOMElement -> Application model message -> Effect Unit
+run :: forall model message. DOMElement -> Application model message -> Effect (Channel (Maybe message))
 run el application = do
         let Tuple initialModel initialMessage = application.init
-        firstTime <- ER.new true
         state <- ER.new {
                 previousModel: Nothing,
                 previousMessage: Nothing,
@@ -126,13 +132,6 @@ run el application = do
                         --it might be that we can get the event from the signal?
                         runUpdate model message Nothing
 
-                 --no way around this hack?
-                initializeSignal message = do
-                        --do not call runUpdate on the starting value of a signal
-                        isFirstTime <- ER.read firstTime
-                        if isFirstTime then pure unit
-                         else runUpdate' message
-
                 modifyState st = do
                         _ <- ER.modify st state
                         pure unit
@@ -145,5 +144,6 @@ run el application = do
                 Just message -> runUpdate initialModel message Nothing
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map initializeSignal) application.signals
-        ER.write false firstTime
+        channel <- SC.channel Nothing
+        S.runSignal <<< map (DF.traverse_ runUpdate') <<< S.filter DM.isJust Nothing $ SC.subscribe channel
+        pure channel

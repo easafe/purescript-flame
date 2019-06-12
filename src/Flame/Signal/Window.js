@@ -1,68 +1,60 @@
 //there is no purescript solution to reusing code in foreign files
-function constantHandler(constantSignal, message, eventName) {
-        var out = constantSignal(message);
-
-        window.addEventListener(eventName, function (_) {
-                out.set(message);
+function channelHandler(message, channel, eventName) {
+        document.addEventListener(eventName, function (_) {
+                channel.set(message);
         });
-
-        return out;
 }
 
-function constantRawHandler(constantSignal, constructor, eventName) {
-        var out = constantSignal(constructor(undefined));
-
-        window.addEventListener(eventName, function (event) {
-                out.set(constructor(event));
+function channelRawHandler(constructor, channel, eventName) {
+        document.addEventListener(eventName, function (event) {
+                channel.set(constructor(event));
         });
-
-        return out;
 }
 
-exports.onError_ = function (constant, message) {
-        return constantHandler(constant, message, 'error');
+exports.onError_ = function (message, channel) {
+        return channelHandler(message, channel, 'error');
 }
 
-exports.onError__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'error');
+exports.onError__ = function (constructor, channel) {
+        return channelRawHandler(constructor, channel, 'error');
 }
 
-exports.onResize_ = function (constant, message) {
-        return constantHandler(constant, message, 'resize');
+exports.onResize_ = function (message, channel) {
+        return channelHandler(message, channel, 'resize');
 }
 
-exports.onResize__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'resize');
+exports.onResize__ = function (constructor, channel) {
+        return channelRawHandler(constructor, channel, 'resize');
 }
 
-exports.onOffline_ = function (constant, message) {
-        return constantHandler(constant, message, 'offline');
+exports.onOffline_ = function (message, channel) {
+        return channelHandler(message, channel, 'offline');
 }
 
-exports.onOffline__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'offline');
+exports.onOffline__ = function (constructor, channel) {
+        return channelRawHandler(constructor, channel, 'offline');
 }
 
-exports.onOnline_ = function (constant, message) {
-        return constantHandler(constant, message, 'online');
+exports.onOnline_ = function (message, channel) {
+        return channelHandler(message, channel, 'online');
 }
 
-exports.onOnline__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'online');
+exports.onOnline__ = function (constructor, channel) {
+        return channelRawHandler(constructor, channel, 'online');
 }
 
-exports.onLoad_ = function (constant, message) {
-        return constantHandler(constant, message, 'load');
+exports.onLoad_ = function (message, channel) {
+        return channelHandler(message, channel, 'load');
 }
 
-exports.onLoad__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'load');
+exports.onLoad__ = function (constructor, channel) {
+        return channelRawHandler(constructor, channel, 'load');
 }
 
-exports.onUnload_ = function (constant, message) {
-        return constantHandler(constant, message, 'unload');
+exports.onUnload_ = function (message, channel) {
+        return channelHandler(message, channel, 'unload');
 }
 
-exports.onUnload__ = function (constant, constructor) {
-        return constantRawHandler(constant, constructor, 'unload');
+exports.onUnload__ = function (constructor, channel) {
+        return channelRawHandler(constructor, channel, 'unload');
 }

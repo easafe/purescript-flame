@@ -85,7 +85,7 @@ view model = HE.main "main" [
         ]
 
 main :: Effect Unit
-main = FAE.mount "main" {
+main = FAE.mount_ "main" {
         init: init :> [],
         update,
         view,

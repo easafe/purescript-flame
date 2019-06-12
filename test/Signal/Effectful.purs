@@ -4,6 +4,7 @@ module Test.Signal.Effectful (mount) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.Traversable as DF
 import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -35,10 +36,9 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-        signals <- DT.sequence [FS.onError' Decrement, FS.onOffline Increment]
-        F.mount "#mount-point" {
+        channel <- F.mount "#mount-point" {
                 init : 5 :> Nothing,
                 update,
-                view,
-                signals
-}
+                view
+        }
+        FS.send [FS.onError' Decrement, FS.onOffline Increment] channel

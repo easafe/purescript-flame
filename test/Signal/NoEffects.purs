@@ -32,11 +32,10 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-        signals <- DT.sequence [FS.onClick' Decrement, FS.onKeydown Increment]
-        _ <- FAN.mount "#mount-point" {
+        channel <- FAN.mount "#mount-point" {
                 init : 0,
                 update,
-                view,
-                signals
+                view
         }
+        FS.send [FS.onClick' Decrement, FS.onKeydown Increment] channel
         pure unit

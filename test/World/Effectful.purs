@@ -55,9 +55,8 @@ view (EModel model) = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = F.mount "#mount-point" {
-        init: einit :> Just Decrement,
-        update,
-        view,
-        signals: []
-}
+mount = F.mount_ "#mount-point" {
+                init: einit :> Just Decrement,
+                update,
+                view
+        }

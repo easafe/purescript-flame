@@ -46,11 +46,6 @@ foreign import onDragover__ :: forall message. ToRawEventSignal_ message
 foreign import onDrop_ :: forall message. ToEventSignal_ message
 foreign import onDrop__ :: forall message. ToRawEventSignal_ message
 
-foreign import onClick2_ :: forall message. EffectFn2 (Array message) (Channel (Array message)) Unit
-
-onClick2 :: forall message. message -> Channel (Array message) -> Effect Unit
-onClick2 message channel = EU.runEffectFn2 onClick2_ [message] channel
-
 onClick :: forall message. ToEventSignal message
 onClick = createEventSignal onClick_
 
