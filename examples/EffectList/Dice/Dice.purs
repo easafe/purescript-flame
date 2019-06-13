@@ -38,6 +38,5 @@ main :: Effect Unit
 main = FAE.mount_ "main" {
         init: init :> [],
         update,
-        view,
-        signals:[]
+        view
 }

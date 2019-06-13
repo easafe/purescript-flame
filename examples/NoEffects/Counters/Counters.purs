@@ -43,6 +43,5 @@ main :: Effect Unit
 main =  FAN.mount_ "main" {
         init,
         update,
-        view,
-        signals: []
+        view
 }

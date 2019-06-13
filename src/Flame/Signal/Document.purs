@@ -4,139 +4,139 @@ module Flame.Signal.Document where
 import Flame.Signal.Signal
 import Flame.Types (Key)
 
-foreign import onClick_ :: forall message. ToEventSignal_ message
-foreign import onClick__ :: forall message. ToRawEventSignal_ message
-foreign import onScroll_ :: forall message. ToEventSignal_ message
-foreign import onScroll__ :: forall message. ToRawEventSignal_ message
-foreign import onFocus_ :: forall message. ToEventSignal_ message
-foreign import onFocus__ :: forall message. ToRawEventSignal_ message
-foreign import onBlur_ :: forall message. ToEventSignal_ message
-foreign import onBlur__ :: forall message. ToRawEventSignal_ message
-foreign import onKeydown_ :: forall message. ToSpecialEventSignal_ message Key
-foreign import onKeydown__ :: forall message. ToRawEventSignal_ message
-foreign import onKeypress_ :: forall message. ToSpecialEventSignal_ message Key
-foreign import onKeypress__ :: forall message. ToRawEventSignal_ message
-foreign import onKeyup_ :: forall message. ToSpecialEventSignal_ message Key
-foreign import onKeyup__ :: forall message. ToRawEventSignal_ message
-foreign import onContextmenu_ :: forall message. ToEventSignal_ message
-foreign import onContextmenu__ :: forall message. ToRawEventSignal_ message
-foreign import onDblclick_ :: forall message. ToEventSignal_ message
-foreign import onDblclick__ :: forall message. ToRawEventSignal_ message
-foreign import onWheel_ :: forall message. ToEventSignal_ message
-foreign import onWheel__ :: forall message. ToRawEventSignal_ message
-foreign import onDrag_ :: forall message. ToEventSignal_ message
-foreign import onDrag__ :: forall message. ToRawEventSignal_ message
-foreign import onDragend_ :: forall message. ToEventSignal_ message
-foreign import onDragend__ :: forall message. ToRawEventSignal_ message
-foreign import onDragenter_ :: forall message. ToEventSignal_ message
-foreign import onDragenter__ :: forall message. ToRawEventSignal_ message
-foreign import onDragstart_ :: forall message. ToEventSignal_ message
-foreign import onDragstart__ :: forall message. ToRawEventSignal_ message
-foreign import onDragleave_ :: forall message. ToEventSignal_ message
-foreign import onDragleave__ :: forall message. ToRawEventSignal_ message
-foreign import onDragover_ :: forall message. ToEventSignal_ message
-foreign import onDragover__ :: forall message. ToRawEventSignal_ message
-foreign import onDrop_ :: forall message. ToEventSignal_ message
-foreign import onDrop__ :: forall message. ToRawEventSignal_ message
+foreign import onClick_ :: forall message. ToEventSource_ message
+foreign import onClick__ :: forall message. ToRawEventSource_ message
+foreign import onScroll_ :: forall message. ToEventSource_ message
+foreign import onScroll__ :: forall message. ToRawEventSource_ message
+foreign import onFocus_ :: forall message. ToEventSource_ message
+foreign import onFocus__ :: forall message. ToRawEventSource_ message
+foreign import onBlur_ :: forall message. ToEventSource_ message
+foreign import onBlur__ :: forall message. ToRawEventSource_ message
+foreign import onKeydown_ :: forall message. ToSpecialEventSource_ message Key
+foreign import onKeydown__ :: forall message. ToRawEventSource_ message
+foreign import onKeypress_ :: forall message. ToSpecialEventSource_ message Key
+foreign import onKeypress__ :: forall message. ToRawEventSource_ message
+foreign import onKeyup_ :: forall message. ToSpecialEventSource_ message Key
+foreign import onKeyup__ :: forall message. ToRawEventSource_ message
+foreign import onContextmenu_ :: forall message. ToEventSource_ message
+foreign import onContextmenu__ :: forall message. ToRawEventSource_ message
+foreign import onDblclick_ :: forall message. ToEventSource_ message
+foreign import onDblclick__ :: forall message. ToRawEventSource_ message
+foreign import onWheel_ :: forall message. ToEventSource_ message
+foreign import onWheel__ :: forall message. ToRawEventSource_ message
+foreign import onDrag_ :: forall message. ToEventSource_ message
+foreign import onDrag__ :: forall message. ToRawEventSource_ message
+foreign import onDragend_ :: forall message. ToEventSource_ message
+foreign import onDragend__ :: forall message. ToRawEventSource_ message
+foreign import onDragenter_ :: forall message. ToEventSource_ message
+foreign import onDragenter__ :: forall message. ToRawEventSource_ message
+foreign import onDragstart_ :: forall message. ToEventSource_ message
+foreign import onDragstart__ :: forall message. ToRawEventSource_ message
+foreign import onDragleave_ :: forall message. ToEventSource_ message
+foreign import onDragleave__ :: forall message. ToRawEventSource_ message
+foreign import onDragover_ :: forall message. ToEventSource_ message
+foreign import onDragover__ :: forall message. ToRawEventSource_ message
+foreign import onDrop_ :: forall message. ToEventSource_ message
+foreign import onDrop__ :: forall message. ToRawEventSource_ message
 
-onClick :: forall message. ToEventSignal message
-onClick = createEventSignal onClick_
+onClick :: forall message. ToEventSource message
+onClick = createEventSource onClick_
 
-onClick' :: forall message. ToRawEventSignal message
-onClick' = createRawEventSignal onClick__
+onClick' :: forall message. ToRawEventSource message
+onClick' = createRawEventSource onClick__
 
-onScroll :: forall message. ToEventSignal message
-onScroll = createEventSignal onScroll_
+onScroll :: forall message. ToEventSource message
+onScroll = createEventSource onScroll_
 
-onScroll' :: forall message. ToRawEventSignal message
-onScroll' = createRawEventSignal onScroll__
+onScroll' :: forall message. ToRawEventSource message
+onScroll' = createRawEventSource onScroll__
 
-onFocus :: forall message. ToEventSignal message
-onFocus = createEventSignal onFocus_
+onFocus :: forall message. ToEventSource message
+onFocus = createEventSource onFocus_
 
-onFocus' :: forall message. ToRawEventSignal message
-onFocus' = createRawEventSignal onFocus__
+onFocus' :: forall message. ToRawEventSource message
+onFocus' = createRawEventSource onFocus__
 
-onBlur :: forall message. ToEventSignal message
-onBlur = createEventSignal onBlur_
+onBlur :: forall message. ToEventSource message
+onBlur = createEventSource onBlur_
 
-onBlur' :: forall message. ToRawEventSignal message
-onBlur' = createRawEventSignal onBlur__
+onBlur' :: forall message. ToRawEventSource message
+onBlur' = createRawEventSource onBlur__
 
-onKeydown :: forall message. ToSpecialEventSignal message Key
-onKeydown = createSpecialEventSignal onKeydown_
+onKeydown :: forall message. ToSpecialEventSource message Key
+onKeydown = createSpecialEventSource onKeydown_
 
-onKeydown' :: forall message. ToRawEventSignal message
-onKeydown' = createRawEventSignal onKeydown__
+onKeydown' :: forall message. ToRawEventSource message
+onKeydown' = createRawEventSource onKeydown__
 
-onKeypress :: forall message. ToSpecialEventSignal message Key
-onKeypress = createSpecialEventSignal onKeypress_
+onKeypress :: forall message. ToSpecialEventSource message Key
+onKeypress = createSpecialEventSource onKeypress_
 
-onKeypress' :: forall message. ToRawEventSignal message
-onKeypress' = createRawEventSignal onKeypress__
+onKeypress' :: forall message. ToRawEventSource message
+onKeypress' = createRawEventSource onKeypress__
 
-onKeyup :: forall message. ToSpecialEventSignal message Key
-onKeyup = createSpecialEventSignal onKeyup_
+onKeyup :: forall message. ToSpecialEventSource message Key
+onKeyup = createSpecialEventSource onKeyup_
 
-onKeyup' :: forall message. ToRawEventSignal message
-onKeyup' = createRawEventSignal onKeyup__
+onKeyup' :: forall message. ToRawEventSource message
+onKeyup' = createRawEventSource onKeyup__
 
-onContextmenu :: forall message. ToEventSignal message
-onContextmenu = createEventSignal onContextmenu_
+onContextmenu :: forall message. ToEventSource message
+onContextmenu = createEventSource onContextmenu_
 
-onContextmenu' :: forall message. ToRawEventSignal message
-onContextmenu' = createRawEventSignal onContextmenu__
+onContextmenu' :: forall message. ToRawEventSource message
+onContextmenu' = createRawEventSource onContextmenu__
 
-onDblclick :: forall message. ToEventSignal message
-onDblclick = createEventSignal onDblclick_
+onDblclick :: forall message. ToEventSource message
+onDblclick = createEventSource onDblclick_
 
-onDblclick' :: forall message. ToRawEventSignal message
-onDblclick' = createRawEventSignal onDblclick__
+onDblclick' :: forall message. ToRawEventSource message
+onDblclick' = createRawEventSource onDblclick__
 
-onWheel :: forall message. ToEventSignal message
-onWheel = createEventSignal onWheel_
+onWheel :: forall message. ToEventSource message
+onWheel = createEventSource onWheel_
 
-onWheel' :: forall message. ToRawEventSignal message
-onWheel' = createRawEventSignal onWheel__
+onWheel' :: forall message. ToRawEventSource message
+onWheel' = createRawEventSource onWheel__
 
-onDrag :: forall message. ToEventSignal message
-onDrag = createEventSignal onDrag_
+onDrag :: forall message. ToEventSource message
+onDrag = createEventSource onDrag_
 
-onDrag' :: forall message. ToRawEventSignal message
-onDrag' = createRawEventSignal onDrag__
+onDrag' :: forall message. ToRawEventSource message
+onDrag' = createRawEventSource onDrag__
 
-onDragend :: forall message. ToEventSignal message
-onDragend = createEventSignal onDragend_
+onDragend :: forall message. ToEventSource message
+onDragend = createEventSource onDragend_
 
-onDragend' :: forall message. ToRawEventSignal message
-onDragend' = createRawEventSignal onDragend__
+onDragend' :: forall message. ToRawEventSource message
+onDragend' = createRawEventSource onDragend__
 
-onDragenter :: forall message. ToEventSignal message
-onDragenter = createEventSignal onDragenter_
+onDragenter :: forall message. ToEventSource message
+onDragenter = createEventSource onDragenter_
 
-onDragenter' :: forall message. ToRawEventSignal message
-onDragenter' = createRawEventSignal onDragenter__
+onDragenter' :: forall message. ToRawEventSource message
+onDragenter' = createRawEventSource onDragenter__
 
-onDragstart :: forall message. ToEventSignal message
-onDragstart = createEventSignal onDragstart_
+onDragstart :: forall message. ToEventSource message
+onDragstart = createEventSource onDragstart_
 
-onDragstart' :: forall message. ToRawEventSignal message
-onDragstart' = createRawEventSignal onDragstart__
+onDragstart' :: forall message. ToRawEventSource message
+onDragstart' = createRawEventSource onDragstart__
 
-onDragleave :: forall message. ToEventSignal message
-onDragleave = createEventSignal onDragleave_
+onDragleave :: forall message. ToEventSource message
+onDragleave = createEventSource onDragleave_
 
-onDragleave' :: forall message. ToRawEventSignal message
-onDragleave' = createRawEventSignal onDragleave__
+onDragleave' :: forall message. ToRawEventSource message
+onDragleave' = createRawEventSource onDragleave__
 
-onDragover :: forall message. ToEventSignal message
-onDragover = createEventSignal onDragover_
+onDragover :: forall message. ToEventSource message
+onDragover = createEventSource onDragover_
 
-onDragover' :: forall message. ToRawEventSignal message
-onDragover' = createRawEventSignal onDragover__
+onDragover' :: forall message. ToRawEventSource message
+onDragover' = createRawEventSource onDragover__
 
-onDrop :: forall message. ToEventSignal message
-onDrop = createEventSignal onDrop_
+onDrop :: forall message. ToEventSource message
+onDrop = createEventSource onDrop_
 
-onDrop' :: forall message. ToRawEventSignal message
-onDrop' = createRawEventSignal onDrop__
+onDrop' :: forall message. ToRawEventSource message
+onDrop' = createRawEventSource onDrop__

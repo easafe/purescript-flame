@@ -9,13 +9,17 @@
     "package.json"
   ],
   "scripts": {
+    "example-webchat-server" : "pulp build --main Examples.Effectful.Webchat.Server.Main --include examples/Effectful/Webchat/Server:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-server.js",
+    "example-webchat-client" : "pulp browserify --main Examples.Effectful.Webchat.Client.Main --include examples/Effectful/Webchat/Client:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-client.js",
+    "example-webchat" : "npm run example-webchat-client && npm run example-webchat-server",
     "example-affjax": "pulp browserify --main Examples.Effectful.Affjax.Main --include examples/Effectful/Affjax --optimise --to examples/Effectful/Affjax/dist/affjax.js",
     "example-counter": "pulp browserify --main Examples.NoEffects.Counter.Main --include examples/NoEffects/Counter --optimise --to examples/NoEffects/Counter/dist/counter.js",
     "example-counters": "pulp browserify --main Examples.NoEffects.Counters.Main --include examples/NoEffects/Counters:examples/NoEffects/Counter --optimise --to examples/NoEffects/Counters/dist/counters.js",
     "example-dice": "pulp browserify --main Examples.EffectList.Dice.Main --include examples/EffectList/Dice --optimise --to examples/EffectList/Dice/dist/dice.js",
     "example-todo": "pulp browserify --main Examples.EffectList.Todo.Main --include examples/EffectList/Todo --optimise --to examples/EffectList/Todo/dist/todo.js",
-    "build-examples": "npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
+    "build-examples": "npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
     "scratch": "pulp browserify --main Test.ScratchPad --include test --to test/dist/scratchpad.js",
+    "webchat": "node example examples/Effectful/Webchat/dist/webchat-server.js",
     "test": "pulp test && npm run build-examples"
   },
   "dependencies": {

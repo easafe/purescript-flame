@@ -2,52 +2,52 @@ module Flame.Signal.Window where
 
 import Flame.Signal.Signal
 
-foreign import onError_ :: forall message. ToEventSignal_ message
-foreign import onError__ :: forall message. ToRawEventSignal_ message
-foreign import onResize_ :: forall message. ToEventSignal_ message
-foreign import onResize__ :: forall message. ToRawEventSignal_ message
-foreign import onOffline_ :: forall message. ToEventSignal_ message
-foreign import onOffline__ :: forall message. ToRawEventSignal_ message
-foreign import onOnline_ :: forall message. ToEventSignal_ message
-foreign import onOnline__ :: forall message. ToRawEventSignal_ message
-foreign import onLoad_ :: forall message. ToEventSignal_ message
-foreign import onLoad__ :: forall message. ToRawEventSignal_ message
-foreign import onUnload_ :: forall message. ToEventSignal_ message
-foreign import onUnload__ :: forall message. ToRawEventSignal_ message
+foreign import onError_ :: forall message. ToEventSource_ message
+foreign import onError__ :: forall message. ToRawEventSource_ message
+foreign import onResize_ :: forall message. ToEventSource_ message
+foreign import onResize__ :: forall message. ToRawEventSource_ message
+foreign import onOffline_ :: forall message. ToEventSource_ message
+foreign import onOffline__ :: forall message. ToRawEventSource_ message
+foreign import onOnline_ :: forall message. ToEventSource_ message
+foreign import onOnline__ :: forall message. ToRawEventSource_ message
+foreign import onLoad_ :: forall message. ToEventSource_ message
+foreign import onLoad__ :: forall message. ToRawEventSource_ message
+foreign import onUnload_ :: forall message. ToEventSource_ message
+foreign import onUnload__ :: forall message. ToRawEventSource_ message
 
-onError :: forall message. ToEventSignal message
-onError = createEventSignal onError_
+onError :: forall message. ToEventSource message
+onError = createEventSource onError_
 
-onError' :: forall message. ToRawEventSignal message
-onError' = createRawEventSignal onError__
+onError' :: forall message. ToRawEventSource message
+onError' = createRawEventSource onError__
 
-onResize :: forall message. ToEventSignal message
-onResize = createEventSignal onResize_
+onResize :: forall message. ToEventSource message
+onResize = createEventSource onResize_
 
-onResize' :: forall message. ToRawEventSignal message
-onResize' = createRawEventSignal onResize__
+onResize' :: forall message. ToRawEventSource message
+onResize' = createRawEventSource onResize__
 
-onOffline :: forall message. ToEventSignal message
-onOffline = createEventSignal onOffline_
+onOffline :: forall message. ToEventSource message
+onOffline = createEventSource onOffline_
 
-onOffline' :: forall message. ToRawEventSignal message
-onOffline' = createRawEventSignal onOffline__
+onOffline' :: forall message. ToRawEventSource message
+onOffline' = createRawEventSource onOffline__
 
-onOnline :: forall message. ToEventSignal message
-onOnline = createEventSignal onOnline_
+onOnline :: forall message. ToEventSource message
+onOnline = createEventSource onOnline_
 
-onOnline' :: forall message. ToRawEventSignal message
-onOnline' = createRawEventSignal onOnline__
+onOnline' :: forall message. ToRawEventSource message
+onOnline' = createRawEventSource onOnline__
 
-onLoad :: forall message. ToEventSignal message
-onLoad = createEventSignal onLoad_
+onLoad :: forall message. ToEventSource message
+onLoad = createEventSource onLoad_
 
-onLoad' :: forall message. ToRawEventSignal message
-onLoad' = createRawEventSignal onLoad__
+onLoad' :: forall message. ToRawEventSource message
+onLoad' = createRawEventSource onLoad__
 
-onUnload :: forall message. ToEventSignal message
-onUnload = createEventSignal onUnload_
+onUnload :: forall message. ToEventSource message
+onUnload = createEventSource onUnload_
 
-onUnload' :: forall message. ToRawEventSignal message
-onUnload' = createRawEventSignal onUnload__
+onUnload' :: forall message. ToRawEventSource message
+onUnload' = createRawEventSource onUnload__
 

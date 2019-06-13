@@ -9,26 +9,26 @@ import Effect.Uncurried as EU
 import Signal.Channel (Channel)
 import Web.Event.Internal.Types (Event)
 
-type ToEventSignal message = message -> Channel message -> Effect Unit
+type ToEventSource message = message -> Channel message -> Effect Unit
 
-type ToSpecialEventSignal message parameter = forall f. Applicative f => f (parameter -> message) -> Channel (f message) -> Effect Unit
+type ToSpecialEventSource message parameter = forall f. Applicative f => f (parameter -> message) -> Channel (f message) -> Effect Unit
 
-type ToRawEventSignal constructor = ToSpecialEventSignal constructor Event
+type ToRawEventSource constructor = ToSpecialEventSource constructor Event
 
-type ToEventSignal_ message = EffectFn2 message (Channel message) Unit
+type ToEventSource_ message = EffectFn2 message (Channel message) Unit
 
-type ToSpecialEventSignal_ message parameter = forall f. Applicative f => EffectFn3 (parameter -> f (parameter -> message) -> f message) (f (parameter -> message)) (Channel (f message)) Unit
+type ToSpecialEventSource_ message parameter = forall f. Applicative f => EffectFn3 (parameter -> f (parameter -> message) -> f message) (f (parameter -> message)) (Channel (f message)) Unit
 
-type ToRawEventSignal_ constructor = ToSpecialEventSignal_ constructor Event
+type ToRawEventSource_ constructor = ToSpecialEventSource_ constructor Event
 
-createEventSignal :: forall message. ToEventSignal_ message -> ToEventSignal message
-createEventSignal ffi = EU.runEffectFn2 ffi
+createEventSource :: forall message. ToEventSource_ message -> ToEventSource message
+createEventSource ffi = EU.runEffectFn2 ffi
 
-createRawEventSignal :: forall constructor. ToRawEventSignal_ constructor -> ToRawEventSignal constructor
-createRawEventSignal ffi = EU.runEffectFn3 ffi applyHandler
+createRawEventSource :: forall constructor. ToRawEventSource_ constructor -> ToRawEventSource constructor
+createRawEventSource ffi = EU.runEffectFn3 ffi applyHandler
 
-createSpecialEventSignal :: forall constructor parameter. ToSpecialEventSignal_ constructor parameter -> ToSpecialEventSignal constructor parameter
-createSpecialEventSignal ffi = EU.runEffectFn3 ffi applyHandler
+createSpecialEventSource :: forall constructor parameter. ToSpecialEventSource_ constructor parameter -> ToSpecialEventSource constructor parameter
+createSpecialEventSource ffi = EU.runEffectFn3 ffi applyHandler
 
 applyHandler :: forall f message parameter. Applicative f => parameter -> f (parameter -> message) -> f message
 applyHandler parameter handler = handler <*> pure parameter

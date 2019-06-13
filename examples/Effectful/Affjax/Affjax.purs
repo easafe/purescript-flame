@@ -59,6 +59,5 @@ main :: Effect Unit
 main = F.mount_ "main" {
         init: init :> Nothing,
         update,
-        view,
-        signals : []
+        view
 }
