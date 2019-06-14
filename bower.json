@@ -27,7 +27,9 @@
     "purescript-test-unit": "^14.0.0",
     "purescript-debug": "^4.0.0",
     "purescript-argonaut-codecs": "^6.0.2",
-    "purescript-websocket-simple": "^3.0.0"
+    "purescript-websocket-simple": "^3.0.0",
+    "purescript-record": "^2.0.1",
+    "purescript-node-http": "^5.0.1"
   },
   "repository": {
     "type": "git",

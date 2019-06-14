@@ -1,6 +1,8 @@
 --the version of Flame.HTML.Event that works on the window/document using signals
 module Flame.Signal.Document where
 
+-- USE THE MKFN FUNCTIONS FROM https://pursuit.purescript.org/packages/purescript-functions/4.0.0/docs/Data.Function.Uncurried
+
 import Flame.Signal.Signal
 import Flame.Types (Key)
 

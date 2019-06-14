@@ -1,5 +1,7 @@
 module Flame.Signal.Window where
 
+-- USE THE MKFN FUNCTIONS FROM https://pursuit.purescript.org/packages/purescript-functions/4.0.0/docs/Data.Function.Uncurried
+
 import Flame.Signal.Signal
 
 foreign import onError_ :: forall message. ToEventSource_ message
