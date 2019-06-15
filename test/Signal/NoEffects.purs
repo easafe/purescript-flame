@@ -4,7 +4,6 @@ module Test.Signal.NoEffects (mount) where
 import Prelude
 
 import Effect (Effect)
-import Data.Traversable as DT
 import Flame (Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE

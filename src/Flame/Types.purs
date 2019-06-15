@@ -22,12 +22,12 @@ type VNodeData = {
 }
 
 -- | Virtual DOM representation
-newtype VNode = VNode
-        { sel :: String
+newtype VNode = VNode {
+          sel :: String
         , data :: VNodeData
         , children :: Array VNode
         , elm :: DOMElement
-        }
+}
 
 -- App abstracts over common fields of an `Application`
 type App model message extension = {
@@ -47,6 +47,7 @@ type Tag = String
 
 type Key = String
 
+--add support for react like fragment nodes?
 -- | Convenience wrapper around `VNode`
 data Element message =
           Node Tag (Array (NodeData message)) (Array (Element message))

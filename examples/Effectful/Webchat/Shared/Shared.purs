@@ -6,4 +6,4 @@ wsPort :: Int
 wsPort = 8888
 
 wsAddress :: String
-wsAddress = "ws://localhost" <> show wsPort
+wsAddress = "ws://localhost:" <> show wsPort

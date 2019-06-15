@@ -9,8 +9,6 @@ import Effect.Uncurried as EU
 import Signal.Channel (Channel)
 import Web.Event.Internal.Types (Event)
 
--- USE THE MKFN FUNCTIONS FROM https://pursuit.purescript.org/packages/purescript-functions/4.0.0/docs/Data.Function.Uncurried
-
 type ToEventSource message = message -> Channel message -> Effect Unit
 
 type ToSpecialEventSource message parameter = forall f. Applicative f => f (parameter -> message) -> Channel (f message) -> Effect Unit

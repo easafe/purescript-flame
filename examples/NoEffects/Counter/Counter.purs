@@ -1,4 +1,4 @@
--- | Counter example using a side effects free function
+-- | Counter example using side effects free updating
 module Examples.NoEffects.Counter.Main where
 
 import Prelude
@@ -25,7 +25,7 @@ update model = case _ of
         Increment -> model + 1
         Decrement -> model - 1
 
--- | `view` is called whenever the model is updated
+-- | `view` updates the app markup whenever the model is updated
 view :: Model -> Html Message
 view model = HE.main "main" [
         HE.button [HA.onClick Decrement] "-",

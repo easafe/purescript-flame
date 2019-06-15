@@ -4,17 +4,14 @@ module Test.Signal.EffectList (mount, TSELMessage(..)) where
 import Prelude
 
 import Data.Maybe (Maybe)
-import Data.Traversable as DT
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Flame (Html)
 import Flame.Application.EffectList ((:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Element as HE
-import Flame.Signal as FS
 import Signal.Channel (Channel)
-import Web.Event.Internal.Types (Event)
 
 -- | The model represents the state of the app
 type Model = Int

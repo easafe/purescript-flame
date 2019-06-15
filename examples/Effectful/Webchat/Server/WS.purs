@@ -1,4 +1,4 @@
--- adapted from https://github.com/FruitieX/purescript-ws
+-- | WS node library bindings adapted from https://github.com/FruitieX/purescript-ws
 module Examples.Effectful.Webchat.Server.WS where
 import Prelude
 
@@ -12,7 +12,6 @@ import Effect.Uncurried as EU
 import Node.HTTP (Request, Server)
 import Type.Row (class Lacks, class Cons, class Union)
 
--- | The type of a WebSocket server object
 foreign import data WebSocketServer :: Type
 foreign import data WebSocketConnection :: Type
 foreign import createWebSocketServer_ :: forall e options . EffectFn2 options (EffectFn1 Unit Unit) WebSocketServer

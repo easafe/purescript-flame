@@ -39,4 +39,4 @@ main = do
                 update,
                 view
         }
-        FS.send [FS.onKeydown [Key]] channel
+        FS.send [FS.onClick' [Click]] channel
