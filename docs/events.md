@@ -11,13 +11,12 @@ Perhaps the most important field in the application record
 type Application model message = {
         init :: model,
         view :: model -> Html message,
-        update :: model -> message -> model,
-        signals :: Array (Signal message)
+        update :: model -> message -> model
 }
 ```
 is the `update` function. This is where we define our business logic by matching event messages and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function. These are called **update strategies**.
 
-An update strategy is chosen by importing the `mount` function from a given module
+An update strategy is chosen by importing the `mount` (or `mount_`) function from a given module
 ```haskell
 import Flame.Application.NoEffects (mount) -- pure, or side effect free, updating
 import Flame.Application.EffectList (mount) -- Elm style updating, using a list of effects
@@ -32,8 +31,7 @@ For this strategy, the application record is the same as we have seen so far
 type Application model message = {
         init :: model,
         view :: model -> Html message,
-        update :: model -> message -> model,
-        signals :: Array (Signal message)
+        update :: model -> message -> model
 }
 ```
 This is enough for toy examples or small modules, but probably not sufficient to build an user facing application. If we want to do any sort of effectul computation we need to look into the next update strategies.
@@ -47,8 +45,7 @@ In the effect list strategy, our update function is still "pure", but we also re
 type Application model message = {
         init :: Tuple model (Array (Aff (Maybe message))),
         view :: model -> Html message,
-        update :: model -> message -> Tuple model (Array (Aff (Maybe message))),
-        signals :: Array (Signal message)
+        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
 }
 ```
 For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
@@ -66,7 +63,7 @@ update model = case _ of
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.text (show model),
+        HE.text $ show model,
         HE.button [HA.onClick Roll] "Roll"
 ]
 ```
@@ -108,7 +105,7 @@ view model = HE.main "main" [
                 ...
 ]
 ```
-Same way, here every call to `performAJAX` will also cause `update` to be called again with a new `Response` or `DifferentResponse` until we get a `Finish` message.
+In the same way, here every call to `performAJAX` will also cause `update` to be called again with a new `Response` or `DifferentResponse` until we get a `Finish` message.
 
 Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Maybe message)))`. This enables us to run effects at the startup of the application. Suppose we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` for the previous example as follows
 ```haskell
@@ -134,8 +131,7 @@ The effectful updating defines `Application` as
 type Application model message = {
         init :: Tuple model (Maybe message),
         view :: model -> Html message,
-        update :: World model message -> model -> message -> Aff model,
-        signals ::  Array (Signal message)
+        update :: World model message -> model -> message -> Aff model
 }
 ```
 Here instead of returning a list of effects, we perform them directly in the `Aff` monad. ``init` also only receives a single optional start up message.
@@ -155,11 +151,11 @@ type World model message = {
         update :: model -> message -> Aff model,
         view :: model -> Aff Unit,
         event :: Maybe Event,
-        previousModel :: model,
+        previousModel :: Maybe model,
         previousMessage :: Maybe message
 }
 ```
-`World.update` may be thought of a way to recurse the update function -- it is used to process different messages. `World.view`, on the other hand, allows arbitraty rerendering of the view without raising a different message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
+`World.update` may be thought of a way to recurse the update function -- it is used to raise and process different messages in a single go. `World.view`, on the other hand, allows arbitraty rerendering of the view without raising a different message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
 
 Using `World` we can write the AJAX example as
 ```haskell
@@ -187,13 +183,41 @@ which is again a little more straightforward.
 
 See all [effectful examples](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful).
 
-## Handling external events
+## [Handling external events](#handling-external-events)
+
+More often than not, a real world application will need to handle events that don't come from the view markup. These might include events targeting `window` or `document`, or simply third party components. To solve this problem, the `mount` function returns a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel) which can be fed arbitrary messages
+
+```haskell
+Flame.Application.NoEffects.mount -- returns Channel (Array message)
+Flame.Application.EffectList.mount -- returns Channel (Array message)
+Flame.mount -- returns Channel (Maybe message)
+```
+
+The module `Flame.External` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a channel
+
+```haskell
+...
+import Flame.Application.NoEffects as FAN
+import Flame.External as FE
+import Signal.Channel as SC
+...
+
+main :: Effect Unit
+main = do
+        channel <- FAN.mount {...}
+        --raise these messages when for the events
+        FE.send [FE.offline [Message3], FE.onClick [Message, Message2]] channel
+        --manualy send a message to the channel
+        SC.send channel [Message4]
+```
+
+See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of backed in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful/Webchat) for more examples of external events.
 
 ## Event handling and components
 
-If you have used React, Vue.js, or are just worried how complex state updating could become, you might be wondering how to struct Flame in "components". That is, to isolate state and business logic to individual modules that can be reused.
+If you have used React, Vue.js, or are just worried how complex state updating could become, you might be wondering how to struct Flame in "components". That is, to isolate state and business logic to individual units that can be reused.
 
-Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, break down a big application into several smaller ones and create type mappings for the model, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application manageable.
+Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, break down a big application into several smaller ones and create type mappings for the model/use channels, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application manageable.
 
 <a href="/views" class="direction previous">Previous: Defining views</a>
 <a href="/rendering" class="direction">Next: Rendering the app</a>

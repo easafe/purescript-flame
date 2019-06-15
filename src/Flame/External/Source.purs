@@ -1,4 +1,4 @@
-module Flame.Signal.Signal where
+module Flame.External.Source where
 
 import Prelude
 

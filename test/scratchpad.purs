@@ -7,7 +7,7 @@ import Effect (Effect)
 import Flame (Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE
-import Flame.Signal as FS
+import Flame.External as FE
 import Web.Event.Internal.Types (Event)
 
 -- | The model represents the state of the app
@@ -39,4 +39,4 @@ main = do
                 update,
                 view
         }
-        FS.send [FS.onClick' [Click]] channel
+        FE.send [FE.onClick' [Click]] channel

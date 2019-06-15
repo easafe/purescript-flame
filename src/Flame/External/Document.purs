@@ -1,7 +1,7 @@
 --the version of Flame.HTML.Event that works on the window/document using signals
-module Flame.Signal.Document where
+module Flame.External.Document where
 
-import Flame.Signal.Signal
+import Flame.External.Source
 import Flame.Types (Key)
 
 foreign import onClick_ :: forall message. ToEventSource_ message

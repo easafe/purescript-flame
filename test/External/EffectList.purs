@@ -1,4 +1,4 @@
-module Test.Signal.EffectList (mount, TSELMessage(..)) where
+module Test.External.EffectList (mount, TEELMessage(..)) where
 
 -- | Counter example using a side effects free function
 import Prelude
@@ -17,22 +17,22 @@ import Signal.Channel (Channel)
 type Model = Int
 
 -- | This datatype is used to signal events to `update`
-data TSELMessage = TSELIncrement | TSELDecrement
+data TEELMessage = TEELIncrement | TEELDecrement
 
 -- | `update` is called to handle events
-update :: Model -> TSELMessage -> Tuple Model (Array (Aff (Maybe TSELMessage)))
+update :: Model -> TEELMessage -> Tuple Model (Array (Aff (Maybe TEELMessage)))
 update model = case _ of
-        TSELIncrement -> (model + 1) :> []
-        TSELDecrement -> (model - 1) :> []
+        TEELIncrement -> (model + 1) :> []
+        TEELDecrement -> (model - 1) :> []
 
 -- | `view` is called whenever the model is updated
-view :: Model -> Html TSELMessage
+view :: Model -> Html TEELMessage
 view model = HE.main "main" [
         HE.span "text-output" $ show model
 ]
 
 -- | Mount the application on the given selector
-mount :: Effect (Channel (Array TSELMessage))
+mount :: Effect (Channel (Array TEELMessage))
 mount = FAE.mount "#mount-point" {
                 init : 0 :> [],
                 update,

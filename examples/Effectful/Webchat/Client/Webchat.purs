@@ -15,7 +15,7 @@ import Flame (Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Signal as FS
+import Flame.External as FE
 import Partial.Unsafe (unsafePartial)
 import Signal.Channel as SC
 import WebSocket (Connection(..), URL(..))
@@ -76,7 +76,7 @@ main = do
                 view
         }
 
-        FS.send [FS.onOnline (Just $ Online true), FS.onOffline (Just $ Online false)] channel
+        FE.send [FE.onOnline (Just $ Online true), FE.onOffline (Just $ Online false)] channel
 
         Connection connection <- W.newWebSocket (URL wsAddress) []
 

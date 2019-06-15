@@ -1,6 +1,6 @@
-module Flame.Signal.Window where
+module Flame.External.Window where
 
-import Flame.Signal.Signal
+import Flame.External.Source
 
 foreign import onError_ :: forall message. ToEventSource_ message
 foreign import onError__ :: forall message. ToRawEventSource_ message

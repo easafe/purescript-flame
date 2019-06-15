@@ -19,10 +19,10 @@ import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
-import Test.Signal.Effectful as TSE
-import Test.Signal.NoEffects as TSN
-import Test.Signal.EffectList as TSEL
-import Test.Signal.EffectList (TSELMessage(..))
+import Test.External.Effectful as TEE
+import Test.External.NoEffects as TEN
+import Test.External.EffectList as TEEL
+import Test.External.EffectList (TEELMessage(..))
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -293,11 +293,11 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 spans3 <- textContentAll ids
                                 equalAll ["3", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement, Just TWEIncrement, Just TWEIncrement], show <<< Just $ TWEModel { previousMessages: [Nothing,(Just TWEDecrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
-                suite "Signal test applications" do
+                suite "custom events test applications" do
                         test "noeffects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TSN.mount
+                                        TEN.mount
                                 output <- textContent "#text-output"
                                 TUA.equal "0" output
 
@@ -313,21 +313,21 @@ main =
                         test "effectlist" do
                                 channel <- liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TSEL.mount
+                                        TEEL.mount
                                 output <- textContent "#text-output"
                                 TUA.equal "0" output
 
-                                liftEffect $ SC.send channel [TSELDecrement]
+                                liftEffect $ SC.send channel [TEELDecrement]
                                 output2 <- textContent "#text-output"
                                 TUA.equal "-1" output2
 
-                                liftEffect $ SC.send channel [TSELIncrement]
+                                liftEffect $ SC.send channel [TEELIncrement]
                                 output3 <- textContent "#text-output"
                                 TUA.equal "0" output3
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TSE.mount
+                                        TEE.mount
                                 output <- textContent "#text-output"
                                 TUA.equal "5" output
 

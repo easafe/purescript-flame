@@ -11,8 +11,7 @@ In the application record
 type Application model message = {
         init :: model,
         view :: model -> Html message,
-        update :: model -> message -> model,
-        signals :: Array (Signal message)
+        update :: model -> message -> model
 }
 ```
 the `view` field maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.
@@ -106,7 +105,7 @@ HE.createEmptyElement
 
 ### View logic
 
-A `view` is just a regular PureScript function, meaning we can compose it, pass it around as any other value. For granted, we can use the model in attributes
+A `view` is just a regular PureScript function, meaning we can compose it or pass it around as any other value. For granted, we can use the model in attributes
 ```haskell
 newtype Model = Model { done :: Int, enabled :: Boolean }
 
@@ -148,7 +147,7 @@ view model = HE.content' [
 ]
 ```
 
-See the [counters](https://github.com/easafe/purescript-flame/tree/master/examples/NoEffects/Counters) and [TODO List](https://github.com/easafe/purescript-flame/tree/master/examples/EffectList/Todo) test applications for more examples of how to compose views.
+See the [counters test application](https://github.com/easafe/purescript-flame/tree/master/examples/NoEffects/Counters) for more examples of how to compose views.
 
 <a href="/concepts" class="direction previous">Previous: Main concepts</a>
 <a href="/events" class="direction">Next: Handling events</a>
