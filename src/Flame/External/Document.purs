@@ -1,4 +1,4 @@
---the version of Flame.HTML.Event that works on the window/document using signals
+-- | Defines events for the native `document` object
 module Flame.External.Document where
 
 import Flame.External.Source
@@ -39,6 +39,7 @@ foreign import onDragover__ :: forall message. ToRawEventSource_ message
 foreign import onDrop_ :: forall message. ToEventSource_ message
 foreign import onDrop__ :: forall message. ToRawEventSource_ message
 
+-- | click event fired for the document
 onClick :: forall message. ToEventSource message
 onClick = createEventSource onClick_
 

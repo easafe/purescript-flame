@@ -14,7 +14,7 @@ type Application model message = {
         update :: model -> message -> model
 }
 ```
-is the `update` function. This is where we define our business logic by matching event messages and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function. These are called **update strategies**.
+is the `update` function. This is where we define our business logic by matching event messages and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function. These are called update strategies.
 
 An update strategy is chosen by importing the `mount` (or `mount_`) function from a given module
 ```haskell
@@ -71,7 +71,7 @@ Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operat
 
 Likewise, we could define a loading screen to appear before AJAX requests
 ```haskell
-type Model = { response :: String, isLoading :: boolean }
+type Model = { response :: String, isLoading :: Boolean }
 
 data Message = Loading | Response String | DifferentResponse String | Finish String
 
@@ -107,7 +107,7 @@ view model = HE.main "main" [
 ```
 In the same way, here every call to `performAJAX` will also cause `update` to be called again with a new `Response` or `DifferentResponse` until we get a `Finish` message.
 
-Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Maybe message)))`. This enables us to run effects at the startup of the application. Suppose we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` for the previous example as follows
+Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Maybe message)))`. This enables us to run effects at the startup of the application. Suppose in the previous example we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` as follows
 ```haskell
 init :: Tuple Model (Array (Aff (Maybe Message)))
 init = model :> [
@@ -118,7 +118,7 @@ init = model :> [
                 pure <<< Just $ Finish "Performed all"
 ]
 ```
-which has the same expected behavior of calling `update` for entry in the array.
+which has the same expected behavior of calling `update` with the resulting message of every entry in the array.
 
 See all [effect list examples](https://github.com/easafe/purescript-flame/tree/master/examples/EffectList).
 
@@ -134,9 +134,9 @@ type Application model message = {
         update :: World model message -> model -> message -> Aff model
 }
 ```
-Here instead of returning a list of effects, we perform them directly in the `Aff` monad. ``init` also only receives a single optional start up message.
+Here instead of returning a list of effects, we perform them directly in the `Aff` monad. `init` also only receives a single optional startup message.
 
-We can see that the dice example listed in the previous section becomes a little more straight forward
+We can see that the dice example listed in the previous section becomes a little more straightforward
 ```haskell
 type Model = Maybe Int
 
@@ -155,7 +155,7 @@ type World model message = {
         previousMessage :: Maybe message
 }
 ```
-`World.update` may be thought of a way to recurse the update function -- it is used to raise and process different messages in a single go. `World.view`, on the other hand, allows arbitraty rerendering of the view without raising a different message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
+`World.update` may be thought of a way to recurse the update function -- it is used to process a message in sequence. `World.view`, on the other hand, allows arbitraty rerendering of the view without raising a new message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
 
 Using `World` we can write the AJAX example as
 ```haskell
@@ -177,7 +177,7 @@ update re model = case _ of
         Finish contents -> pure $ model { isLoading = false, response = model.response <> contents }
 
 init :: Tuple Model (Maybe Message)
-init = model :> Loading
+init = model :> Just Loading
 ```
 which is again a little more straightforward.
 
@@ -185,18 +185,17 @@ See all [effectful examples](https://github.com/easafe/purescript-flame/tree/mas
 
 ## [Handling external events](#handling-external-events)
 
-More often than not, a real world application will need to handle events that don't come from the view markup. These might include events targeting `window` or `document`, or simply third party components. To solve this problem, the `mount` function returns a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel) which can be fed arbitrary messages
+More often than not, a real world application will need to handle events that don't come from the view. These might include events targeting `window` or `document`, or third party components. To solve this problem, the `mount` function returns a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel) which can be fed arbitrary messages
 
-```haskell
-Flame.Application.NoEffects.mount -- returns Channel (Array message)
-Flame.Application.EffectList.mount -- returns Channel (Array message)
-Flame.mount -- returns Channel (Maybe message)
-```
+`Flame.Application.NoEffects.mount` returns a `Channel (Array message)`
+
+`Flame.Application.EffectList.mount` returns a `Channel (Array message)`
+
+`Flame.mount` returns a `Channel (Maybe message)`
 
 The module `Flame.External` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a channel
 
 ```haskell
-...
 import Flame.Application.NoEffects as FAN
 import Flame.External as FE
 import Signal.Channel as SC
@@ -205,13 +204,13 @@ import Signal.Channel as SC
 main :: Effect Unit
 main = do
         channel <- FAN.mount {...}
-        --raise these messages when for the events
+        --raise these messages when these events are fired
         FE.send [FE.offline [Message3], FE.onClick [Message, Message2]] channel
-        --manualy send a message to the channel
+        --manualy raise a message
         SC.send channel [Message4]
 ```
 
-See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of backed in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful/Webchat) for more examples of external events.
+See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful/Webchat) for more examples of external events.
 
 ## Event handling and components
 

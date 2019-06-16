@@ -1,6 +1,4 @@
---the idea is that events from outside the view function are expressed as signals
--- such as window or document events (which should be defined here)
--- as user supplied signals
+-- | Defines helpers for custom events that are send to the application message Channel
 module Flame.External (module Exported) where
 
 import Flame.External.Source hiding (ToEventSource_, ToRawEventSource_, applyHandler) as Exported

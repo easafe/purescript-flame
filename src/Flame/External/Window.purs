@@ -1,3 +1,4 @@
+-- | Defines events for the native `window` object
 module Flame.External.Window where
 
 import Flame.External.Source

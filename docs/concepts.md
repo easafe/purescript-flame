@@ -14,7 +14,7 @@ type Application model message = {
         update :: model -> message -> model
 }
 ```
-The type variable `model` refers to the **state** of the application. `message`, on the other hand, describe the kind of **events** the application handles.
+The type variable `model` refers to the state of the application. `message`, on the other hand, describe the kind of events the application handles.
 
 ### Application state
 
@@ -66,7 +66,7 @@ See [Handling events](events) for an in depth look at update strategies.
 
 ### External event handling
 
-Finally, mounting a Flame application record yields a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel), which can be fed messages from events outside of our view. This includes `window` or `document` events, such as resize or websockets, and custom events, all of which will then be handled as usual by the application `update` function.
+Finally, mounting a Flame application record yields a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel), which can be fed messages from events outside of our view. This includes `window` or `document` events, such as resize or load, and custom events, all of which will then be handled as usual by the application `update` function.
 
 In the counter example, no external events are handled, so we use the version of `mount` that discard the channel
 ```haskell
