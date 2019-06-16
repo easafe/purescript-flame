@@ -56,25 +56,26 @@ h = runFn3 h_
 -- | This function is necessary since subsequent calls to snabbdom `patch` require a previsouly created VNode
 renderInitial :: forall message. DOMElement -> (message -> Maybe Event -> Effect Unit) -> Element message -> Effect VNode
 renderInitial domElement updater element = do
+        let vNode = toVNodeProxy updater element
         patchInitial domElement vNode
         pure vNode
-        where vNode = toVNodeProxy updater element
 
 -- | Renders markup according to the difference between VNodes
 render :: forall message. VNode -> (message -> Maybe Event -> Effect Unit) -> Element message -> Effect VNode
 render oldVNode updater element = do
+        let vNode = toVNodeProxy updater element
         patch oldVNode vNode
         pure vNode
-        where vNode = toVNodeProxy updater element
 
+-- could we make this keyed (key : string | number) somehow?
 -- | Transforms an Element into a VNode
 toVNodeProxy :: forall message. (message -> Maybe Event -> Effect Unit) -> Element message -> VNode
 toVNodeProxy updater (Text value) = text value
 toVNodeProxy updater (Node tag nodeData children) = h tag vNodeData $ map (toVNodeProxy updater) children
         where   toVNodeData {attributesProperties, events} =
                         {
-                                props : attributesProperties,
-                                on : toVNodeEvents events
+                                props: attributesProperties,
+                                on: toVNodeEvents events
                         }
 
                 handleRawEvent handler event = do

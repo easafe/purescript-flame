@@ -9,7 +9,7 @@ Flame is a PureScript frontend framework inspired by [purescript-hedwig](https:/
 
 * Different strategies for state updating -- see [Handling events](events)
 
-* Signal based interface for handling window or document events
+* [Signal](https://pursuit.purescript.org/packages/purescript-signal) based interface for handling custom events -- see [Handling external events](events#handling-external-events)
 
 * Performance comparable to native JavaScript frameworks -- see [benchmarks](benchmarks)
 
@@ -24,7 +24,7 @@ npm install snabbdom snabbom-html # the latter is used for server side rendering
 bower install purescript-flame
 ```
 
-Example counter appp:
+Example counter app:
 
 ```haskell
 module App.Main where
@@ -64,11 +64,10 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount "main" {
+main = FAN.mount_ "main" {
         init,
         update,
-        view,
-        inputs: []
+        view
 }
 ```
 

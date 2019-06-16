@@ -56,9 +56,8 @@ view model = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount "main" {
+main = F.mount_ "main" {
         init: init :> Nothing,
         update,
-        view,
-        inputs : []
+        view
 }

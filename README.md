@@ -1,4 +1,4 @@
-# Flame
+# Flame [![Build Status](https://travis-ci.com/easafe/purescript-flame.svg?branch=master)](https://travis-ci.com/easafe/purescript-flame)
 
 Flame is a fast & simple framework for building web applications in PureScript inspired by [purescript-hedwig](https://github.com/utkarshkukreti/purescript-hedwig) and Elm
 
@@ -59,11 +59,10 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount "main" {
+main = FAN.mount_ "main" {
         init,
         update,
-        view,
-        inputs: []
+        view
 }
 ```
 

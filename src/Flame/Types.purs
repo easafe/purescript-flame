@@ -5,7 +5,6 @@ import Prelude
 
 import Effect (Effect)
 import Foreign.Object (Object)
-import Signal (Signal)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 
@@ -22,18 +21,17 @@ type VNodeData = {
 }
 
 -- | Virtual DOM representation
-newtype VNode = VNode
-        { sel :: String
-        , data :: VNodeData
-        , children :: Array VNode
-        , elm :: DOMElement
-        }
+newtype VNode = VNode {
+        sel :: String,
+        data :: VNodeData,
+        children :: Array VNode,
+        elm :: DOMElement
+}
 
 -- App abstracts over common fields of an `Application`
 type App model message extension = {
-        view :: model -> Html message,
-        inputs :: Array (Signal message)
-        | extension
+        view :: model -> Html message |
+        extension
 }
 
 -- | A native HMLT element
@@ -46,20 +44,23 @@ type ToNodeData message = forall b. message -> NodeData b
 
 type Tag = String
 
+type Key = String
+
+--add support for react like fragment nodes?
 -- | Convenience wrapper around `VNode`
 data Element message =
-          Node Tag (Array (NodeData message)) (Array (Element message))
-        | Text String
+        Node Tag (Array (NodeData message)) (Array (Element message)) |
+        Text String
 
 derive instance elementFunctor :: Functor Element
 
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
-          Attribute String String
-        | Property String Boolean
-        | Event String message
-        | RawEvent String (Event -> Effect message)
+        Attribute String String |
+        Property String Boolean |
+        Event String message |
+        RawEvent String (Event -> Effect message)
 
 derive instance nodeDataFunctor :: Functor NodeData
 

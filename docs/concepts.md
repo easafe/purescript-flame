@@ -11,11 +11,10 @@ A Flame application consists of the following record
 type Application model message = {
         init :: model,
         view :: model -> Html message,
-        update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        update :: model -> message -> model
 }
 ```
-The type variable `model` refers to the **state** of the application. `message`, on the other hand, describe the kind of **events** the application handles.
+The type variable `model` refers to the state of the application. `message`, on the other hand, describe the kind of events the application handles.
 
 ### Application state
 
@@ -67,29 +66,27 @@ See [Handling events](events) for an in depth look at update strategies.
 
 ### External event handling
 
-Finally, the last field in a Flame application record is `inputs`. It contains a list of [signals](https://pursuit.purescript.org/packages/purescript-signal/), which can be used to raise messages from events outside of our view. This includes `window` or `document` events, such as resize or websockets, and custom events, which will then be handled as usual by the application `update` function.
+Finally, mounting a Flame application record yields a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel), which can be fed messages from events outside of our view. This includes `window` or `document` events, such as resize or load, and custom events, all of which will then be handled as usual by the application `update` function.
 
-In the counter example, no external events are handled, so we define inputs as the empty array
+In the counter example, no external events are handled, so we use the version of `mount` that discardsgit the channel
 ```haskell
 main :: Effect Unit
-main = FAN.mount "main" {
+main = FAN.mount_ "main" {
         ...
-        inputs: []
 }
 ```
 
-See [Handling external events](events#external) for an in depth look at input signals.
+See [Handling external events](events#handling-external-events) for an in depth look at external events.
 
 ### Rendering
 
 Having all pieces put together, we can either render the application to the DOM, as in the case of the counter example
 ```haskell
 main :: Effect Unit
-main = FAN.mount "main" {
+main = FAN.mount_ "main" {
         init,
         update,
-        view,
-        inputs: []
+        view
 }
 ```
 or as a `String` with `Flame.Renderer.StringRenderer.render`, which can be used server-side.

@@ -40,9 +40,8 @@ view model = HE.main "main" [
                 ]
 
 main :: Effect Unit
-main =  FAN.mount "main" {
+main =  FAN.mount_ "main" {
         init,
         update,
-        view,
-        inputs: []
+        view
 }

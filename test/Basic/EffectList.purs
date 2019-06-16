@@ -1,4 +1,4 @@
-module Test.EffectList (mount) where
+module Test.Basic.EffectList (mount) where
 
 import Prelude
 
@@ -39,9 +39,9 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = FAE.mount "#mount-point" {
-        init: "" :> [],
-        update,
-        view,
-        inputs:[]
-}
+mount = FAE.mount_ "#mount-point" {
+                init: "" :> [],
+                update,
+                view
+        }
+

@@ -1,4 +1,4 @@
-module Test.NoEffects (mount) where
+module Test.Basic.NoEffects (mount) where
 
 import Prelude
 
@@ -28,9 +28,8 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = FAN.mount "#mount-point" {
-        init,
-        update,
-        view,
-        inputs: []
-}
+mount = FAN.mount_ "#mount-point" {
+                init,
+                update,
+                view
+        }

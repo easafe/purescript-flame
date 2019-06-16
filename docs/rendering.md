@@ -11,8 +11,7 @@ With all pieces in place
 type Application model message = {
         init :: model,
         view :: model -> Html message,
-        update :: model -> message -> model,
-        inputs :: Array (Signal message)
+        update :: model -> message -> model
 }
 ```
 let's talk about actually rendering the application.
@@ -21,7 +20,7 @@ let's talk about actually rendering the application.
 
 The `mount` function we previously saw in [Handling events](events) sets up a Flame application in the client side
 ```haskell
-mount :: Selector -> Application model message -> Effect Unit
+mount :: Selector -> Application model message -> Effect (Channel (Array message))
 ```
 The first parameter is a css selector used as mount point. Under the hood, Flame uses the [snabbdom](https://github.com/snabbdom/snabbdom) virtual DOM.
 

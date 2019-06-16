@@ -5,6 +5,7 @@ module Flame.Application.EffectList(
         Application,
         emptyApp,
         mount,
+        mount_,
         (:>)
 )
 where
@@ -25,12 +26,13 @@ import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
+import Signal.Channel (Channel)
+import Signal.Channel as SC
 
 -- | `Application` contains
 -- | * `init` – the initial model and a list of messages to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
--- | * `inputs` – an array of signals
 type Application model message = App model message (
         init :: Tuple model (Array (Aff (Maybe message))),
         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
@@ -44,21 +46,26 @@ emptyApp :: Application Unit Unit
 emptyApp = {
         init: unit :> [],
         update,
-        view: const (FHE.createEmptyElement "bs"),
-        inputs : []
+        view: const (FHE.createEmptyElement "bs")
 }
         where update model message = model :> []
 
 -- | Mount a Flame application in the given selector
-mount :: forall model message. String -> Application model message -> Effect Unit
+mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
 mount selector application = do
         maybeEl <- FD.querySelector selector
         case maybeEl of
                 Just el -> run el application
-                Nothing -> EC.log $ "No element matching selector " <> show selector <> " found!"
+                Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+
+-- | Mount a Flame application in the given selector, discarding the message Channel
+mount_ :: forall model message. String -> Application model message -> Effect Unit
+mount_ selector application = do
+        _ <- mount selector application
+        pure unit
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
-run :: forall model message. DOMElement -> Application model message -> Effect Unit
+run :: forall model message. DOMElement -> Application model message -> Effect (Channel (Array message))
 run el application = do
         let Tuple initialModel initialAffs = application.init
         state <- ER.new {
@@ -91,4 +98,6 @@ run el application = do
         runMessages initialAffs
 
         --signals are used for some dom events as well user supplied custom events
-        DF.traverse_ (S.runSignal <<< map runUpdate) application.inputs
+        channel <- SC.channel []
+        S.runSignal <<< map (DF.traverse_ runUpdate) $ SC.subscribe channel
+        pure channel
