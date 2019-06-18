@@ -20,7 +20,7 @@ Flame is a PureScript frontend framework inspired by [purescript-hedwig](https:/
 Install:
 
 ```bash
-npm install snabbdom snabbom-html # the latter is used for server side rendering
+npm install snabbdom snabbdom-to-html # the latter is used for server side rendering
 bower install purescript-flame
 ```
 
