@@ -15,7 +15,7 @@ See the [examples folder](/examples)
 Install:
 
 ```bash
-npm install snabbdom snabbom-html # for server side rendering
+npm install snabbdom snabbdom-to-html # for server side rendering
 bower install purescript-flame
 ```
 
