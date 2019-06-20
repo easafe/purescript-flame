@@ -143,7 +143,7 @@ main =
 
                         test "nested elements" do
                                 let html = HE.html_ [
-                                        HE.head_ [HE.title_ "title"],
+                                        HE.head_ [HE.title "title"],
                                         HE.body_ [
                                                 HE.main_ [
                                                         HE.button_ "-",
@@ -162,7 +162,7 @@ main =
 
                         test "nested elements with attributes" do
                                 let html = HE.html [HA.lang "en"] [
-                                        HE.head_ [HE.title_ "title"],
+                                        HE.head_ [HE.title "title"],
                                         HE.body "content" [
                                                 HE.main_ [
                                                         HE.button (HA.style { display: "block", width: "20px"}) "-",
@@ -181,7 +181,7 @@ main =
 
                         test "nested elements with properties and attributes" do
                                 let html = HE.html [HA.lang "en"] [
-                                        HE.head [HA.disabled true] [HE.title_ "title"],
+                                        HE.head [HA.disabled true] [HE.title "title"],
                                         HE.body "content" [
                                                 HE.main_ [
                                                         HE.button (HA.style { display: "block", width: "20px"}) "-",

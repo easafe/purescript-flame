@@ -544,14 +544,8 @@ li_ = createElement_ "li"
 li' :: forall a h. ToElement' a h
 li' = createElement' "li"
 
-link :: forall a b h. ToElement a b h
-link = createElement "link"
-
-link_ :: forall b h. ToElement_ b h
-link_ = createElement_ "link"
-
-link' :: forall a h. ToElement' a h
-link' = createElement' "link"
+link :: forall a h. ToElement' a h
+link = createElement' "link"
 
 main :: forall a b h. ToElement a b h
 main = createElement "main"
@@ -598,14 +592,8 @@ menuitem_ = createElement_ "menuitem"
 menuitem' :: forall a h. ToElement' a h
 menuitem' = createElement' "menuitem"
 
-meta :: forall a b h. ToElement a b h
-meta = createElement "meta"
-
-meta_ :: forall b h. ToElement_ b h
-meta_ = createElement_ "meta"
-
-meta' :: forall a h. ToElement' a h
-meta' = createElement' "meta"
+meta :: forall a h. ToElement' a h
+meta = createElement' "meta"
 
 meter :: forall a b h. ToElement a b h
 meter = createElement "meter"
@@ -651,6 +639,12 @@ ol_ = createElement_ "ol"
 
 ol' :: forall a h. ToElement' a h
 ol' = createElement' "ol"
+
+img :: forall a b h. ToElement a b h
+img = createElement "img"
+
+img' :: forall a h. ToElement' a h
+img' = createElement' "img"
 
 optgroup :: forall a b h. ToElement a b h
 optgroup = createElement "optgroup"
@@ -949,14 +943,8 @@ time_ = createElement_ "time"
 time' :: forall a h. ToElement' a h
 time' = createElement' "time"
 
-title :: forall a b h. ToElement a b h
-title = createElement "title"
-
-title_ :: forall b h. ToElement_ b h
-title_ = createElement_ "title"
-
-title' :: forall a h. ToElement' a h
-title' = createElement' "title"
+title :: forall b h. ToElement_ b h
+title = createElement_ "title"
 
 tr :: forall a b h. ToElement a b h
 tr = createElement "tr"
