@@ -1,4 +1,4 @@
-module Flame.DOM(querySelector) where
+module Flame.Application.DOM(querySelector) where
 
 import Data.Maybe (Maybe)
 import Data.Nullable (Nullable)

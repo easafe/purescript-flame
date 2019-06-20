@@ -10,7 +10,7 @@ import Data.Traversable as DF
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Flame.DOM as FD
+import Flame.Application.DOM as FD
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as HS

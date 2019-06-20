@@ -20,7 +20,7 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
-import Flame.DOM as FD
+import Flame.Application.DOM as FD
 import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
