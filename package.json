@@ -20,7 +20,7 @@
                 "build-examples": "npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
                 "scratch": "pulp browserify --main Test.ScratchPad --include test --to test/dist/scratchpad.js",
                 "webchat": "node examples/Effectful/Webchat/dist/webchat-server.js",
-                "test": "pulp test && npm build-examples"
+                "test": "pulp test && npm run build-examples"
         },
         "dependencies": {
                 "snabbdom": "^0.7.3",
