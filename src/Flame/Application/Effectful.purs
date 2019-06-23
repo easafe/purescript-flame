@@ -23,7 +23,7 @@ import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
 import Flame.Application.EffectList ((:>))
-import Flame.Application.DOM as FD
+import Flame.Application.DOM as FAD
 import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement)
@@ -65,15 +65,15 @@ emptyApp = {
 }
         where update f model message = pure model
 
--- | Mount a Flame application in the given selector
+-- | Mount a Flame application on the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Maybe message))
 mount selector application = do
-        maybeEl <- FD.querySelector selector
+        maybeEl <- FAD.querySelector selector
         case maybeEl of
                 Just el -> run el application
                 Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
 
--- | Mount a Flame application in the given selector, discarding the message Channel
+-- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. String -> Application model message -> Effect Unit
 mount_ selector application = do
         _ <- mount selector application

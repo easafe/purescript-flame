@@ -34,12 +34,12 @@ emptyApp = {
         view: const (FHE.createEmptyElement "bs")
 }
 
--- | Mount a Flame application in the given selector
+-- | Mount a Flame application on the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
 mount selector application = FAE.mount selector $ application { init = application.init :> [], update = update' }
         where update' model message = application.update model message :> []
 
--- | Mount a Flame application in the given selector, discarding the message Channel
+-- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. String -> Application model message -> Effect Unit
 mount_ selector application = do
         _ <- mount selector application

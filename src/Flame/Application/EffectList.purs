@@ -20,9 +20,10 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
-import Flame.Application.DOM as FD
+import Flame.Application.DOM as FAD
 import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
+--import Flame.Renderer.String as FRS
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
@@ -38,6 +39,11 @@ type Application model message = App model message (
         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
 )
 
+-- type ServerApplication model message = App model message (
+--         init :: Tuple model (Array message),
+--         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+-- )
+
 -- | Infix tuple constructor
 infixr 6 Tuple as :>
 
@@ -50,15 +56,33 @@ emptyApp = {
 }
         where update model message = model :> []
 
--- | Mount a Flame application in the given selector
+-- -- | Render a Flame application server-side
+-- -- |
+-- -- |
+-- preMount :: forall model message. String -> ServerApplication model message -> Effect String
+-- preMount id application = do
+--         let Tuple initialModel initialMessages = application.init
+
+--         markup <- FRS.render <<< HE.div id $ application.view initialModel
+
+--         pure markup
+
+-- resumeMount :: forall model message. String -> (model -> message -> Tuple model (Array (Aff (Maybe message)))) -> Effect (Channel (Array message))
+-- resumeMount selector update = do
+--         maybeEl <- FAD.querySelector selector
+--         case maybeEl of
+--                 Just el -> resume
+--                 Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+
+-- | Mount a Flame application on the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
 mount selector application = do
-        maybeEl <- FD.querySelector selector
+        maybeEl <- FAD.querySelector selector
         case maybeEl of
                 Just el -> run el application
                 Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
 
--- | Mount a Flame application in the given selector, discarding the message Channel
+-- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. String -> Application model message -> Effect Unit
 mount_ selector application = do
         _ <- mount selector application

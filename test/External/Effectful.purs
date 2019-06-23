@@ -11,6 +11,7 @@ import Effect.Aff (Aff)
 import Flame (Html, (:>))
 import Flame as F
 import Flame.HTML.Element as HE
+import Flame.HTML.Attribute as HA
 import Flame.External as FE
 import Web.Event.Internal.Types (Event)
 
@@ -30,7 +31,9 @@ update _ model =
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.span "text-output" $ show model
+        HE.span "text-output" $ show model,
+        HE.br,
+        HE.button (HA.onClick Increment) "+"
 ]
 
 -- | Mount the application on the given selector
