@@ -6,14 +6,19 @@ module Flame.Application.EffectList(
         emptyApp,
         mount,
         mount_,
+        -- resumeMount,
+        -- resumeMount_,
         (:>)
 )
 where
 
 import Data.Either (Either(..))
 import Data.Foldable as DF
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
+import Data.Argonaut.Encode.Generic.Rep as EGR
+import Data.Argonaut.Core as DAC
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -23,7 +28,8 @@ import Effect.Ref as ER
 import Flame.Application.DOM as FAD
 import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
---import Flame.Renderer.String as FRS
+import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
+import Flame.Renderer.String as FRS
 import Flame.Types (App, DOMElement)
 import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
@@ -39,10 +45,21 @@ type Application model message = App model message (
         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
 )
 
--- type ServerApplication model message = App model message (
---         init :: Tuple model (Array message),
---         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
--- )
+-- | `ResumedApplication` contains
+-- | * `init` – the initial model
+-- | * `view` – a function to update your markup
+type PreApplication model message = App model message (
+        init :: model
+)
+
+-- | `ResumedApplication` contains
+-- | * `init` – initial list of messages to invoke `update` with
+-- | * `view` – a function to update your markup
+-- | * `update` – a function to update your model
+type ResumedApplication model message = App model message (
+        init :: Array (Aff (Maybe message)),
+        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+)
 
 -- | Infix tuple constructor
 infixr 6 Tuple as :>
@@ -56,23 +73,25 @@ emptyApp = {
 }
         where update model message = model :> []
 
--- -- | Render a Flame application server-side
--- -- |
--- -- |
--- preMount :: forall model message. String -> ServerApplication model message -> Effect String
--- preMount id application = do
---         let Tuple initialModel initialMessages = application.init
+preMount ::  forall model m message. Generic model m => EncodeRep m => PreApplication model message -> Effect String
+preMount application = do
+        let encodedModel = DAC.stringify $ EGR.genericEncodeJson application.init
+        markup <- FRS.render $ application.view application.init
+        pure markup
 
---         markup <- FRS.render <<< HE.div id $ application.view initialModel
-
---         pure markup
-
--- resumeMount :: forall model message. String -> (model -> message -> Tuple model (Array (Aff (Maybe message)))) -> Effect (Channel (Array message))
--- resumeMount selector update = do
+-- -- | Mount a Flame application on the given selector which was rendered server-side
+-- resumeMount :: forall model message. String -> ResumedApplication model message -> Effect (Channel (Array message))
+-- resumeMount selector application = do
 --         maybeEl <- FAD.querySelector selector
 --         case maybeEl of
---                 Just el -> resume
+--                 Just el -> run el application
 --                 Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+
+-- -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
+-- resumeMount_ :: forall model message. String -> ResumedApplication model message -> Effect Unit
+-- resumeMount_ selector application = do
+--         _ <- resumeMount selector application
+--         pure unit
 
 -- | Mount a Flame application on the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))

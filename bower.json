@@ -30,7 +30,8 @@
     "purescript-websocket-simple": "^3.0.0",
     "purescript-record": "^2.0.1",
     "purescript-node-http": "^5.0.1",
-    "purescript-httpure": "^0.8.3"
+    "purescript-httpure": "^0.8.3",
+    "purescript-argonaut-generic": "^5.0.0"
   },
   "repository": {
     "type": "git",

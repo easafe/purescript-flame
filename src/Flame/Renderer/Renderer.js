@@ -5,6 +5,7 @@ var patch = require('snabbdom').init([
 	require('snabbdom/modules/eventlisteners').default,
 ]);
 var h = require('snabbdom/h').default;
+var toVNode = require('snabbdom/tovnode').default;
 
 exports.emptyVNode = [];
 
@@ -30,6 +31,10 @@ function runEvent(handler) {
 
 exports.h_ = h;
 
-exports.patch_ = patch;
+exports.patch_ = function(a,b) {
+	console.log(a)
+	console.log(b)
+	return patch(a,b);
+}
 
 exports.patchInitial_ = patch;

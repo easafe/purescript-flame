@@ -6,7 +6,7 @@
 module Flame.Renderer(
         render,
         renderInitial,
-        toVNodeProxy,
+        toVNode,
         emptyVNode
 ) where
 
@@ -17,10 +17,10 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame.Types (DOMElement, Element(..), NodeData(..), VNodeData, VNodeEvents, VNode)
+import Flame.Types (DOMElement, Html(..), NodeData(..), VNodeData, VNodeEvents, VNode)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Prelude (Unit, bind, discard, map, pure, show, unit, ($), (<<<))
+import Prelude
 import Type.Data.Boolean (kind Boolean)
 import Web.Event.Internal.Types (Event)
 
@@ -54,24 +54,24 @@ h = runFn3 h_
 -- | Renders markup to a given selector
 -- |
 -- | This function is necessary since subsequent calls to snabbdom `patch` require a previsouly created VNode
-renderInitial :: forall message. DOMElement -> (message -> Maybe Event -> Effect Unit) -> Element message -> Effect VNode
+renderInitial :: forall message. DOMElement -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
 renderInitial domElement updater element = do
-        let vNode = toVNodeProxy updater element
+        let vNode = toVNode updater element
         patchInitial domElement vNode
         pure vNode
 
 -- | Renders markup according to the difference between VNodes
-render :: forall message. VNode -> (message -> Maybe Event -> Effect Unit) -> Element message -> Effect VNode
+render :: forall message. VNode -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
 render oldVNode updater element = do
-        let vNode = toVNodeProxy updater element
+        let vNode = toVNode updater element
         patch oldVNode vNode
         pure vNode
 
 -- could we make this keyed (key : string | number) somehow?
--- | Transforms an Element into a VNode
-toVNodeProxy :: forall message. (message -> Maybe Event -> Effect Unit) -> Element message -> VNode
-toVNodeProxy updater (Text value) = text value
-toVNodeProxy updater (Node tag nodeData children) = h tag vNodeData $ map (toVNodeProxy updater) children
+-- | Transforms an `Html` into a `VNode`
+toVNode :: forall message. (message -> Maybe Event -> Effect Unit) -> Html message -> VNode
+toVNode updater (Text value) = text value
+toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
         where   toVNodeData {attributesProperties, events} =
                         {
                                 props: attributesProperties,

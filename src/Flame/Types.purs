@@ -37,9 +37,6 @@ type App model message extension = {
 -- | A native HMLT element
 type DOMElement = WDE.Element
 
--- | Type synonym for view functions
-type Html = Element
-
 type ToNodeData message = forall b. message -> NodeData b
 
 type Tag = String
@@ -48,11 +45,11 @@ type Key = String
 
 --add support for react like fragment nodes?
 -- | Convenience wrapper around `VNode`
-data Element message =
-        Node Tag (Array (NodeData message)) (Array (Element message)) |
+data Html message =
+        Node Tag (Array (NodeData message)) (Array (Html message)) |
         Text String
 
-derive instance elementFunctor :: Functor Element
+derive instance elementFunctor :: Functor Html
 
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
