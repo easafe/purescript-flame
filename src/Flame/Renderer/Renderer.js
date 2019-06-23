@@ -31,21 +31,6 @@ function runEvent(handler) {
 
 exports.h_ = h;
 
-exports.patch_ = extendedPatch;
+exports.patch_ = patch;
 
-exports.patchInitial_ = extendedPatch;
-
-//add support for fragments??
-function extendedPatch(oldVNode, newVNode) {
-	debugger
-	if (typeof(newVNode) === 'string') {
-		if (oldVNode instanceof HTMLElement)
-			newVNode = toVNode(document.createTextNode(newVNode));
-		else {
-			oldVNode.elm.textContent = newVNode;
-			return oldVNode;
-		}
-	}
-
-	return patch(oldVNode, newVNode);
-}
+exports.patchInitial_ = patch;

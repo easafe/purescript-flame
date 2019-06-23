@@ -29,7 +29,7 @@ update model = case _ of
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
-view model = HE.span_ $ HE.text $ "this is " <> show ( model.times)  -- HE.main "main" [HE.text $ "You have clicked " <> show model.times <> " times", HE.br, HE.text $ "You have pressed " <> model.key  ]
+view model =  HE.text $ "this is " <> show ( model.times)  -- HE.main "main" [HE.text $ "You have clicked " <> show model.times <> " times", HE.br, HE.text $ "You have pressed " <> model.key  ]
 
 -- | Mount the application on the given selector
 main :: Effect Unit
