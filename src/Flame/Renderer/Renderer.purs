@@ -10,17 +10,18 @@ module Flame.Renderer(
         emptyVNode
 ) where
 
+import Prelude
+
 import Data.Foldable as DF
-import Data.Function.Uncurried (Fn1, Fn3, runFn3)
+import Data.Function.Uncurried (Fn1, Fn2, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame.Types (DOMElement, Html(..), NodeData(..), VNodeData, VNodeEvents, VNode)
+import Flame.Types
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Prelude
 import Type.Data.Boolean (kind Boolean)
 import Web.Event.Internal.Types (Event)
 
@@ -28,6 +29,7 @@ foreign import emptyVNode :: VNode
 foreign import toVNodeEvents_ :: Fn1 (Object (Event -> Effect Unit)) VNodeEvents
 foreign import patch_ :: EffectFn2 VNode VNode Unit
 foreign import patchInitial_ :: EffectFn2 DOMElement VNode Unit
+foreign import toTextVNode_ :: Fn2 DOMElement String VNode
 foreign import text_ :: Fn1 String VNode
 foreign import h_ :: Fn3 String VNodeData (Array VNode) VNode
 
@@ -47,6 +49,9 @@ patchInitial = EU.runEffectFn2 patchInitial_
 text :: String -> VNode
 text = DFU.runFn1 text_
 
+toTextVNode :: DOMElement -> String -> VNode
+toTextVNode = DFU.runFn2 toTextVNode_
+
 -- | snabbdom h function
 h :: String -> VNodeData -> Array VNode -> VNode
 h = runFn3 h_
@@ -56,14 +61,20 @@ h = runFn3 h_
 -- | This function is necessary since subsequent calls to snabbdom `patch` require a previsouly created VNode
 renderInitial :: forall message. DOMElement -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
 renderInitial domElement updater element = do
-        let vNode = toVNode updater element
+        let vNode =
+                case element of
+                        Text textContent -> toTextVNode domElement textContent
+                        _ -> toVNode updater element
         patchInitial domElement vNode
         pure vNode
 
 -- | Renders markup according to the difference between VNodes
 render :: forall message. VNode -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
 render oldVNode updater element = do
-        let vNode = toVNode updater element
+        let vNode =
+                case element of
+                        Text textContent -> let (VNode node) = oldVNode in toTextVNode node.elm textContent
+                        _ -> toVNode updater element
         patch oldVNode vNode
         pure vNode
 

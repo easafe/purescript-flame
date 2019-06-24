@@ -9,11 +9,19 @@ var toVNode = require('snabbdom/tovnode').default;
 
 exports.emptyVNode = [];
 
-exports.text_ = function (text) {
+exports.text_ = function(text) {
 	return text;
 }
 
-exports.toVNodeEvents_ = function (events) {
+exports.toTextVNode_ = function(element, text) {
+	var vNode = toVNode(element)
+	vNode.text = text;
+	vNode.children = undefined;
+
+	return vNode;
+}
+
+exports.toVNodeEvents_ = function(events) {
 	for (var key in events) {
 		var handler = events[key];
 

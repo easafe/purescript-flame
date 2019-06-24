@@ -38,6 +38,7 @@ import Web.HTML as WH
 import Web.HTML.HTMLDocument as WDD
 import Web.HTML.HTMLInputElement as WHH
 import Web.HTML.Window as WHW
+import Test.TextContent.NoEffects as TTN
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
@@ -293,7 +294,7 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 spans3 <- textContentAll ids
                                 equalAll ["3", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement, Just TWEIncrement, Just TWEIncrement], show <<< Just $ TWEModel { previousMessages: [Nothing,(Just TWEDecrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
-                suite "custom events test applications" do
+                suite "Custom events test applications" do
                         test "noeffects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -340,6 +341,13 @@ main =
                                 dispatchWindowEvent offlineEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "3" output3
+                suite "Text content" $ do
+                        test "no effects" $ do
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TEE.mount
+                                --finish this test
+                                TUA.equal "2" "3"
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
                 childrenNodeLength = liftEffect $ do
