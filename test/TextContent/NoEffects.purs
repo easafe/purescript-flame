@@ -5,8 +5,9 @@ import Prelude
 import Effect (Effect)
 import Flame (Html)
 import Flame.Application.NoEffects as FAN
-import Flame.HTML.Element as HE
+import Flame.External as FE
 import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as HE
 
 type Model = Int
 
@@ -21,6 +22,7 @@ update model = case _ of
         Decrement -> model - 1
 
 view :: Model -> Html Message
+view 0 = HE.text "Nothing to show"
 view model = HE.main_ [
         HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
         HE.span "text-output" $ show model,
@@ -28,8 +30,10 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = FAN.mount_ "#mount-point" {
+mount = do
+        channel <- FAN.mount "#mount-point" {
                 init,
                 update,
                 view
         }
+        FE.send [FE.onClick [Increment], FE.onOffline [Decrement]] channel

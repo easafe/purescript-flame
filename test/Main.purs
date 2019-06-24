@@ -346,7 +346,8 @@ main =
                                 liftEffect $ do
                                         unsafeCreateEnviroment
                                         TEE.mount
-                                --finish this test
+                                dispatchWindowEvent offlineEvent
+                                dispatchDocumentEvent clickEvent
                                 TUA.equal "2" "3"
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
