@@ -33,7 +33,7 @@ view model = HE.div "oi" [
 
 main :: Effect Unit
 main = do
-        channel <- FAN.mount "main" {
+        channel <- FAN.mount "#mount-point" {
                 init,
                 update,
                 view

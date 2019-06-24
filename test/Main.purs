@@ -19,10 +19,11 @@ import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
+import Test.External.EffectList (TEELMessage(..))
+import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
 import Test.External.NoEffects as TEN
-import Test.External.EffectList as TEEL
-import Test.External.EffectList (TEELMessage(..))
+import Test.TextContent.NoEffects as TTN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -38,7 +39,6 @@ import Web.HTML as WH
 import Web.HTML.HTMLDocument as WDD
 import Web.HTML.HTMLInputElement as WHH
 import Web.HTML.Window as WHW
-import Test.TextContent.NoEffects as TTN
 
 --we use jsdom to provide a browser like enviroment to run tests
 -- as of now, dom objects are copied to the global object, as it is easier than having to mess with browersification
@@ -341,18 +341,27 @@ main =
                                 dispatchWindowEvent offlineEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "3" output3
-                suite "Text content" $ do
+                suite "Text content views" $ do
                         test "no effects" $ do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TEE.mount
-                                dispatchWindowEvent offlineEvent
+                                        TTN.mount
+                                childrenLength <- childrenNodeLengthOf "#mount-point"
+                                TUA.equal 0 childrenLength
+
                                 dispatchDocumentEvent clickEvent
-                                TUA.equal "2" "3"
+                                childrenLength2 <- childrenNodeLength
+                                TUA.equal 3 childrenLength2
+
+                                dispatchWindowEvent offlineEvent
+                                childrenLength3 <- childrenNodeLength
+                                TUA.equal 0 childrenLength3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
-                childrenNodeLength = liftEffect $ do
-                        mountPoint <- unsafeQuerySelector "main"
+                childrenNodeLength = childrenNodeLengthOf "main"
+
+                childrenNodeLengthOf selector = liftEffect $ do
+                        mountPoint <- unsafeQuerySelector selector
                         children <- WDP.children $ WDE.toParentNode mountPoint
                         WDH.length children
 
