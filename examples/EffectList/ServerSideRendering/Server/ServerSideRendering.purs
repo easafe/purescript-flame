@@ -5,12 +5,12 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Examples.EffectList.ServerSideRendering.Shared (Model, Message)
+import Examples.EffectList.ServerSideRendering.Shared (Model(..), Message)
 import Examples.EffectList.ServerSideRendering.Shared as EESS
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Renderer.String as FRS
+import Flame.Application.EffectList as FAE
 import HTTPure (ResponseM, ServerM, Request)
 import HTTPure as H
 import Node.FS.Aff as FSA
@@ -32,15 +32,15 @@ serveJavaScript = do
 
 serveHTML :: ResponseM
 serveHTML = do
-        stringContents <- liftEffect <<< FRS.render $ markup Nothing
+        stringContents <- liftEffect $ FAE.preMount "main" { init: Model Nothing, view: markup }
         H.ok' htmlContentType stringContents
         where htmlContentType = H.header "Content-Type" "text/html"
 
 markup :: Model -> Html Message
 markup model = HE.html_ [
-        HE.meta $ HA.charset "utf-8",
         HE.head_ [
-                HE.title "Server Side Rendering Dice Example"
+                HE.title "Server Side Rendering Dice Example",
+                HE.meta $ HA.charset "utf-8"
         ],
         HE.body_ $ EESS.view model,
         HE.script' [HA.type' "text/javascript", HA.src scriptName]

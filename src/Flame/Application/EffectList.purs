@@ -4,6 +4,7 @@
 module Flame.Application.EffectList(
         Application,
         emptyApp,
+        preMount,
         mount,
         mount_,
         -- resumeMount,
@@ -12,13 +13,18 @@ module Flame.Application.EffectList(
 )
 where
 
+import Flame.Types
+import Prelude
+
+import Data.Argonaut.Core as DAC
+import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
+import Data.Argonaut.Encode.Generic.Rep as EGR
+import Data.Array ((:))
 import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Data.Argonaut.Encode.Generic.Rep as EGR
-import Data.Argonaut.Core as DAC
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -26,12 +32,10 @@ import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
 import Flame.Application.DOM as FAD
-import Flame.HTML.Element as FHE
+import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as HE
 import Flame.Renderer as FR
-import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Flame.Renderer.String as FRS
-import Flame.Types (App, DOMElement)
-import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
@@ -69,15 +73,23 @@ emptyApp :: Application Unit Unit
 emptyApp = {
         init: unit :> [],
         update,
-        view: const (FHE.createEmptyElement "bs")
+        view: const (HE.createEmptyElement "bs")
 }
         where update model message = model :> []
 
-preMount ::  forall model m message. Generic model m => EncodeRep m => PreApplication model message -> Effect String
-preMount application = do
-        let encodedModel = DAC.stringify $ EGR.genericEncodeJson application.init
-        markup <- FRS.render $ application.view application.init
-        pure markup
+preMount :: forall model m message. Generic model m => EncodeRep m => String -> PreApplication model message -> Effect String
+preMount selector application = do
+        markup <- injectState $ application.view application.init
+        rendered <- FRS.render markup
+        pure rendered
+        where   state = HE.createElement "template-state" [ HA.style { display: "none"}, HA.id $ "pre-mount-" <> selector, HA.createAttribute ("__pre-mount-" <> selector) selector] <<< DAC.stringify $ EGR.genericEncodeJson application.init
+
+                --needs to be injected at the body, if it exists
+                --check if it works or not on template tags
+                injectState (Text _) = EE.throw "Error pre mounting application: cannot mount on text node!"
+                injectState (Node tag nodeData children)
+                        | tag == "template" = EE.throw "Error pre mounting application: cannot mount on template node!"
+                        | otherwise = pure <<< Node tag nodeData $ state : children
 
 -- -- | Mount a Flame application on the given selector which was rendered server-side
 -- resumeMount :: forall model message. String -> ResumedApplication model message -> Effect (Channel (Array message))
@@ -85,7 +97,7 @@ preMount application = do
 --         maybeEl <- FAD.querySelector selector
 --         case maybeEl of
 --                 Just el -> run el application
---                 Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+--                 Nothing -> EE.throw $ "Error mounting application: no element matching selector " <> show selector <> " found!"
 
 -- -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
 -- resumeMount_ :: forall model message. String -> ResumedApplication model message -> Effect Unit
@@ -99,7 +111,7 @@ mount selector application = do
         maybeEl <- FAD.querySelector selector
         case maybeEl of
                 Just el -> run el application
-                Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+                Nothing -> EE.throw $ "Error mounting application: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. String -> Application model message -> Effect Unit

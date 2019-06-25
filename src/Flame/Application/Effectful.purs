@@ -71,7 +71,7 @@ mount selector application = do
         maybeEl <- FAD.querySelector selector
         case maybeEl of
                 Just el -> run el application
-                Nothing -> EE.throw $ "No element matching selector " <> show selector <> " found!"
+                Nothing -> EE.throw $ "Error mounting application: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. String -> Application model message -> Effect Unit
