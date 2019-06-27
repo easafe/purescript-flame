@@ -20,10 +20,12 @@ import Data.Argonaut.Core as DAC
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Encode.Generic.Rep as EGR
 import Data.Array ((:))
+import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -36,6 +38,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer as FR
 import Flame.Renderer.String as FRS
+import Partial.Unsafe (unsafePartial)
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
@@ -84,11 +87,19 @@ preMount selector application = do
         pure rendered
         where   state = HE.createElement "template-state" [ HA.style { display: "none"}, HA.id $ "pre-mount-" <> selector, HA.createAttribute ("__pre-mount-" <> selector) selector] <<< DAC.stringify $ EGR.genericEncodeJson application.init
 
-                --needs to be injected at the body, if it exists
-                --check if it works or not on template tags
+                headBody (Node tag nodeData children) = tag == "head" || tag == "body"
+                headBody _ = false
+
+                inject (Node tag nodeData children) = Node tag nodeData (state : children)
+                inject node = node
+
                 injectState (Text _) = EE.throw "Error pre mounting application: cannot mount on text node!"
                 injectState (Node tag nodeData children)
-                        | tag == "template" = EE.throw "Error pre mounting application: cannot mount on template node!"
+                        | tag == "html" =
+                                pure <<< Node tag nodeData $
+                                        case DA.findIndex headBody children of
+                                                Nothing -> state : children
+                                                Just index -> unsafePartial (DM.fromJust $ DA.modifyAt index inject children)
                         | otherwise = pure <<< Node tag nodeData $ state : children
 
 -- -- | Mount a Flame application on the given selector which was rendered server-side
