@@ -356,6 +356,9 @@ main =
                                 dispatchWindowEvent offlineEvent
                                 childrenLength3 <- childrenNodeLength
                                 TUA.equal 0 childrenLength3
+                suite "Server side rendering" $ do
+                        test "effectful" $ do
+                                TUA.equal 2 3
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
                 childrenNodeLength = childrenNodeLengthOf "main"

@@ -8,6 +8,7 @@ import Effect.Console as EC
 import Examples.EffectList.ServerSideRendering.Shared (Model(..), Message)
 import Examples.EffectList.ServerSideRendering.Shared as EESS
 import Flame (Html)
+import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Application.EffectList as FAE
@@ -32,7 +33,7 @@ serveJavaScript = do
 
 serveHTML :: ResponseM
 serveHTML = do
-        stringContents <- liftEffect $ FAE.preMount "main" { init: Model Nothing, view: markup }
+        stringContents <- liftEffect $ F.preMount "main" { init: Model Nothing, view: markup }
         H.ok' htmlContentType stringContents
         where htmlContentType = H.header "Content-Type" "text/html"
 

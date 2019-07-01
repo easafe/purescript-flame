@@ -3,6 +3,7 @@ module Flame.Types where
 
 import Prelude
 
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Foreign.Object (Object)
 import Web.DOM.Element as WDE
@@ -34,6 +35,13 @@ type App model message extension = {
         extension
 }
 
+-- | `ResumedApplication` contains
+-- | * `init` – the initial model
+-- | * `view` – a function to update your markup
+type PreApplication model message = App model message (
+        init :: model
+)
+
 -- | A native HMLT element
 type DOMElement = WDE.Element
 
@@ -61,3 +69,5 @@ data NodeData message =
 
 derive instance nodeDataFunctor :: Functor NodeData
 
+-- | Infix tuple constructor
+infixr 6 Tuple as :>

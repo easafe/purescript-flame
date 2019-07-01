@@ -3,18 +3,16 @@
 -- | The update function is a pure function from model and message raised
 module Flame.Application.NoEffects(
         Application,
-        emptyApp,
         mount,
         mount_
 )
 where
 
 import Effect (Effect)
-import Flame.Application.EffectList ((:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Element as FHE
-import Flame.Types (App)
-import Prelude (Unit, const, unit, ($), (<<<), bind, pure)
+import Flame.Types
+import Prelude
 import Signal.Channel (Channel)
 
 -- | `Application` contains
@@ -25,14 +23,6 @@ type Application model message = App model message (
         init :: model,
         update :: model -> message -> model
 )
-
--- | A bare bones application
-emptyApp :: Application Unit Unit
-emptyApp = {
-        init: unit,
-        update: const <<< const unit,
-        view: const (FHE.createEmptyElement "bs")
-}
 
 -- | Mount a Flame application on the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))

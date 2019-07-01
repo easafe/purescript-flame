@@ -7,14 +7,11 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame.Application.EffectList ((:>))
+import Flame ((:>))
 import Flame.Application.EffectList as FAE
 import Data.Tuple(Tuple)
 import Examples.EffectList.ServerSideRendering.Shared(Model(..), Message(..))
 import Examples.EffectList.ServerSideRendering.Shared as EESS
-
-init :: Model
-init = Model Nothing
 
 update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update m@(Model model) = case _ of
@@ -24,8 +21,8 @@ update m@(Model model) = case _ of
         Update int -> Model (Just int) :> []
 
 main :: Effect Unit
-main = FAE.mount_ "main" {
-        init: init :> [],
+main = FAE.resumeMount_ "main" {
+        init: [],
         update,
         view: EESS.view
 }

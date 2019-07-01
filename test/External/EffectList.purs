@@ -7,8 +7,7 @@ import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (Html)
-import Flame.Application.EffectList ((:>))
+import Flame (Html, (:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Element as HE
 import Signal.Channel (Channel)

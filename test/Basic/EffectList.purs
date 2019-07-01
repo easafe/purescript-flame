@@ -10,8 +10,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame (Html)
-import Flame.Application.EffectList ((:>))
+import Flame (Html, (:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE

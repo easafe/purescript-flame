@@ -3,15 +3,23 @@
 -- | The update function carries context information and runs on `Aff`
 module Flame.Application.Effectful(
         Application,
-        emptyApp,
         mount,
         mount_,
-        World
+        World,
+        ResumedApplication,
+        resumeMount,
+        resumeMount_
 )
 where
 
+import Flame.Types
+import Prelude
+
+import Flame.Application.PreMount as FAP
+import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Either (Either(..))
 import Data.Foldable as DF
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
@@ -22,12 +30,9 @@ import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
-import Flame.Application.EffectList ((:>))
 import Flame.Application.DOM as FAD
 import Flame.HTML.Element as FHE
 import Flame.Renderer as FR
-import Flame.Types (App, DOMElement)
-import Prelude (Unit, bind, const, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
@@ -39,6 +44,15 @@ import Web.Event.Internal.Types (Event)
 -- | * `update` – a function to update your model
 type Application model message = App model message (
         init :: Tuple model (Maybe message),
+        update :: World model message -> model -> message -> Aff model
+)
+
+-- | `ResumedApplication` contains
+-- | * `init` – initial list of messages to invoke `update` with
+-- | * `view` – a function to update your markup
+-- | * `update` – a function to update your model
+type ResumedApplication model message = App model message (
+        init :: Maybe message,
         update :: World model message -> model -> message -> Aff model
 )
 
@@ -56,21 +70,31 @@ type World model message = {
         previousMessage :: Maybe message
 }
 
--- | A bare bones application
-emptyApp :: Application Unit Unit
-emptyApp = {
-        init: unit :> Nothing,
-        update,
-        view: const (FHE.createEmptyElement "bs")
-}
-        where update f model message = pure model
+-- | Mount a Flame application on the given selector which was rendered server-side
+resumeMount :: forall model m message. Generic model m => DecodeRep m => String -> ResumedApplication model message -> Effect (Channel (Maybe message))
+resumeMount selector application = do
+        initialModel <- FAP.serializedState selector
+        maybeElement <- FAD.querySelector selector
+        case maybeElement of
+                Just el -> run el true {
+                        init: initialModel :> application.init,
+                        view: application.view,
+                        update: application.update
+                }
+                Nothing -> EE.throw $ "Error resuming application mount: no element matching selector " <> show selector <> " found!"
+
+-- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
+resumeMount_ :: forall model m message. Generic model m => DecodeRep m => String -> ResumedApplication model message -> Effect Unit
+resumeMount_ selector application = do
+        _ <- resumeMount selector application
+        pure unit
 
 -- | Mount a Flame application on the given selector
 mount :: forall model message. String -> Application model message -> Effect (Channel (Maybe message))
 mount selector application = do
-        maybeEl <- FAD.querySelector selector
-        case maybeEl of
-                Just el -> run el application
+        maybeElement <- FAD.querySelector selector
+        case maybeElement of
+                Just el -> run el false application
                 Nothing -> EE.throw $ "Error mounting application: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
@@ -80,8 +104,8 @@ mount_ selector application = do
         pure unit
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
-run :: forall model message. DOMElement -> Application model message -> Effect (Channel (Maybe message))
-run el application = do
+run :: forall model message. DOMElement -> Boolean -> Application model message -> Effect (Channel (Maybe message))
+run el isResumed application = do
         let Tuple initialModel initialMessage = application.init
         state <- ER.new {
                 previousModel: Nothing,
@@ -136,7 +160,11 @@ run el application = do
                         _ <- ER.modify st state
                         pure unit
 
-        initialVNode <- FR.renderInitial el (runUpdate initialModel) $ application.view initialModel
+        initialVNode <-
+                if isResumed then
+                        FR.renderInitialFrom el (runUpdate initialModel) $ application.view initialModel
+                else
+                        FR.renderInitial el (runUpdate initialModel) $ application.view initialModel
         modifyState (\st -> st { vNode = initialVNode })
 
         case initialMessage of

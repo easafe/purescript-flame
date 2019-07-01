@@ -42,3 +42,7 @@ exports.h_ = h;
 exports.patch_ = patch;
 
 exports.patchInitial_ = patch;
+
+exports.patchInitialFrom_ = function (element, vNode) {
+	patch(toVNode(element), vNode);
+}
