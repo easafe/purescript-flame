@@ -1,3 +1,4 @@
+-- | Client side application
 module Examples.EffectList.ServerSideRendering.Client.Main where
 
 import Prelude

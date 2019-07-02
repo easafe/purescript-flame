@@ -1,3 +1,4 @@
+-- | Quick and dirty server, the relevant functions for example sake are serveHTML and markup
 module Examples.EffectList.ServerSideRendering.Server.Main where
 
 import Prelude
@@ -11,7 +12,6 @@ import Flame (Html)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Application.EffectList as FAE
 import HTTPure (ResponseM, ServerM, Request)
 import HTTPure as H
 import Node.FS.Aff as FSA

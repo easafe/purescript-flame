@@ -3,6 +3,7 @@ module Test.Main where
 import Prelude
 
 import Data.Array as DA
+import Test.ServerSideRendering.Effectful as TSE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.CodeUnits as DSC
@@ -358,7 +359,26 @@ main =
                                 TUA.equal 0 childrenLength3
                 suite "Server side rendering" $ do
                         test "effectful" $ do
-                                TUA.equal 2 3
+                                liftEffect $ do
+                                        unsafeCreateEnviroment
+                                        TSE.preMount
+                                childrenLength <- childrenNodeLengthOf "#mount-point"
+                                TUA.equal 1 childrenLength
+
+                                childrenLength2 <- childrenNodeLength
+                                initial <- textContent "#text-output"
+                                TUA.equal 4 childrenLength2
+                                TUA.equal "2" initial
+
+                                liftEffect TSE.mount
+                                childrenLength3 <- childrenNodeLength
+                                initial2 <- textContent "#text-output"
+                                TUA.equal 4 childrenLength3
+                                TUA.equal "2" initial2
+
+                                dispatchEvent clickEvent "#increment-button"
+                                current <- textContent "#text-output"
+                                TUA.equal "3" current
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
                 childrenNodeLength = childrenNodeLengthOf "main"

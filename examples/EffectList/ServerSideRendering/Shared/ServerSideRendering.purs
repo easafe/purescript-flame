@@ -1,3 +1,6 @@
+-- | Definitions commom to server and client
+-- |
+-- | The same view, and model type are reused; the generic instance is necessary to serialize the inital state
 module Examples.EffectList.ServerSideRendering.Shared where
 
 import Prelude
