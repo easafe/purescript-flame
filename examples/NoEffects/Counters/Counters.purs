@@ -8,7 +8,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Examples.NoEffects.Counter.Main as ECM
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -40,7 +40,7 @@ view model = HE.main "main" [
                 ]
 
 main :: Effect Unit
-main =  FAN.mount_ "main" {
+main =  FAN.mount_ (QuerySelector "main") {
         init,
         update,
         view

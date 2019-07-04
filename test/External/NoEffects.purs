@@ -4,7 +4,7 @@ module Test.External.NoEffects (mount) where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE
 import Web.Event.Internal.Types (Event)
@@ -31,7 +31,7 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-        channel <- FAN.mount "#mount-point" {
+        channel <- FAN.mount (QuerySelector "#mount-point") {
                 init : 0,
                 update,
                 view

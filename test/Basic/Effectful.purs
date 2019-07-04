@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (Html, World, (:>))
+import Flame (QuerySelector(..), Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -41,7 +41,7 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = F.mount_ "#mount-point" {
+mount = F.mount_ (QuerySelector "#mount-point") {
         init: init :> Just Decrement,
         update,
         view

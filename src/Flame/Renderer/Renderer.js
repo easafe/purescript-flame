@@ -5,14 +5,23 @@ var patch = require('snabbdom').init([
 	require('snabbdom/modules/eventlisteners').default,
 ]);
 var h = require('snabbdom/h').default;
+var toVNode = require('snabbdom/tovnode').default;
 
 exports.emptyVNode = [];
 
-exports.text_ = function (text) {
+exports.text_ = function(text) {
 	return text;
 }
 
-exports.toVNodeEvents_ = function (events) {
+exports.toTextVNode_ = function(element, text) {
+	var vNode = toVNode(element)
+	vNode.text = text;
+	vNode.children = undefined;
+
+	return vNode;
+}
+
+exports.toVNodeEvents_ = function(events) {
 	for (var key in events) {
 		var handler = events[key];
 
@@ -33,3 +42,7 @@ exports.h_ = h;
 exports.patch_ = patch;
 
 exports.patchInitial_ = patch;
+
+exports.patchInitialFrom_ = function (element, vNode) {
+	patch(toVNode(element), vNode);
+}

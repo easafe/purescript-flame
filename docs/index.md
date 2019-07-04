@@ -11,9 +11,9 @@ Flame is a PureScript frontend framework inspired by [purescript-hedwig](https:/
 
 * [Signal](https://pursuit.purescript.org/packages/purescript-signal) based interface for handling custom events -- see [Handling external events](events#handling-external-events)
 
-* Performance comparable to native JavaScript frameworks -- see [benchmarks](benchmarks)
-
 * Server side rendering -- see [Rendering the app](rendering)
+
+* Performance comparable to native JavaScript frameworks -- see [benchmarks](benchmarks)
 
 ## Quick start
 
@@ -32,7 +32,7 @@ module App.Main where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html)
+import Flame (Html, QuerySelector(..))
 -- Update strategy for side effects free functions; see docs for other strategies
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE
@@ -64,7 +64,7 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount_ "main" {
+main = FAN.mount_ (QuerySelector "main") {
         init,
         update,
         view

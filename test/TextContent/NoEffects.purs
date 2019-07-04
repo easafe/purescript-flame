@@ -1,12 +1,14 @@
-module Test.Basic.NoEffects (mount) where
+module Test.TextContent.NoEffects (mount) where
 
 import Prelude
 
 import Effect (Effect)
 import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
-import Flame.HTML.Element as HE
+import Flame.External as FE
 import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model = Int
 
@@ -21,6 +23,7 @@ update model = case _ of
         Decrement -> model - 1
 
 view :: Model -> Html Message
+view 0 = HE.text "Nothing to show"
 view model = HE.main_ [
         HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
         HE.span "text-output" $ show model,
@@ -28,8 +31,10 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = FAN.mount_ (QuerySelector "#mount-point") {
+mount = do
+        channel <- FAN.mount (QuerySelector "#mount-point") {
                 init,
                 update,
                 view
         }
+        FE.send [FE.onClick [Increment], FE.onOffline [Decrement]] channel

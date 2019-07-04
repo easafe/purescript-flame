@@ -3,6 +3,7 @@ module Flame.Types where
 
 import Prelude
 
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Foreign.Object (Object)
 import Web.DOM.Element as WDE
@@ -34,11 +35,15 @@ type App model message extension = {
         extension
 }
 
+-- | `ResumedApplication` contains
+-- | * `init` – the initial model
+-- | * `view` – a function to update your markup
+type PreApplication model message = App model message (
+        init :: model
+)
+
 -- | A native HMLT element
 type DOMElement = WDE.Element
-
--- | Type synonym for view functions
-type Html = Element
 
 type ToNodeData message = forall b. message -> NodeData b
 
@@ -48,11 +53,11 @@ type Key = String
 
 --add support for react like fragment nodes?
 -- | Convenience wrapper around `VNode`
-data Element message =
-        Node Tag (Array (NodeData message)) (Array (Element message)) |
+data Html message =
+        Node Tag (Array (NodeData message)) (Array (Html message)) |
         Text String
 
-derive instance elementFunctor :: Functor Element
+derive instance elementFunctor :: Functor Html
 
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
@@ -64,3 +69,5 @@ data NodeData message =
 
 derive instance nodeDataFunctor :: Functor NodeData
 
+-- | Infix tuple constructor
+infixr 6 Tuple as :>

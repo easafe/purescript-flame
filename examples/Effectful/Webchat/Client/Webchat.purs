@@ -11,7 +11,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Var (($=))
-import Flame (Html, World, (:>))
+import Flame (QuerySelector(..), Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -70,7 +70,7 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector and bind WebSocket events to the app channel
 main :: Effect Unit
 main = do
-        channel <- F.mount "main" {
+        channel <- F.mount (QuerySelector "main") {
                 init: init :> Nothing,
                 update,
                 view

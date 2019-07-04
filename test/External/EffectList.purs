@@ -7,8 +7,7 @@ import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (Html)
-import Flame.Application.EffectList ((:>))
+import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Element as HE
 import Signal.Channel (Channel)
@@ -33,7 +32,7 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 mount :: Effect (Channel (Array TEELMessage))
-mount = FAE.mount "#mount-point" {
+mount = FAE.mount (QuerySelector "#mount-point") {
                 init : 0 :> [],
                 update,
                 view

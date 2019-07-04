@@ -4,7 +4,7 @@ module Examples.NoEffects.Counter.Main where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
@@ -35,7 +35,7 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount_ "main" {
+main = FAN.mount_ (QuerySelector "main") {
         init,
         update,
         view

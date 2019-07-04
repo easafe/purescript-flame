@@ -11,8 +11,7 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Flame (Html, Key)
-import Flame.Application.EffectList ((:>))
+import Flame (QuerySelector(..), Html, Key, (:>))
 import Flame.Application.EffectList as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -85,7 +84,7 @@ view model = HE.main "main" [
         ]
 
 main :: Effect Unit
-main = FAE.mount_ "main" {
+main = FAE.mount_ (QuerySelector "main") {
         init: init :> [],
         update,
         view
