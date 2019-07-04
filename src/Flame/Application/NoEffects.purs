@@ -19,6 +19,7 @@ import Data.Generic.Rep (class Generic)
 import Effect (Effect)
 import Flame.Application.EffectList as FAE
 import Signal.Channel (Channel)
+import Web.DOM.ParentNode (QuerySelector)
 
 -- | `Application` contains
 -- | * `init` – the initial model
@@ -47,13 +48,13 @@ resumeMount selector application = FAE.resumeMount selector {
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
 resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
-resumeMount_ (QuerySelector selector) application = do
+resumeMount_ selector application = do
         _ <- resumeMount selector application
         pure unit
 
 -- | Mount a Flame application on the given selector
 mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Array message))
-mount (QuerySelector selector) application = FAE.mount (QuerySelector selector) $ application {
+mount selector application = FAE.mount selector $ application {
         init = application.init :> [],
         update = update'
 }
@@ -61,6 +62,6 @@ mount (QuerySelector selector) application = FAE.mount (QuerySelector selector) 
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
-mount_ (QuerySelector selector) application = do
-        _ <- mount (QuerySelector selector) application
+mount_ selector application = do
+        _ <- mount selector application
         pure unit

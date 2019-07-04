@@ -3,7 +3,7 @@ module Test.Basic.NoEffects (mount) where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
@@ -28,7 +28,7 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = FAN.mount_ "#mount-point" {
+mount = FAN.mount_ (QuerySelector "#mount-point") {
                 init,
                 update,
                 view

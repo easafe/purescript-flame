@@ -8,7 +8,7 @@ import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Examples.EffectList.ServerSideRendering.Shared (Model(..), Message)
 import Examples.EffectList.ServerSideRendering.Shared as EESS
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE

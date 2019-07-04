@@ -3,11 +3,12 @@ module Test.TextContent.NoEffects (mount) where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
 import Flame.External as FE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model = Int
 
@@ -31,7 +32,7 @@ view model = HE.main_ [
 
 mount :: Effect Unit
 mount = do
-        channel <- FAN.mount "#mount-point" {
+        channel <- FAN.mount (QuerySelector "#mount-point") {
                 init,
                 update,
                 view

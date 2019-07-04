@@ -8,10 +8,11 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Internal.Types (Event)
 
 foreign import setInnerHTML :: EffectFn2 String String Unit
@@ -47,12 +48,12 @@ children (Model model) = [
 
 preMount :: Effect Unit
 preMount = do
-        contents <- F.preMount "main" { init: Model 2, view: preView }
+        contents <- F.preMount (QuerySelector "main") { init: Model 2, view: preView }
         EU.runEffectFn2 setInnerHTML "#mount-point" contents
 
 -- | Mount the application on the given selector
 mount :: Effect Unit
-mount = F.resumeMount_ "main" {
+mount = F.resumeMount_ (QuerySelector "main") {
                 init: Nothing,
                 update,
                 view

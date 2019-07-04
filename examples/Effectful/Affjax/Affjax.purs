@@ -8,7 +8,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (Html, World, (:>))
+import Flame (QuerySelector(..), Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -56,7 +56,7 @@ view model = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount_ "main" {
+main = F.mount_ (QuerySelector "main") {
         init: init :> Nothing,
         update,
         view

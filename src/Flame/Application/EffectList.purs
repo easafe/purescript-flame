@@ -61,7 +61,7 @@ type ResumedApplication model message = App model message (
 
 -- | Mount a Flame application on the given selector which was rendered server-side
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
-resumeMount selector application = do
+resumeMount (QuerySelector selector) application = do
         initialModel <- FAP.serializedState selector
         maybeElement <- FAD.querySelector selector
         case maybeElement of
@@ -74,7 +74,7 @@ resumeMount selector application = do
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
 resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
-resumeMount_ (QuerySelector selector) application = do
+resumeMount_ selector application = do
         _ <- resumeMount selector application
         pure unit
 
@@ -88,8 +88,8 @@ mount (QuerySelector selector) application = do
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
-mount_ (QuerySelector selector) application = do
-        _ <- mount (QuerySelector selector) application
+mount_ selector application = do
+        _ <- mount selector application
         pure unit
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update

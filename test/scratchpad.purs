@@ -7,12 +7,13 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Flame (Html, (:>))
+import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful as FAE
 import Flame.External as FE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Types (NodeData(..))
+import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Event (Event, stopPropagation)
 
 type Model = Int
@@ -42,7 +43,7 @@ view model = HE.template "oi" [
 
 main :: Effect Unit
 main = do
-        channel <- FAE.mount "#mount-point" {
+        channel <- FAE.mount (QuerySelector "#mount-point") {
                 init : init :> Nothing,
                 update,
                 view

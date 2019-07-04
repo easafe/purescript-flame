@@ -8,7 +8,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame ((:>))
+import Flame (QuerySelector(..), (:>))
 import Flame.Application.EffectList as FAE
 import Data.Tuple(Tuple)
 import Examples.EffectList.ServerSideRendering.Shared(Model(..), Message(..))
@@ -22,7 +22,7 @@ update m@(Model model) = case _ of
         Update int -> Model (Just int) :> []
 
 main :: Effect Unit
-main = FAE.resumeMount_ "main" {
+main = FAE.resumeMount_ (QuerySelector "main") {
         init: [],
         update,
         view: EESS.view

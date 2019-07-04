@@ -8,7 +8,7 @@ import Data.Traversable as DF
 import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (Html, (:>))
+import Flame (QuerySelector(..), Html, (:>))
 import Flame as F
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
@@ -39,7 +39,7 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-        channel <- F.mount "#mount-point" {
+        channel <- F.mount (QuerySelector "#mount-point") {
                 init : 5 :> Nothing,
                 update,
                 view

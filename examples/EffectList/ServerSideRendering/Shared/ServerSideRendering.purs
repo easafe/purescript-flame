@@ -7,7 +7,7 @@ import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Flame (Html)
+import Flame (QuerySelector(..), Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
