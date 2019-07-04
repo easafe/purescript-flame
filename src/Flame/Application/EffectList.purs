@@ -39,6 +39,7 @@ import Flame.Renderer as FR
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
+import Web.DOM.ParentNode (QuerySelector(..))
 
 -- | `Application` contains
 -- | * `init` – the initial model and a list of messages to invoke `update` with
@@ -59,7 +60,7 @@ type ResumedApplication model message = App model message (
 )
 
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount :: forall model m message. Generic model m => DecodeRep m => String -> ResumedApplication model message -> Effect (Channel (Array message))
+resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
 resumeMount selector application = do
         initialModel <- FAP.serializedState selector
         maybeElement <- FAD.querySelector selector
@@ -72,23 +73,23 @@ resumeMount selector application = do
                 Nothing -> EE.throw $ "Error resuming application mount: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
-resumeMount_ :: forall model m message. Generic model m => DecodeRep m => String -> ResumedApplication model message -> Effect Unit
-resumeMount_ selector application = do
+resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ (QuerySelector selector) application = do
         _ <- resumeMount selector application
         pure unit
 
 -- | Mount a Flame application on the given selector
-mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
-mount selector application = do
+mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Array message))
+mount (QuerySelector selector) application = do
         maybeElement <- FAD.querySelector selector
         case maybeElement of
                 Just el -> run el false application
                 Nothing -> EE.throw $ "Error mounting application: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
-mount_ :: forall model message. String -> Application model message -> Effect Unit
-mount_ selector application = do
-        _ <- mount selector application
+mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
+mount_ (QuerySelector selector) application = do
+        _ <- mount (QuerySelector selector) application
         pure unit
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update

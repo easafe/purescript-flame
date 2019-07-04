@@ -24,6 +24,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Partial.Unsafe (unsafePartial)
+import Web.DOM.ParentNode (QuerySelector(..))
 
 tagSerializedState :: String
 tagSerializedState = "template-state"
@@ -53,8 +54,8 @@ serializedState selector = do
                         json <- DAP.jsonParser contents
                         DADEGR.genericDecodeJson json
 
-preMount :: forall model m message. Generic model m => EncodeRep m => String -> PreApplication model message -> Effect String
-preMount selector application = do
+preMount :: forall model m message. Generic model m => EncodeRep m => QuerySelector -> PreApplication model message -> Effect String
+preMount (QuerySelector selector) application = do
         markup <- injectState $ application.view application.init
         rendered <- FRS.render markup
         pure rendered

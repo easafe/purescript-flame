@@ -32,6 +32,7 @@ import Flame (Html)
 import Flame.Application.NoEffects as FAN
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
+import Web.DOM.ParentNode (QuerySelector(..))
 
 -- | The model represents the state of the app
 type Model = Int
@@ -59,7 +60,7 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount_ "main" {
+main = FAN.mount_ (QuerySelector "main") {
         init,
         update,
         view

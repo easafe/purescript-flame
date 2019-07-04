@@ -37,7 +37,7 @@ type ResumedApplication model message = App model message (
 )
 
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount :: forall model m message. Generic model m => DecodeRep m => String -> ResumedApplication model message -> Effect (Channel (Array message))
+resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
 resumeMount selector application = FAE.resumeMount selector {
         init: [],
         update: update',
@@ -46,21 +46,21 @@ resumeMount selector application = FAE.resumeMount selector {
         where   update' model message = application.update model message :> []
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
-resumeMount_ :: forall model m message. Generic model m => DecodeRep m => String -> ResumedApplication model message -> Effect Unit
-resumeMount_ selector application = do
+resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ (QuerySelector selector) application = do
         _ <- resumeMount selector application
         pure unit
 
 -- | Mount a Flame application on the given selector
-mount :: forall model message. String -> Application model message -> Effect (Channel (Array message))
-mount selector application = FAE.mount selector $ application {
+mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Array message))
+mount (QuerySelector selector) application = FAE.mount (QuerySelector selector) $ application {
         init = application.init :> [],
         update = update'
 }
         where update' model message = application.update model message :> []
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
-mount_ :: forall model message. String -> Application model message -> Effect Unit
-mount_ selector application = do
-        _ <- mount selector application
+mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
+mount_ (QuerySelector selector) application = do
+        _ <- mount (QuerySelector selector) application
         pure unit
