@@ -9,12 +9,12 @@
                 "package.json"
         ],
         "scripts": {
-                "example-server-side-rendering-server" : "pulp build --main Examples.EffectList.ServerSideRendering.Server.Main --include examples/EffectList/ServerSideRendering/Server:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
-                "example-server-side-rendering-client" : "pulp browserify --main Examples.EffectList.ServerSideRendering.Client.Main --include examples/EffectList/ServerSideRendering/Client:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-client.js",
-                "example-server-side-rendering" : "npm run example-server-side-rendering-server && npm run example-server-side-rendering-client",
-                "example-webchat-server" : "pulp build --main Examples.Effectful.Webchat.Server.Main --include examples/Effectful/Webchat/Server:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-server.js",
-                "example-webchat-client" : "pulp browserify --main Examples.Effectful.Webchat.Client.Main --include examples/Effectful/Webchat/Client:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-client.js",
-                "example-webchat" : "npm run example-webchat-server && npm run example-webchat-client",
+                "example-server-side-rendering-server": "pulp build --main Examples.EffectList.ServerSideRendering.Server.Main --include examples/EffectList/ServerSideRendering/Server:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
+                "example-server-side-rendering-client": "pulp browserify --main Examples.EffectList.ServerSideRendering.Client.Main --include examples/EffectList/ServerSideRendering/Client:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-client.js",
+                "example-server-side-rendering": "npm run example-server-side-rendering-server && npm run example-server-side-rendering-client",
+                "example-webchat-server": "pulp build --main Examples.Effectful.Webchat.Server.Main --include examples/Effectful/Webchat/Server:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-server.js",
+                "example-webchat-client": "pulp browserify --main Examples.Effectful.Webchat.Client.Main --include examples/Effectful/Webchat/Client:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-client.js",
+                "example-webchat": "npm run example-webchat-server && npm run example-webchat-client",
                 "example-affjax": "pulp browserify --main Examples.Effectful.Affjax.Main --include examples/Effectful/Affjax --optimise --to examples/Effectful/Affjax/dist/affjax.js",
                 "example-counter": "pulp browserify --main Examples.NoEffects.Counter.Main --include examples/NoEffects/Counter --optimise --to examples/NoEffects/Counter/dist/counter.js",
                 "example-counters": "pulp browserify --main Examples.NoEffects.Counters.Main --include examples/NoEffects/Counters:examples/NoEffects/Counter --optimise --to examples/NoEffects/Counters/dist/counters.js",
@@ -31,8 +31,8 @@
                 "snabbdom-to-html": "^5.1.1"
         },
         "devDependencies": {
-                "jsdom": "^14.0.0",
-                "pulp": "^12.3.0",
+                "jsdom": "^14.1.0",
+                "pulp": "^12.4.2",
                 "ws": "^7.0.0"
         }
 }
