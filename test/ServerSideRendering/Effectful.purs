@@ -34,10 +34,10 @@ update _ (Model model) =
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main "main" $ children model <> [HE.span_ "rendered!"]
+view model = HE.main "my-id" $ children model <> [HE.span_ "rendered!"]
 
 preView :: Model -> Html Message
-preView model = HE.main "main" $ children model
+preView model = HE.main "my-id" $ children model
 
 children :: Model -> Array (Html Message)
 children (Model model) = [
@@ -48,12 +48,12 @@ children (Model model) = [
 
 preMount :: Effect Unit
 preMount = do
-        contents <- F.preMount (QuerySelector "main") { init: Model 2, view: preView }
+        contents <- F.preMount (QuerySelector "#my-id") { init: Model 2, view: preView }
         EU.runEffectFn2 setInnerHTML "#mount-point" contents
 
 -- | Mount the application on the given selector
 mount :: Effect Unit
-mount = F.resumeMount_ (QuerySelector "main") {
+mount = F.resumeMount_ (QuerySelector "#my-id") {
                 init: Nothing,
                 update,
                 view

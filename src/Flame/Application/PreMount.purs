@@ -17,6 +17,9 @@ import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String.Regex as DSR
+import Data.String.Regex.Flags (global)
+import Data.String.Regex.Unsafe as DSRU
 import Effect (Effect)
 import Effect.Exception as EE
 import Flame.Application.DOM as FAD
@@ -35,18 +38,22 @@ idSerializedState = ("pre-mount-" <> _)
 attributeSerializedState :: String -> String
 attributeSerializedState = ("__pre-mount-" <> _)
 
+onlyLetters :: String -> String
+onlyLetters = DSR.replace (DSRU.unsafeRegex "[^aA-zZ]" global) ""
+
 selectorSerializedState :: String -> String
 selectorSerializedState selector = tagSerializedState <> "#" <> idSerializedState selector <> "[" <> attributeSerializedState selector <> "=" <> selector <> "]"
 
 serializedState :: forall model m. Generic model m => DecodeRep m => String -> Effect model
 serializedState selector = do
-        maybeElement <- FAD.querySelector $ selectorSerializedState selector
+        let sanitizedSelector = onlyLetters selector
+        maybeElement <- FAD.querySelector $ selectorSerializedState sanitizedSelector
         case maybeElement of
                 Just el -> do
                         contents <- FAD.textContent el
                         case CME.runExcept <<< CME.except $ decoding contents of
                                 Right model -> do
-                                        FAD.removeElement $ selectorSerializedState selector
+                                        FAD.removeElement $ selectorSerializedState sanitizedSelector
                                         pure model
                                 Left message -> EE.throw $ "Error resuming application mount: serialized state is invalid! " <> message
                 Nothing -> EE.throw $ "Error resuming application mount: serialized state not found!"
@@ -59,13 +66,15 @@ preMount (QuerySelector selector) application = do
         markup <- injectState $ application.view application.init
         rendered <- FRS.render markup
         pure rendered
-        where   state = HE.createElement tagSerializedState [ HA.style { display: "none"}, HA.id $ idSerializedState selector, HA.createAttribute (attributeSerializedState selector) selector] <<< DAC.stringify $ DAEGR.genericEncodeJson application.init
+        where   sanitizedSelector = onlyLetters selector
+
+                state = HE.createElement tagSerializedState [ HA.style { display: "none"}, HA.id $ idSerializedState sanitizedSelector, HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector] <<< DAC.stringify $ DAEGR.genericEncodeJson application.init
 
                 isBody (Node tag _ _) = tag == "body"
                 isBody _ = false
 
                 inject (Node tag nodeData children) = Node tag nodeData (state : children)
-                inject node = node
+                inject node2 = node2
 
                 injectState (Text _) = EE.throw "Error pre mounting application: cannot mount on text node!"
                 injectState node@(Node tag nodeData children)
