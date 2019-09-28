@@ -31,7 +31,7 @@ instance recordClassList :: Homogeneous r Boolean => ToClassList { | r } where
         to = DS.joinWith " " <<< FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
 
 class' :: forall a b. ToClassList b => b -> NodeData a
-class' = createAttribute "class" <<< caseify <<< to
+class' = createSetAttribute "class" <<< caseify <<< to
 
 style :: forall a r. Homogeneous r String => { | r } -> NodeData a
 style record = Attribute Props "style" <<< DS.joinWith ";" <<< DA.zipWith zipper (FO.keys object) $ FO.values object

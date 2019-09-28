@@ -385,10 +385,13 @@ main =
                                 liftEffect $ do
                                         unsafeCreateEnviroment
                                         TSN.mount
-                                --we are only interested that updating a svg attr (e.g. viewBox) doens't fail
                                 dispatchEvent clickEvent "#decrement-button"
                                 dispatchEvent clickEvent "#increment-button"
                                 dispatchEvent clickEvent "#increment-button"
+                                --we are only interested that updating a svg attr (e.g. viewBox) doesn't fail
+                                liftEffect $ do
+                                        _ <- unsafeQuerySelector """svg circle[cx="1"]"""
+                                        pure unit
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
                 childrenNodeLength = childrenNodeLengthOf "main"
