@@ -99,8 +99,9 @@ render oldVNode updater element = do
 toVNode :: forall message. (message -> Maybe Event -> Effect Unit) -> Html message -> VNode
 toVNode updater (Text value) = text value
 toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
-        where   toVNodeData {attributesProperties, events} =
+        where   toVNodeData {attributesProperties, setAttributes, events} =
                         {
+                                attrs: setAttributes,
                                 props: attributesProperties,
                                 on: toVNodeEvents events
                         }
@@ -109,13 +110,14 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                         message <- handler event
                         updater message (Just event)
 
-                unions record@{attributesProperties, events} =
+                unions record@{attributesProperties, setAttributes, events} =
                         case _ of
-                                Attribute name value -> record { attributesProperties = FO.insert name value attributesProperties }
+                                Attribute Props name value -> record { attributesProperties = FO.insert name value attributesProperties }
+                                Attribute Attrs name value -> record { setAttributes = FO.insert name value setAttributes }
                                 Property name value ->
                                         if value then record { attributesProperties = FO.insert name name attributesProperties }
                                          else record
                                 Event name message -> record { events = FO.insert name (updater message <<< Just) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
 
-                vNodeData = toVNodeData $ DF.foldl unions { attributesProperties: FO.empty, events: FO.empty } nodeData
+                vNodeData = toVNodeData $ DF.foldl unions { attributesProperties: FO.empty, setAttributes:  FO.empty, events: FO.empty } nodeData

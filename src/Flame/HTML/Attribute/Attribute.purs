@@ -12,7 +12,7 @@ import Data.String.Regex.Flags (global)
 import Foreign.Object as FO
 import Partial.Unsafe (unsafePartial)
 import Type.Row.Homogeneous (class Homogeneous)
-import Flame.Types (NodeData(..), ToNodeData)
+import Flame.Types (NodeData(..), ToNodeData, SetTo(..))
 
 type ToStringAttribute = ToNodeData String
 
@@ -34,7 +34,7 @@ class' :: forall a b. ToClassList b => b -> NodeData a
 class' = createAttribute "class" <<< caseify <<< to
 
 style :: forall a r. Homogeneous r String => { | r } -> NodeData a
-style record = Attribute "style" <<< DS.joinWith ";" <<< DA.zipWith zipper (FO.keys object) $ FO.values object
+style record = Attribute Props "style" <<< DS.joinWith ";" <<< DA.zipWith zipper (FO.keys object) $ FO.values object
         where   object = FO.fromHomogeneous record
 
                 zipper name' value' = caseify name' <> ":" <> value'
@@ -55,7 +55,13 @@ caseify name'
 -- |
 -- | Attributes have name and value opposed to properties, which are presential only
 createAttribute :: forall message. String -> String -> NodeData message
-createAttribute = Attribute
+createAttribute = Attribute Props
+
+-- | Creates a HTML attribute that uses setAttribute
+-- |
+-- | Attributes have name and value opposed to properties, which are presential only
+createSetAttribute :: forall message. String -> String -> NodeData message
+createSetAttribute = Attribute Attrs
 
 --script generated
 
@@ -114,7 +120,7 @@ href :: ToStringAttribute
 href = createAttribute "href"
 
 hreflang :: ToStringAttribute
-hreflang = createAttribute "hreflang"
+hreflang = createSetAttribute "hreflang"
 
 kind :: ToStringAttribute
 kind = createAttribute "kind"
@@ -123,13 +129,13 @@ lang :: ToStringAttribute
 lang = createAttribute "lang"
 
 max :: ToStringAttribute
-max = createAttribute "max"
+max = createSetAttribute "max"
 
 method :: ToStringAttribute
-method = createAttribute "method"
+method = createSetAttribute "method"
 
 min :: ToStringAttribute
-min = createAttribute "min"
+min = createSetAttribute "min"
 
 name :: ToStringAttribute
 name = createAttribute "name"
@@ -138,7 +144,7 @@ pattern :: ToStringAttribute
 pattern = createAttribute "pattern"
 
 ping :: ToStringAttribute
-ping = createAttribute "ping"
+ping = createSetAttribute "ping"
 
 placeholder :: ToStringAttribute
 placeholder = createAttribute "placeholder"
@@ -195,7 +201,7 @@ colspan :: ToIntAttribute
 colspan = createAttribute "colspan" <<< show
 
 height :: ToIntAttribute
-height = createAttribute "height" <<< show
+height = createSetAttribute "height" <<< show
 
 maxlength :: ToIntAttribute
 maxlength = createAttribute "maxlength" <<< show
@@ -219,7 +225,7 @@ tabindex :: ToIntAttribute
 tabindex = createAttribute "tabindex" <<< show
 
 width :: ToIntAttribute
-width = createAttribute "width" <<< show
+width = createSetAttribute "width" <<< show
 
 contextmenu :: ToStringAttribute
 contextmenu = createAttribute "contextmenu"
@@ -240,7 +246,7 @@ manifest :: ToStringAttribute
 manifest = createAttribute "manifest"
 
 media :: ToStringAttribute
-media = createAttribute "media"
+media = createSetAttribute "media"
 
 pubdate :: ToStringAttribute
 pubdate = createAttribute "pubdate"
@@ -249,484 +255,484 @@ rel :: ToStringAttribute
 rel = createAttribute "rel"
 
 cx :: ToStringAttribute
-cx = createAttribute "cx"
+cx = createSetAttribute "cx"
 
 cy :: ToStringAttribute
-cy = createAttribute "cy"
+cy = createSetAttribute "cy"
 
 fillOpacity :: ToStringAttribute
 fillOpacity = createAttribute "fill-opacity"
 
 fx :: ToStringAttribute
-fx = createAttribute "fx"
+fx = createSetAttribute "fx"
 
 fy :: ToStringAttribute
-fy = createAttribute "fy"
+fy = createSetAttribute "fy"
 
 markerHeight :: ToStringAttribute
-markerHeight = createAttribute "markerHeight"
+markerHeight = createSetAttribute "markerHeight"
 
 markerWidth :: ToStringAttribute
-markerWidth = createAttribute "markerWidth"
+markerWidth = createSetAttribute "markerWidth"
 
 r :: ToStringAttribute
-r = createAttribute "r"
+r = createSetAttribute "r"
 
 strokeDashoffset :: ToStringAttribute
-strokeDashoffset = createAttribute "stroke-dashoffset"
+strokeDashoffset = createSetAttribute "stroke-dashoffset"
 
 strokeOpacity :: ToStringAttribute
-strokeOpacity = createAttribute "stroke-opacity"
+strokeOpacity = createSetAttribute "stroke-opacity"
 
 strokeWidth :: ToStringAttribute
-strokeWidth = createAttribute "stroke-width"
+strokeWidth = createSetAttribute "stroke-width"
 
 textLength :: ToStringAttribute
-textLength = createAttribute "textLength"
+textLength = createSetAttribute "textLength"
 
 x :: ToStringAttribute
-x = createAttribute "x"
+x = createSetAttribute "x"
 
 x1 :: ToStringAttribute
-x1 = createAttribute "x1"
+x1 = createSetAttribute "x1"
 
 x2 :: ToStringAttribute
-x2 = createAttribute "x2"
+x2 = createSetAttribute "x2"
 
 y :: ToStringAttribute
-y = createAttribute "y"
+y = createSetAttribute "y"
 
 y1 :: ToStringAttribute
-y1 = createAttribute "y1"
+y1 = createSetAttribute "y1"
 
 y2 :: ToStringAttribute
-y2 = createAttribute "y2"
+y2 = createSetAttribute "y2"
 
 accumulate :: ToStringAttribute
-accumulate = createAttribute "accumulate"
+accumulate = createSetAttribute "accumulate"
 
 additive :: ToStringAttribute
-additive = createAttribute "additive"
+additive = createSetAttribute "additive"
 
 alignmentBaseline :: ToStringAttribute
-alignmentBaseline = createAttribute "alignment-baseline"
+alignmentBaseline = createSetAttribute "alignment-baseline"
 
 createAttributeName :: ToStringAttribute
-createAttributeName = createAttribute "createAttributeName"
+createAttributeName = createSetAttribute "createAttributeName"
 
 createAttributeType :: ToStringAttribute
-createAttributeType = createAttribute "createAttributeType"
+createAttributeType = createSetAttribute "createAttributeType"
 
 baseFrequency :: ToStringAttribute
-baseFrequency = createAttribute "baseFrequency"
+baseFrequency = createSetAttribute "baseFrequency"
 
 baselineShift :: ToStringAttribute
-baselineShift = createAttribute "baseline-shift"
+baselineShift = createSetAttribute "baseline-shift"
 
 baseProfile :: ToStringAttribute
-baseProfile = createAttribute "baseProfile"
+baseProfile = createSetAttribute "baseProfile"
 
 begin :: ToStringAttribute
-begin = createAttribute "begin"
+begin = createSetAttribute "begin"
 
 calcMode :: ToStringAttribute
-calcMode = createAttribute "calcMode"
+calcMode = createSetAttribute "calcMode"
 
 clipPathUnits :: ToStringAttribute
-clipPathUnits = createAttribute "clipPathUnits"
+clipPathUnits = createSetAttribute "clipPathUnits"
 
 clipPathAttr :: ToStringAttribute
-clipPathAttr = createAttribute "clip-path"
+clipPathAttr = createSetAttribute "clip-path"
 
 clipRule :: ToStringAttribute
-clipRule = createAttribute "clip-rule"
+clipRule = createSetAttribute "clip-rule"
 
 color :: ToStringAttribute
-color = createAttribute "color"
+color = createSetAttribute "color"
 
 colorInterpolation :: ToStringAttribute
-colorInterpolation = createAttribute "color-interpolation"
+colorInterpolation = createSetAttribute "color-interpolation"
 
 colorInterpolationFilters :: ToStringAttribute
-colorInterpolationFilters = createAttribute "color-interpolation-filters"
+colorInterpolationFilters = createSetAttribute "color-interpolation-filters"
 
 colorProfileAttr :: ToStringAttribute
-colorProfileAttr = createAttribute "color-profile"
+colorProfileAttr = createSetAttribute "color-profile"
 
 colorRendering :: ToStringAttribute
-colorRendering = createAttribute "color-rendering"
+colorRendering = createSetAttribute "color-rendering"
 
 contentScriptType :: ToStringAttribute
-contentScriptType = createAttribute "contentScriptType"
+contentScriptType = createSetAttribute "contentScriptType"
 
 contentStyleType :: ToStringAttribute
-contentStyleType = createAttribute "contentStyleType"
+contentStyleType = createSetAttribute "contentStyleType"
 
 cursorAttr :: ToStringAttribute
-cursorAttr = createAttribute "cursor"
+cursorAttr = createSetAttribute "cursor"
 
 d :: ToStringAttribute
-d = createAttribute "d"
+d = createSetAttribute "d"
 
 direction :: ToStringAttribute
-direction = createAttribute "direction"
+direction = createSetAttribute "direction"
 
 display :: ToStringAttribute
-display = createAttribute "display"
+display = createSetAttribute "display"
 
 dominantBaseline :: ToStringAttribute
-dominantBaseline = createAttribute "dominant-baseline"
+dominantBaseline = createSetAttribute "dominant-baseline"
 
 dur :: ToStringAttribute
-dur = createAttribute "dur"
+dur = createSetAttribute "dur"
 
 dx :: ToStringAttribute
-dx = createAttribute "dx"
+dx = createSetAttribute "dx"
 
 dy :: ToStringAttribute
-dy = createAttribute "dy"
+dy = createSetAttribute "dy"
 
 edgeMode :: ToStringAttribute
-edgeMode = createAttribute "edgeMode"
+edgeMode = createSetAttribute "edgeMode"
 
 end :: ToStringAttribute
-end = createAttribute "end"
+end = createSetAttribute "end"
 
 fill :: ToStringAttribute
-fill = createAttribute "fill"
+fill = createSetAttribute "fill"
 
 fillRule :: ToStringAttribute
-fillRule = createAttribute "fill-rule"
+fillRule = createSetAttribute "fill-rule"
 
 filterAttr :: ToStringAttribute
-filterAttr = createAttribute "filter"
+filterAttr = createSetAttribute "filter"
 
 filterUnits :: ToStringAttribute
-filterUnits = createAttribute "filterUnits"
+filterUnits = createSetAttribute "filterUnits"
 
 floodColor :: ToStringAttribute
-floodColor = createAttribute "flood-color"
+floodColor = createSetAttribute "flood-color"
 
 floodOpacity :: ToStringAttribute
-floodOpacity = createAttribute "flood-opacity"
+floodOpacity = createSetAttribute "flood-opacity"
 
 fontFamily :: ToStringAttribute
-fontFamily = createAttribute "font-family"
+fontFamily = createSetAttribute "font-family"
 
 fontSize :: ToStringAttribute
-fontSize = createAttribute "font-size"
+fontSize = createSetAttribute "font-size"
 
 fontSizeAdjust :: ToStringAttribute
-fontSizeAdjust = createAttribute "font-size-adjust"
+fontSizeAdjust = createSetAttribute "font-size-adjust"
 
 fontStretch :: ToStringAttribute
-fontStretch = createAttribute "font-stretch"
+fontStretch = createSetAttribute "font-stretch"
 
 fontStyle :: ToStringAttribute
-fontStyle = createAttribute "font-style"
+fontStyle = createSetAttribute "font-style"
 
 fontVariant :: ToStringAttribute
-fontVariant = createAttribute "font-variant"
+fontVariant = createSetAttribute "font-variant"
 
 fontWeight :: ToStringAttribute
-fontWeight = createAttribute "font-weight"
+fontWeight = createSetAttribute "font-weight"
 
 from :: ToStringAttribute
-from = createAttribute "from"
+from = createSetAttribute "from"
 
 gradientTransform :: ToStringAttribute
-gradientTransform = createAttribute "gradientTransform"
+gradientTransform = createSetAttribute "gradientTransform"
 
 gradientUnits :: ToStringAttribute
-gradientUnits = createAttribute "gradientUnits"
+gradientUnits = createSetAttribute "gradientUnits"
 
 imageRendering :: ToStringAttribute
-imageRendering = createAttribute "image-rendering"
+imageRendering = createSetAttribute "image-rendering"
 
 in' :: ToStringAttribute
-in' = createAttribute "in"
+in' = createSetAttribute "in"
 
 in2 :: ToStringAttribute
-in2 = createAttribute "in2"
+in2 = createSetAttribute "in2"
 
 kernelMatrix :: ToStringAttribute
-kernelMatrix = createAttribute "kernelMatrix"
+kernelMatrix = createSetAttribute "kernelMatrix"
 
 kernelUnitLength :: ToStringAttribute
-kernelUnitLength = createAttribute "kernelUnitLength"
+kernelUnitLength = createSetAttribute "kernelUnitLength"
 
 kerning :: ToStringAttribute
-kerning = createAttribute "kerning"
+kerning = createSetAttribute "kerning"
 
 keySplines :: ToStringAttribute
-keySplines = createAttribute "keySplines"
+keySplines = createSetAttribute "keySplines"
 
 keyTimes :: ToStringAttribute
-keyTimes = createAttribute "keyTimes"
+keyTimes = createSetAttribute "keyTimes"
 
 lengthAdjust :: ToStringAttribute
-lengthAdjust = createAttribute "lengthAdjust"
+lengthAdjust = createSetAttribute "lengthAdjust"
 
 letterSpacing :: ToStringAttribute
-letterSpacing = createAttribute "letter-spacing"
+letterSpacing = createSetAttribute "letter-spacing"
 
 lightingColor :: ToStringAttribute
-lightingColor = createAttribute "lighting-color"
+lightingColor = createSetAttribute "lighting-color"
 
 local :: ToStringAttribute
-local = createAttribute "local"
+local = createSetAttribute "local"
 
 markerEnd :: ToStringAttribute
-markerEnd = createAttribute "marker-end"
+markerEnd = createSetAttribute "marker-end"
 
 markerMid :: ToStringAttribute
-markerMid = createAttribute "marker-mid"
+markerMid = createSetAttribute "marker-mid"
 
 markerStart :: ToStringAttribute
-markerStart = createAttribute "marker-start"
+markerStart = createSetAttribute "marker-start"
 
 markerUnits :: ToStringAttribute
-markerUnits = createAttribute "markerUnits"
+markerUnits = createSetAttribute "markerUnits"
 
 maskAttr :: ToStringAttribute
-maskAttr = createAttribute "mask"
+maskAttr = createSetAttribute "mask"
 
 maskContentUnits :: ToStringAttribute
-maskContentUnits = createAttribute "maskContentUnits"
+maskContentUnits = createSetAttribute "maskContentUnits"
 
 maskUnits :: ToStringAttribute
-maskUnits = createAttribute "maskUnits"
+maskUnits = createSetAttribute "maskUnits"
 
 mode :: ToStringAttribute
-mode = createAttribute "mode"
+mode = createSetAttribute "mode"
 
 opacity :: ToStringAttribute
-opacity = createAttribute "opacity"
+opacity = createSetAttribute "opacity"
 
 operator :: ToStringAttribute
-operator = createAttribute "operator"
+operator = createSetAttribute "operator"
 
 order :: ToStringAttribute
-order = createAttribute "order"
+order = createSetAttribute "order"
 
 overflow :: ToStringAttribute
-overflow = createAttribute "overflow"
+overflow = createSetAttribute "overflow"
 
 paintOrder :: ToStringAttribute
-paintOrder = createAttribute "paint-order"
+paintOrder = createSetAttribute "paint-order"
 
 patternContentUnits :: ToStringAttribute
-patternContentUnits = createAttribute "patternContentUnits"
+patternContentUnits = createSetAttribute "patternContentUnits"
 
 patternTransform :: ToStringAttribute
-patternTransform = createAttribute "patternTransform"
+patternTransform = createSetAttribute "patternTransform"
 
 patternUnits :: ToStringAttribute
-patternUnits = createAttribute "patternUnits"
+patternUnits = createSetAttribute "patternUnits"
 
 pointerEvents :: ToStringAttribute
-pointerEvents = createAttribute "pointer-events"
+pointerEvents = createSetAttribute "pointer-events"
 
 points :: ToStringAttribute
-points = createAttribute "points"
+points = createSetAttribute "points"
 
 preserveAspectRatio :: ToStringAttribute
-preserveAspectRatio = createAttribute "preserveAspectRatio"
+preserveAspectRatio = createSetAttribute "preserveAspectRatio"
 
 primitiveUnits :: ToStringAttribute
-primitiveUnits = createAttribute "primitiveUnits"
+primitiveUnits = createSetAttribute "primitiveUnits"
 
 radius :: ToStringAttribute
-radius = createAttribute "radius"
+radius = createSetAttribute "radius"
 
 repeatCount :: ToStringAttribute
-repeatCount = createAttribute "repeatCount"
+repeatCount = createSetAttribute "repeatCount"
 
 repeatDur :: ToStringAttribute
-repeatDur = createAttribute "repeatDur"
+repeatDur = createSetAttribute "repeatDur"
 
 requiredFeatures :: ToStringAttribute
-requiredFeatures = createAttribute "requiredFeatures"
+requiredFeatures = createSetAttribute "requiredFeatures"
 
 restart :: ToStringAttribute
-restart = createAttribute "restart"
+restart = createSetAttribute "restart"
 
 result :: ToStringAttribute
-result = createAttribute "result"
+result = createSetAttribute "result"
 
 rx :: ToStringAttribute
-rx = createAttribute "rx"
+rx = createSetAttribute "rx"
 
 ry :: ToStringAttribute
-ry = createAttribute "ry"
+ry = createSetAttribute "ry"
 
 shapeRendering :: ToStringAttribute
-shapeRendering = createAttribute "shape-rendering"
+shapeRendering = createSetAttribute "shape-rendering"
 
 stdDeviation :: ToStringAttribute
-stdDeviation = createAttribute "stdDeviation"
+stdDeviation = createSetAttribute "stdDeviation"
 
 stitchTiles :: ToStringAttribute
-stitchTiles = createAttribute "stitchTiles"
+stitchTiles = createSetAttribute "stitchTiles"
 
 stopColor :: ToStringAttribute
-stopColor = createAttribute "stop-color"
+stopColor = createSetAttribute "stop-color"
 
 stopOpacity :: ToStringAttribute
-stopOpacity = createAttribute "stop-opacity"
+stopOpacity = createSetAttribute "stop-opacity"
 
 stroke :: ToStringAttribute
-stroke = createAttribute "stroke"
+stroke = createSetAttribute "stroke"
 
 strokeDasharray :: ToStringAttribute
-strokeDasharray = createAttribute "stroke-dasharray"
+strokeDasharray = createSetAttribute "stroke-dasharray"
 
 strokeLinecap :: ToStringAttribute
-strokeLinecap = createAttribute "stroke-linecap"
+strokeLinecap = createSetAttribute "stroke-linecap"
 
 strokeLinejoin :: ToStringAttribute
-strokeLinejoin = createAttribute "stroke-linejoin"
+strokeLinejoin = createSetAttribute "stroke-linejoin"
 
 styleAttr :: ToStringAttribute
 styleAttr = createAttribute "style"
 
 textAnchor :: ToStringAttribute
-textAnchor = createAttribute "text-anchor"
+textAnchor = createSetAttribute "text-anchor"
 
 textDecoration :: ToStringAttribute
-textDecoration = createAttribute "text-decoration"
+textDecoration = createSetAttribute "text-decoration"
 
 textRendering :: ToStringAttribute
-textRendering = createAttribute "text-rendering"
+textRendering = createSetAttribute "text-rendering"
 
 transform :: ToStringAttribute
-transform = createAttribute "transform"
+transform = createSetAttribute "transform"
 
 values :: ToStringAttribute
-values = createAttribute "values"
+values = createSetAttribute "values"
 
 vectorEffect :: ToStringAttribute
-vectorEffect = createAttribute "vector-effect"
+vectorEffect = createSetAttribute "vector-effect"
 
 viewBox :: ToStringAttribute
-viewBox = createAttribute "viewBox"
+viewBox = createSetAttribute "viewBox"
 
 visibility :: ToStringAttribute
-visibility = createAttribute "visibility"
+visibility = createSetAttribute "visibility"
 
 wordSpacing :: ToStringAttribute
-wordSpacing = createAttribute "word-spacing"
+wordSpacing = createSetAttribute "word-spacing"
 
 writingMode :: ToStringAttribute
-writingMode = createAttribute "writing-mode"
+writingMode = createSetAttribute "writing-mode"
 
 xChannelSelector :: ToStringAttribute
-xChannelSelector = createAttribute "xChannelSelector"
+xChannelSelector = createSetAttribute "xChannelSelector"
 
 yChannelSelector :: ToStringAttribute
-yChannelSelector = createAttribute "yChannelSelector"
+yChannelSelector = createSetAttribute "yChannelSelector"
 
 accentHeight :: ToNumberAttribute
-accentHeight = createAttribute "accent-height" <<< show
+accentHeight = createSetAttribute "accent-height" <<< show
 
 ascent :: ToNumberAttribute
-ascent = createAttribute "ascent" <<< show
+ascent = createSetAttribute "ascent" <<< show
 
 azimuth :: ToNumberAttribute
-azimuth = createAttribute "azimuth" <<< show
+azimuth = createSetAttribute "azimuth" <<< show
 
 bias :: ToNumberAttribute
-bias = createAttribute "bias" <<< show
+bias = createSetAttribute "bias" <<< show
 
 diffuseConstant :: ToNumberAttribute
 diffuseConstant = createAttribute "diffuseConstant" <<< show
 
 divisor :: ToNumberAttribute
-divisor = createAttribute "divisor" <<< show
+divisor = createSetAttribute "divisor" <<< show
 
 elevation :: ToNumberAttribute
 elevation = createAttribute "elevation" <<< show
 
 fr :: ToNumberAttribute
-fr = createAttribute "fr" <<< show
+fr = createSetAttribute "fr" <<< show
 
 k1 :: ToNumberAttribute
-k1 = createAttribute "k1" <<< show
+k1 = createSetAttribute "k1" <<< show
 
 k2 :: ToNumberAttribute
-k2 = createAttribute "k2" <<< show
+k2 = createSetAttribute "k2" <<< show
 
 k3 :: ToNumberAttribute
-k3 = createAttribute "k3" <<< show
+k3 = createSetAttribute "k3" <<< show
 
 k4 :: ToNumberAttribute
-k4 = createAttribute "k4" <<< show
+k4 = createSetAttribute "k4" <<< show
 
 limitingConeAngle :: ToNumberAttribute
-limitingConeAngle = createAttribute "limitingConeAngle" <<< show
+limitingConeAngle = createSetAttribute "limitingConeAngle" <<< show
 
 overlinePosition :: ToNumberAttribute
-overlinePosition = createAttribute "overline-position" <<< show
+overlinePosition = createSetAttribute "overline-position" <<< show
 
 overlineThickness :: ToNumberAttribute
-overlineThickness = createAttribute "overline-thickness" <<< show
+overlineThickness = createSetAttribute "overline-thickness" <<< show
 
 pathLength :: ToNumberAttribute
-pathLength = createAttribute "pathLength" <<< show
+pathLength = createSetAttribute "pathLength" <<< show
 
 pointsAtX :: ToNumberAttribute
-pointsAtX = createAttribute "pointsAtX" <<< show
+pointsAtX = createSetAttribute "pointsAtX" <<< show
 
 pointsAtY :: ToNumberAttribute
-pointsAtY = createAttribute "pointsAtY" <<< show
+pointsAtY = createSetAttribute "pointsAtY" <<< show
 
 pointsAtZ :: ToNumberAttribute
-pointsAtZ = createAttribute "pointsAtZ" <<< show
+pointsAtZ = createSetAttribute "pointsAtZ" <<< show
 
 refX :: ToNumberAttribute
-refX = createAttribute "refX" <<< show
+refX = createSetAttribute "refX" <<< show
 
 refY :: ToNumberAttribute
-refY = createAttribute "refY" <<< show
+refY = createSetAttribute "refY" <<< show
 
 scale :: ToNumberAttribute
-scale = createAttribute "scale" <<< show
+scale = createSetAttribute "scale" <<< show
 
 seed :: ToNumberAttribute
-seed = createAttribute "seed" <<< show
+seed = createSetAttribute "seed" <<< show
 
 specularConstant :: ToNumberAttribute
-specularConstant = createAttribute "specularConstant" <<< show
+specularConstant = createSetAttribute "specularConstant" <<< show
 
 specularExponent :: ToNumberAttribute
-specularExponent = createAttribute "specularExponent" <<< show
+specularExponent = createSetAttribute "specularExponent" <<< show
 
 strikethroughPosition :: ToNumberAttribute
-strikethroughPosition = createAttribute "strikethrough-position" <<< show
+strikethroughPosition = createSetAttribute "strikethrough-position" <<< show
 
 strikethroughThickness :: ToNumberAttribute
-strikethroughThickness = createAttribute "strikethrough-thickness" <<< show
+strikethroughThickness = createSetAttribute "strikethrough-thickness" <<< show
 
 strokeMiterlimit :: ToNumberAttribute
-strokeMiterlimit = createAttribute "stroke-miterlimit" <<< show
+strokeMiterlimit = createSetAttribute "stroke-miterlimit" <<< show
 
 surfaceScale :: ToNumberAttribute
-surfaceScale = createAttribute "surfaceScale" <<< show
+surfaceScale = createSetAttribute "surfaceScale" <<< show
 
 targetX :: ToNumberAttribute
-targetX = createAttribute "targetX" <<< show
+targetX = createSetAttribute "targetX" <<< show
 
 targetY :: ToNumberAttribute
-targetY = createAttribute "targetY" <<< show
+targetY = createSetAttribute "targetY" <<< show
 
 underlinePosition :: ToNumberAttribute
-underlinePosition = createAttribute "underline-position" <<< show
+underlinePosition = createSetAttribute "underline-position" <<< show
 
 underlineThickness :: ToNumberAttribute
-underlineThickness = createAttribute "underline-thickness" <<< show
+underlineThickness = createSetAttribute "underline-thickness" <<< show
 
 version :: ToNumberAttribute
-version = createAttribute "version" <<< show
+version = createSetAttribute "version" <<< show
 
 numOctaves :: ToIntAttribute
-numOctaves = createAttribute "numOctaves" <<< show
+numOctaves = createSetAttribute "numOctaves" <<< show
