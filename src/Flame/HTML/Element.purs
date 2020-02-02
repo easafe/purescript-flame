@@ -13,22 +13,22 @@ import Flame.HTML.Attribute.Internal as FHAI
 -- | * elements with a single attribute or children need not as well to use lists: `tag (enabled True) (tag attrs children)`
 -- blaze like syntax would be nicer but the only ps port available (smolder) seems to be slow and not mantained
 class ToNode a b c | a -> b where
-	to :: a -> Array (c b)
+        to :: a -> Array (c b)
 
 instance stringToHtml :: ToNode String b Html where
-	to = DA.singleton <<< text
+        to = DA.singleton <<< text
 
 instance arrayToHtml :: (ToNode a b c) => ToNode (Array a) b c where
-	to = DA.concatMap to
+        to = DA.concatMap to
 
 instance htmlToHtml :: ToNode (Html a) a Html where
-	to = DA.singleton
+        to = DA.singleton
 
 instance stringToElementData :: ToNode String b NodeData where
-	to = DA.singleton <<< FHAI.id
+        to = DA.singleton <<< FHAI.id
 
 instance attributeEventToElementData :: ToNode (NodeData a) a NodeData where
-	to = DA.singleton
+        to = DA.singleton
 
 type ToHtml a b h = ToNode a h NodeData => ToNode b h Html => a -> b -> Html h
 

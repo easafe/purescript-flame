@@ -64,8 +64,8 @@ update model message =
 
                 serialize updatedModel = do
                         window <- WH.window
-	                localStorage <- WHW.localStorage window
-	                WSS.setItem todoLocalStorageKey (DAC.stringify $ DAE.encodeJson updatedModel.todos) localStorage
+                        localStorage <- WHW.localStorage window
+                        WSS.setItem todoLocalStorageKey (DAC.stringify $ DAE.encodeJson updatedModel.todos) localStorage
                         pure Nothing
 
 view :: Model -> Html Message

@@ -23,12 +23,12 @@ data TWEMessage = TWEIncrement | TWEDecrement | TWEBogus
 derive instance genericMessage :: Generic TWEMessage _
 
 instance showMessage :: Show TWEMessage where
-	show = DGRS.genericShow
+        show = DGRS.genericShow
 
 derive instance genericModel :: Generic TWEModel _
 
 instance showModel :: Show TWEModel where
-	show a = DGRS.genericShow a
+        show a = DGRS.genericShow a
 
 einit :: TWEModel
 einit = TWEModel {
