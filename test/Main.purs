@@ -408,9 +408,7 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 dispatchEvent clickEvent "#increment-button"
                                 --we are only interested that updating a svg attr (e.g. viewBox) doesn't fail
-                                liftEffect $ do
-                                        _ <- unsafeQuerySelector """svg circle[cx="1"]"""
-                                        pure unit
+                                liftEffect <<< void $ unsafeQuerySelector """svg circle[cx="1"]"""
 
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
@@ -437,22 +435,19 @@ main =
                         element <- unsafeQuerySelector selector
                         WHH.disabled $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
 
-                dispatchEvent eventFunction selector = liftEffect do
+                dispatchEvent eventFunction selector = liftEffect $ void do
                         element <- unsafeQuerySelector selector
                         event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
-                        pure unit
+                        WEE.dispatchEvent event $ WDE.toEventTarget element
 
-                dispatchDocumentEvent eventFunction = liftEffect $ do
+                dispatchDocumentEvent eventFunction = liftEffect $ void do
                         window <- WH.window
                         document <- WHW.document window
                         event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WDD.toEventTarget document
-                        pure unit
+                        WEE.dispatchEvent event $ WDD.toEventTarget document
 
-                dispatchWindowEvent eventFunction = liftEffect $ do
+                dispatchWindowEvent eventFunction = liftEffect $ void do
                         window <- WH.window
                         event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
-                        pure unit
+                        WEE.dispatchEvent event $ WHW.toEventTarget window
 

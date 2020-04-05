@@ -37,4 +37,3 @@ mount = do
                 view
         }
         FE.send [FE.onClick' [Decrement], FE.onKeydown [Increment]] channel
-        pure unit

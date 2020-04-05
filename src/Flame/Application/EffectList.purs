@@ -74,9 +74,7 @@ resumeMount (QuerySelector selector) application = do
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
 resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
-resumeMount_ selector application = do
-        _ <- resumeMount selector application
-        pure unit
+resumeMount_ selector application = void $ resumeMount selector application
 
 -- | Mount a Flame application on the given selector
 mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Array message))
@@ -88,9 +86,7 @@ mount (QuerySelector selector) application = do
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
-mount_ selector application = do
-        _ <- mount selector application
-        pure unit
+mount_ selector application = void $ mount selector application
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
 run :: forall model message. DOMElement -> Boolean -> Application model message -> Effect (Channel (Array message))
