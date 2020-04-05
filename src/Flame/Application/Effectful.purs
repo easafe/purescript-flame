@@ -5,10 +5,12 @@ module Flame.Application.Effectful(
         Application,
         mount,
         mount_,
-        World,
+        AffUpdate,
+        Environment,
         ResumedApplication,
         resumeMount,
-        resumeMount_
+        resumeMount_,
+        noChanges
 )
 where
 
@@ -38,13 +40,15 @@ import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Internal.Types (Event)
 
+type AffUpdate model message = Environment model message -> Aff (model -> model)
+
 -- | `Application` contains
 -- | * `init` – the initial model and an optional message to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
 type Application model message = App model message (
         init :: Tuple model (Maybe message),
-        update :: World model message -> model -> message -> Aff model
+        update :: AffUpdate model message
 )
 
 -- | `ResumedApplication` contains
@@ -53,22 +57,20 @@ type Application model message = App model message (
 -- | * `update` – a function to update your model
 type ResumedApplication model message = App model message (
         init :: Maybe message,
-        update :: World model message -> model -> message -> Aff model
+        update :: AffUpdate model message
 )
 
--- | `World` contains context information for `Application.update`
+-- | `Environment` contains context information for `Application.update`
 -- | * `update` – recurse `Application.update` with given model and message
 -- | * `view` – forcefully update view with given model
--- | * `event` – the `Event` currently being handled
--- | * `previousModel` – model before last update
--- | * `previousMessage` – last message raised
-type World model message = {
-        update :: model -> message -> Aff model,
-        view :: model -> Aff Unit,
-        event :: Maybe Event,
-        previousModel :: Maybe model,
-        previousMessage :: Maybe message
+type Environment model message = {
+        model :: model,
+        message :: message,
+        view :: (model -> model) -> Aff Unit
 }
+
+noChanges :: forall model. Aff (model -> model)
+noChanges = pure identity
 
 -- | Mount a Flame application on the given selector which was rendered server-side
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Maybe message))
@@ -104,68 +106,47 @@ run :: forall model message. DOMElement -> Boolean -> Application model message 
 run el isResumed application = do
         let Tuple initialModel initialMessage = application.init
         state <- ER.new {
-                previousModel: Nothing,
-                previousMessage: Nothing,
                 model: initialModel,
                 vNode: FR.emptyVNode
         }
 
         let     --the function which actually run events
-                runUpdate model message event = do
-                        st <- ER.read state
-                        let world = createWorld st.previousModel st.previousMessage event
+                runUpdate message = do
+                        { model } <- ER.read state
                         EA.runAff_ (case _ of
                                 Left error -> EC.log $ EE.message error --shouldn't stay like this
-                                Right model' -> render (Just message) model') $ application.update world model message
+                                Right recordUpdate -> render $ recordUpdate model) $ application.update {
+                                        view: renderFromUpdate,
+                                        model,
+                                        message
+                                }
 
                 --the function which renders to the dom
-                render previousMessage model = do
+                render model = do
                         currentVNode <- _.vNode <$> ER.read state
-                        updatedVNode <- FR.render currentVNode (runUpdate model) $ application.view model
-                        modifyState (\st -> st {
-                                previousModel = Just st.model,
-                                previousMessage = previousMessage,
+                        updatedVNode <- FR.render currentVNode runUpdate $ application.view model
+                        ER.modify_ (_ {
                                 model = model,
                                 vNode = updatedVNode
-                        })
+                        }) state
 
-                --the function application.update uses instead of recursion
-                reUpdate model message event = liftEffect $ do
-                        runUpdate model message event
-                        _.model <$> ER.read state
-
-                --the function application.update uses to forcefully render
-                reRender model = liftEffect $ render Nothing model
-
-                --first parameter of application.update
-                createWorld previousModel previousMessage event = {
-                        view: \model -> reRender model,
-                        update: \model message -> reUpdate model message event,
-                        previousModel,
-                        previousMessage,
-                        event
-                }
-
-                --wrapper to process signals
-                runUpdate' message = do
-                        model <- _.model <$> ER.read state
-                        --it might be that we can get the event from the signal?
-                        runUpdate model message Nothing
-
-                modifyState st = ER.modify_ st state
+                --the function used to arbitraly render the view from inside Environment.update
+                renderFromUpdate recordUpdate = liftEffect do
+                      { model } <- ER.read state
+                      render $ recordUpdate model
 
         initialVNode <-
                 if isResumed then
-                        FR.renderInitialFrom el (runUpdate initialModel) $ application.view initialModel
+                        FR.renderInitialFrom el runUpdate $ application.view initialModel
                 else
-                        FR.renderInitial el (runUpdate initialModel) $ application.view initialModel
-        modifyState (_ { vNode = initialVNode })
+                        FR.renderInitial el runUpdate $ application.view initialModel
+        ER.modify_ (_ { vNode = initialVNode }) state
 
         case initialMessage of
                 Nothing -> pure unit
-                Just message -> runUpdate initialModel message Nothing
+                Just message -> runUpdate message
 
         --signals are used for some dom events as well user supplied custom events
         channel <- SC.channel Nothing
-        S.runSignal <<< map (DF.traverse_ runUpdate') <<< S.filter DM.isJust Nothing $ SC.subscribe channel
+        S.runSignal <<< map (DF.traverse_ runUpdate) <<< S.filter DM.isJust Nothing $ SC.subscribe channel
         pure channel

@@ -113,14 +113,17 @@ run el isResumed application = do
                 --the function which renders to the dom
                 render model = do
                         currentVNode <- _.vNode <$> ER.read state
-                        updatedVNode <- FR.render currentVNode (const <<< runUpdate) $ application.view model
-                        ER.write { model, vNode: updatedVNode } state
+                        updatedVNode <- FR.render currentVNode runUpdate $ application.view model
+                        ER.write {
+                                vNode: updatedVNode,
+                                model
+                        } state
 
         initialVNode <-
                 if isResumed then
-                        FR.renderInitialFrom el (const <<< runUpdate) $ application.view initialModel
+                        FR.renderInitialFrom el runUpdate $ application.view initialModel
                  else
-                        FR.renderInitial el (const <<< runUpdate) $ application.view initialModel
+                        FR.renderInitial el runUpdate $ application.view initialModel
         ER.modify_ (_ { vNode = initialVNode }) state
 
         runMessages initialAffs

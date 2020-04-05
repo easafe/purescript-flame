@@ -1,4 +1,4 @@
-module Test.World.Effectful (mount, TWEMessage(..), einit, TWEModel(..)) where
+module Test.Environment.Effectful (mount, TWEMessage(..), einit, TWEModel(..)) where
 
 import Prelude
 
@@ -7,7 +7,7 @@ import Data.Generic.Rep.Show as DGRS
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (QuerySelector(..), Html, World, (:>))
+import Flame (QuerySelector(..), Html, Environment, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -37,7 +37,7 @@ einit = TWEModel {
         previousModel : Nothing
 }
 
-update :: World TWEModel TWEMessage -> TWEModel -> TWEMessage -> Aff TWEModel
+update :: Environment TWEModel TWEMessage -> TWEModel -> TWEMessage -> Aff TWEModel
 update re (TWEModel model) message = do
         pure $ TWEModel $ model {
                 times = model.times + 1,

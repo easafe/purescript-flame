@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (QuerySelector(..), Html, World, (:>))
+import Flame (QuerySelector(..), Html, Environment, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -21,7 +21,7 @@ data Message = Increment | Decrement | Bogus
 init :: Model
 init = { increments: 0, decrements: 0, luckyNumber: 0 }
 
-update :: World Model Message -> Model -> Message -> Aff Model
+update :: Environment Model Message -> Model -> Message -> Aff Model
 update re model = case _ of
         Increment -> do
                 re.view (model { luckyNumber = model.increments - 2 })

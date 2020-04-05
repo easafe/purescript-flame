@@ -14,7 +14,6 @@ module Flame.Renderer(
 import Data.Foldable as DF
 import Data.Function.Uncurried (Fn1, Fn2, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
@@ -64,7 +63,7 @@ h = runFn3 h_
 -- | Renders markup to a given selector
 -- |
 -- | This function is necessary since subsequent calls to snabbdom `patch` require a previsouly created VNode
-renderInitial :: forall message. DOMElement -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
+renderInitial :: forall message. DOMElement -> (message -> Effect Unit) -> Html message -> Effect VNode
 renderInitial domElement updater element = do
         let vNode =
                 case element of
@@ -73,7 +72,7 @@ renderInitial domElement updater element = do
         patchInitial domElement vNode
         pure vNode
 
-renderInitialFrom :: forall message. DOMElement -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
+renderInitialFrom :: forall message. DOMElement -> (message -> Effect Unit) -> Html message -> Effect VNode
 renderInitialFrom domElement updater element = do
         let vNode =
                 case element of
@@ -83,7 +82,7 @@ renderInitialFrom domElement updater element = do
         pure vNode
 
 -- | Renders markup according to the difference between VNodes
-render :: forall message. VNode -> (message -> Maybe Event -> Effect Unit) -> Html message -> Effect VNode
+render :: forall message. VNode -> (message -> Effect Unit) -> Html message -> Effect VNode
 render oldVNode updater element = do
         let vNode =
                 case element of
@@ -94,7 +93,7 @@ render oldVNode updater element = do
 
 -- could we make this keyed (key : string | number) somehow?
 -- | Transforms an `Html` into a `VNode`
-toVNode :: forall message. (message -> Maybe Event -> Effect Unit) -> Html message -> VNode
+toVNode :: forall message. (message -> Effect Unit) -> Html message -> VNode
 toVNode updater (Text value) = text value
 toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
         where   toVNodeData { properties, attributes, events } = {
@@ -105,13 +104,13 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
 
                 handleRawEvent handler event = do
                         message <- handler event
-                        updater message (Just event)
+                        updater message
 
                 unions record@{ properties, attributes, events } =
                         case _ of
                                 Property name value -> record { properties = FO.insert name value properties }
                                 Attribute name value -> record { attributes = FO.insert name value attributes }
-                                Event name message -> record { events = FO.insert name (updater message <<< Just) events }
+                                Event name message -> record { events = FO.insert name updater events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
 
                 vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty } nodeData

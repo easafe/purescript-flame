@@ -31,8 +31,8 @@ import Test.TextContent.NoEffects as TTN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
-import Test.World.Effectful (TWEMessage(..), TWEModel(..), einit)
-import Test.World.Effectful as TWE
+import Test.Environment.Effectful (TWEMessage(..), TWEModel(..), einit)
+import Test.Environment.Effectful as TWE
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
 import Web.DOM.Node as WDN
@@ -294,7 +294,7 @@ main =
                                 TUA.equal false currentNewChecked
                                 TUA.equal false currentNewDisabled
 
-                suite "World parameter test application" do
+                suite "Environment parameter test application" do
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment

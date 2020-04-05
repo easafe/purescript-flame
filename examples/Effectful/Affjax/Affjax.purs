@@ -6,9 +6,9 @@ import Affjax as A
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Flame (QuerySelector(..), Html, World, (:>))
+import Flame (QuerySelector(..), Html, AffUpdate, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -18,7 +18,7 @@ type Model = {
         result :: Result
 }
 
-data Message = UpdateUrl String | Fetch | Fetched Result
+data Message = UpdateUrl String | Fetch
 
 data Result = NotFetched | Fetching | Ok String | Error String
 
@@ -30,21 +30,23 @@ init = {
         result: NotFetched
 }
 
-update :: World Model Message -> Model -> Message -> Aff Model
-update _ model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
-update _ model (Fetched result) = pure $ model { result = result }
-update re model Fetch = do
-        re.view $ model { result = Fetching }
-        response <- A.get AR.string model.url
-        pure $ case response.body of
-                Left error -> model { result = Error $ A.printResponseFormatError error }
-                Right ok -> model { result =  Ok ok }
+update :: AffUpdate Model Message
+update { view, model, message } =
+        case message of
+                UpdateUrl url -> pure $ _ { url = url, result = NotFetched }
+                Fetch -> do
+                        view $ _ { result = Fetching }
+                        response <- A.get AR.string model.url
+                        pure $ case response.body of
+                                Left error -> _ { result = Error $ A.printResponseFormatError error }
+                                Right ok -> _ { result =  Ok ok }
 
+--
 view :: Model -> Html Message
-view model = HE.main "main" [
-        HE.input [HA.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
-        HE.button [HA.onClick Fetch, HA.disabled $ model.result == Fetching] "Fetch",
-        case model.result of
+view { url, result } = HE.main "main" [
+        HE.input [HA.onInput UpdateUrl, HA.value url, HA.type' "text"],
+        HE.button [HA.onClick Fetch, HA.disabled $ result == Fetching] "Fetch",
+        case result of
                 NotFetched ->
                         HE.div_ "Not Fetched..."
                 Fetching ->

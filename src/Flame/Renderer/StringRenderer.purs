@@ -10,4 +10,4 @@ foreign import render_ :: EffectFn1 VNode String
 
 -- | Render markup into a string, useful for server side rendering of static pages
 render :: forall a. Html a -> Effect String
-render = runEffectFn1 render_ <<< FR.toVNode (\_ _ -> pure unit)
+render = runEffectFn1 render_ <<< FR.toVNode (const (pure unit))

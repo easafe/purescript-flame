@@ -11,7 +11,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Var (($=))
-import Flame (QuerySelector(..), Html, World, (:>))
+import Flame (QuerySelector(..), Html, Environment, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -42,15 +42,20 @@ init = {
 }
 
 -- | `update` is called to handle events
-update :: World Model Message -> Model -> Message -> Aff Model
-update re model (SetSocket connection) = re.update (model { connection = connection }) <<< Online $ DM.isJust connection
-update _ model (Receive text) = pure $ model { history = DA.snoc model.history text }
-update _ model (Online isOnline) = pure $ model { isOnline = isOnline }
-update _ model (SetMessage text) = pure $ model { message = text }
-update re model Send = do
-        let Connection socket = unsafePartial (DM.fromJust model.connection)
-        liftEffect $ socket.send $ W.Message model.message
-        pure $ model { message = "" }
+update :: Environment Model Message -> Aff (Model -> Model)
+update { model, message, view } =
+        case message of
+                SetSocket connection -> pure (setIsOnline (DM.isJust connection) <<<  _ { connection = connection })
+                Receive text -> pure $ \model -> model { history = DA.snoc model.history text }
+                Online isOnline -> pure (setIsOnline isOnline)
+                SetMessage text -> pure $ _ { message = text }
+                Send -> do
+                        view $ _ { message = "" }
+                        let Connection socket = unsafePartial (DM.fromJust model.connection)
+                        liftEffect $ socket.send $ W.Message model.message
+                        F.noChanges
+
+        where setIsOnline isIt = _ { isOnline = isIt }
 
 -- | `view` updates the app markup whenever the model is updated
 view :: Model -> Html Message
