@@ -11,19 +11,18 @@ module Flame.Renderer(
         emptyVNode
 ) where
 
-import Prelude
-
 import Data.Foldable as DF
 import Data.Function.Uncurried (Fn1, Fn2, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
 import Data.Maybe (Maybe(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame.Types
+import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Type.Data.Boolean (kind Boolean)
+import Prelude (Unit, bind, discard, map, pure, ($), (<<<))
 import Web.Event.Internal.Types (Event)
 
 foreign import emptyVNode :: VNode
@@ -92,32 +91,28 @@ render oldVNode updater element = do
                         Text textContent -> let (VNode node) = oldVNode in toTextVNode node.elm textContent
                         _ -> toVNode updater element
         patch oldVNode vNode
-        pure vNode
+        pure $ spy "v" vNode
 
 -- could we make this keyed (key : string | number) somehow?
 -- | Transforms an `Html` into a `VNode`
 toVNode :: forall message. (message -> Maybe Event -> Effect Unit) -> Html message -> VNode
 toVNode updater (Text value) = text value
 toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
-        where   toVNodeData {attributesProperties, setAttributes, events} =
-                        {
-                                attrs: setAttributes,
-                                props: attributesProperties,
-                                on: toVNodeEvents events
-                        }
+        where   toVNodeData { properties, attributes, events } = {
+                        attrs: attributes,
+                        props: properties,
+                        on: toVNodeEvents events
+                }
 
                 handleRawEvent handler event = do
                         message <- handler event
                         updater message (Just event)
 
-                unions record@{attributesProperties, setAttributes, events} =
+                unions record@{ properties, attributes, events } =
                         case _ of
-                                Attribute Props name value -> record { attributesProperties = FO.insert name value attributesProperties }
-                                Attribute Attrs name value -> record { setAttributes = FO.insert name value setAttributes }
-                                Property name value ->
-                                        if value then record { attributesProperties = FO.insert name name attributesProperties }
-                                         else record
+                                Property name value -> record { properties = FO.insert name value properties }
+                                Attribute name value -> record { attributes = FO.insert name value attributes }
                                 Event name message -> record { events = FO.insert name (updater message <<< Just) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
 
-                vNodeData = toVNodeData $ DF.foldl unions { attributesProperties: FO.empty, setAttributes:  FO.empty, events: FO.empty } nodeData
+                vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty } nodeData

@@ -7,7 +7,8 @@ import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (Aff)
+import Effect.Aff (Aff, Milliseconds(..))
+import Effect.Aff as AF
 import Flame (QuerySelector(..), Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
@@ -35,6 +36,7 @@ update _ model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
 update _ model (Fetched result) = pure $ model { result = result }
 update re model Fetch = do
         re.view $ model { result = Fetching }
+        AF.delay  $ Milliseconds 2000.0
         response <- A.get AR.string model.url
         pure $ case response.body of
                 Left error -> model { result = Error $ A.printResponseFormatError error }
@@ -43,6 +45,7 @@ update re model Fetch = do
 view :: Model -> Html Message
 view model = HE.main "main" [
         HE.input [HA.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
+        HE.input [HA.type' "checkbox", HA.checked $ model.result == Fetching],
         HE.button [HA.onClick Fetch, HA.disabled $ model.result == Fetching] "Fetch",
         case model.result of
                 NotFetched ->

@@ -127,23 +127,6 @@ main =
                                 html3' <- liftEffect $ FRS.render html3
                                 TUA.equal """<custom-element>test</custom-element>""" html3'
 
-                        test "properties" do
-                                let html = HE.a [HA.disabled true] [HE.text "TEST"]
-                                html' <- liftEffect $ FRS.render html
-                                TUA.equal """<a disabled="disabled">TEST</a>""" html'
-
-                                let html2 = HE.a [HA.disabled false] [HE.text "TEST"]
-                                html2' <- liftEffect $ FRS.render html2
-                                TUA.equal """<a>TEST</a>""" html2'
-
-                                let html3 = HE.a [HA.createProperty "test-prop" true] [HE.text "TEST"]
-                                html3' <- liftEffect $ FRS.render html3
-                                TUA.equal """<a test-prop="test-prop">TEST</a>""" html3'
-
-                                let html4 = HE.a [HA.createProperty "test-prop" false] [HE.text "TEST"]
-                                html4' <- liftEffect $ FRS.render html4
-                                TUA.equal """<a>TEST</a>""" html4'
-
                         test "nested elements" do
                                 let html = HE.html_ [
                                         HE.head_ [HE.title "title"],
@@ -199,7 +182,7 @@ main =
                                         ]
                                 ]
                                 html' <- liftEffect $ FRS.render html
-                                TUA.equal """<html lang="en"><head disabled="disabled"><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a autofocus="autofocus">here</a></span></div></div></main></body></html>""" html'
+                                TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
 
                         test "events" do
                                 let html = HE.a [HA.onClick unit, HA.onInput (const unit)] [HE.text "TEST"]
