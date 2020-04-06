@@ -1,10 +1,9 @@
 module Flame.Application.PreMount where
 
-import Flame.Types
-import Prelude
+import Flame.Types (Html(..), PreApplication)
+import Prelude (bind, discard, otherwise, pure, ($), (<<<), (<>), (==))
 
 import Control.Monad.Except as CME
-import Control.Monad.Trans.Class (lift)
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DADEGR

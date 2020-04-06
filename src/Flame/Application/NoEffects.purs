@@ -11,8 +11,8 @@ module Flame.Application.NoEffects(
 )
 where
 
-import Flame.Types
-import Prelude
+import Flame.Types (App, (:>))
+import Prelude (Unit, bind, pure, unit, ($))
 
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Generic.Rep (class Generic)

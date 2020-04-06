@@ -27,9 +27,11 @@ import Flame.HTML.Attribute as HA
 
 The module `Flame.HTML.Attribute` exports
 
-* Attributes, which are functions from string values such as `id` or `type'`, or helpers such as `class'` or `style`
+* Properties, which are functions from string values such as `id` or `type'`, or helpers such as `class'` or `style`
 
-* Properties, i.e., presential attributes such as `disabled` or `checked`, expecting boolean parameters
+* Presential properties, such as `disabled` or `checked`, expecting boolean parameters
+
+* Regular name value HTML attributes
 
 * Events, such as `onClick` or `onInput`, expecting a `message` type constructor
 
@@ -37,9 +39,7 @@ See the [API reference](https://pursuit.purescript.org/packages/purescript-flame
 
 ```haskell
 HA.createAttibute
-
 HA.createProperty
-
 HA.createEvent
 HA.createRawEvent
 ```
@@ -96,6 +96,7 @@ But for some common cases, the markup DSL also defines convenience type classes 
 * `HE.element _ $ HE.element _ _` instead of `HE.element _ [HE.Element _ _]` to declare elements with a single child element
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of elements. In the case you need to define your own elements, Flame provides a few combinators as well
+
 ```haskell
 HE.createElement
 HE.createElement_
