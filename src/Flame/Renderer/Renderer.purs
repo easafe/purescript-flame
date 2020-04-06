@@ -15,7 +15,6 @@ import Data.Foldable as DF
 import Data.Function.Uncurried (Fn1, Fn2, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
@@ -91,7 +90,7 @@ render oldVNode updater element = do
                         Text textContent -> let (VNode node) = oldVNode in toTextVNode node.elm textContent
                         _ -> toVNode updater element
         patch oldVNode vNode
-        pure $ spy "v" vNode
+        pure vNode
 
 -- could we make this keyed (key : string | number) somehow?
 -- | Transforms an `Html` into a `VNode`

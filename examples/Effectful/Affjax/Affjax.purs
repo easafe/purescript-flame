@@ -36,7 +36,6 @@ update _ model (UpdateUrl url) = pure $ model { url = url, result = NotFetched }
 update _ model (Fetched result) = pure $ model { result = result }
 update re model Fetch = do
         re.view $ model { result = Fetching }
-        AF.delay  $ Milliseconds 2000.0
         response <- A.get AR.string model.url
         pure $ case response.body of
                 Left error -> model { result = Error $ A.printResponseFormatError error }

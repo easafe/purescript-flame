@@ -3,7 +3,6 @@ module Test.Main where
 import Prelude
 
 import Data.Array as DA
-import Test.ServerSideRendering.Effectful as TSE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.CodeUnits as DSC
@@ -12,10 +11,12 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Flame.Application.DOM as FAD
+import Test.Basic.PresentialAttributes as TBPA
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Partial.Unsafe (unsafePartial)
+import Partial.Unsafe as PU
 import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
@@ -24,6 +25,8 @@ import Test.External.EffectList (TEELMessage(..))
 import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
 import Test.External.NoEffects as TEN
+import Test.SVG.NoEffects as TSN
+import Test.ServerSideRendering.Effectful as TSE
 import Test.TextContent.NoEffects as TTN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
@@ -39,7 +42,6 @@ import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WDD
 import Web.HTML.HTMLInputElement as WHH
-import Test.SVG.NoEffects as TSN
 import Web.HTML.Window as WHW
 
 --we use jsdom to provide a browser like enviroment to run tests
@@ -209,6 +211,7 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 current2 <- textContent "#text-output"
                                 TUA.equal "1" current2
+
                         test "effectlist" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -233,6 +236,7 @@ main =
                                 cut <- textContent "#text-output"
                                 --always remove at least one character
                                 TUA.assert "cut text" $ DSC.length cut < 4
+
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -264,6 +268,32 @@ main =
                                 TUA.equal "2" currentIncrement3
                                 TUA.equal "-2" currentDecrement3
                                 TUA.equal "2" currentLuckyNumber3
+
+                        test "presential attributes" do
+                                liftEffect do
+                                        unsafeCreateEnviroment
+                                        TBPA.mount
+                                childrenLength <- childrenNodeLength
+                                --button, input, button
+                                TUA.equal 3 childrenLength
+
+                                initialChecked <- isChecked "#checkbox"
+                                initialDisabled <- isDisabled "#checkbox"
+                                TUA.equal true initialChecked
+                                TUA.equal false initialDisabled
+
+                                dispatchEvent clickEvent "#increment-button"
+                                currentChecked <- isChecked "#checkbox"
+                                currentDisabled <- isDisabled "#checkbox"
+                                TUA.equal false currentChecked
+                                TUA.equal true currentDisabled
+
+                                dispatchEvent clickEvent "#increment-button"
+                                currentNewChecked <- isChecked "#checkbox"
+                                currentNewDisabled <- isDisabled "#checkbox"
+                                TUA.equal false currentNewChecked
+                                TUA.equal false currentNewDisabled
+
                 suite "World parameter test application" do
                         test "effectful" do
                                 liftEffect $ do
@@ -279,6 +309,7 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 spans3 <- textContentAll ids
                                 equalAll ["3", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement, Just TWEIncrement, Just TWEIncrement], show <<< Just $ TWEModel { previousMessages: [Nothing,(Just TWEDecrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
+
                 suite "Custom events test applications" do
                         test "noeffects" do
                                 liftEffect $ do
@@ -296,6 +327,7 @@ main =
                                 dispatchDocumentEvent keydownEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "2" output3
+
                         test "effectlist" do
                                 channel <- liftEffect $ do
                                         unsafeCreateEnviroment
@@ -310,6 +342,7 @@ main =
                                 liftEffect $ SC.send channel [TEELIncrement]
                                 output3 <- textContent "#text-output"
                                 TUA.equal "0" output3
+
                         test "effectful" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
@@ -326,6 +359,7 @@ main =
                                 dispatchWindowEvent offlineEvent
                                 output3 <- textContent "#text-output"
                                 TUA.equal "3" output3
+
                 suite "Text content views" $ do
                         test "no effects" $ do
                                 liftEffect $ do
@@ -341,6 +375,7 @@ main =
                                 dispatchWindowEvent offlineEvent
                                 childrenLength3 <- childrenNodeLength
                                 TUA.equal 0 childrenLength3
+
                 suite "Server side rendering" $ do
                         test "effectful" $ do
                                 liftEffect $ do
@@ -363,6 +398,7 @@ main =
                                 dispatchEvent clickEvent "#increment-button"
                                 current <- textContent "#text-output"
                                 TUA.equal "3" current
+
                 suite "SVG" do
                         test "noeffects" do
                                 liftEffect $ do
@@ -375,6 +411,7 @@ main =
                                 liftEffect $ do
                                         _ <- unsafeQuerySelector """svg circle[cx="1"]"""
                                         pure unit
+
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
                 childrenNodeLength = childrenNodeLengthOf "main"
@@ -388,11 +425,19 @@ main =
 
                 equalAll expected = DF.traverse_ (\(Tuple a b) -> TUA.equal a b) <<< DA.zip expected
 
-                textContent selector = liftEffect $ do
+                textContent selector = liftEffect do
                         element <- unsafeQuerySelector selector
                         WDN.textContent $ WDE.toNode element
 
-                dispatchEvent eventFunction selector = liftEffect $ do
+                isChecked selector = liftEffect do
+                        element <- unsafeQuerySelector selector
+                        WHH.checked $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
+
+                isDisabled selector = liftEffect do
+                        element <- unsafeQuerySelector selector
+                        WHH.disabled $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
+
+                dispatchEvent eventFunction selector = liftEffect do
                         element <- unsafeQuerySelector selector
                         event <- eventFunction
                         _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
