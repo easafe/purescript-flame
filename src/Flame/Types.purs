@@ -42,7 +42,7 @@ type PreApplication model message = App model message (
         init :: model
 )
 
--- | A native HMLT element
+-- | A native HTML element
 type DOMElement = WDE.Element
 
 type ToNodeData message = forall b. message -> NodeData b
@@ -59,13 +59,11 @@ data Html message =
 
 derive instance elementFunctor :: Functor Html
 
-data SetTo = Props | Attrs
-
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
-        Attribute SetTo String String |
-        Property String Boolean |
+        Attribute String String |
+        Property String String |
         Event String message |
         RawEvent String (Event -> Effect message)
 

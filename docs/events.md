@@ -173,7 +173,7 @@ update re model = case _ of
                         performAJAX "url3",
                         performAJAX "url4",
                 ]
-                re.update newModel Finish "Performed all"
+                re.update newModel $ Finish "Performed all"
         Finish contents -> pure $ model { isLoading = false, response = model.response <> contents }
 
 init :: Tuple Model (Maybe Message)
