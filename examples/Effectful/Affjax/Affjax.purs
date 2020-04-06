@@ -7,8 +7,7 @@ import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (Aff, Milliseconds(..))
-import Effect.Aff as AF
+import Effect.Aff (Aff)
 import Flame (QuerySelector(..), Html, World, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
@@ -44,7 +43,6 @@ update re model Fetch = do
 view :: Model -> Html Message
 view model = HE.main "main" [
         HE.input [HA.onInput UpdateUrl, HA.value model.url, HA.type' "text"],
-        HE.input [HA.type' "checkbox", HA.checked $ model.result == Fetching],
         HE.button [HA.onClick Fetch, HA.disabled $ model.result == Fetching] "Fetch",
         case model.result of
                 NotFetched ->
