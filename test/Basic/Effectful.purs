@@ -21,13 +21,13 @@ data Message = Increment | Decrement | Bogus
 init :: Model
 init = { increments: 0, decrements: 0, luckyNumber: 0 }
 
-update :: Environment Model Message -> Model -> Message -> Aff Model
-update re model = case _ of
+update :: Environment Model Message -> Aff (Model -> Model)
+update {view, model, message } = case message of
         Increment -> do
-                re.view (model { luckyNumber = model.increments - 2 })
-                pure $ model { increments = model.increments + 1}
-        Decrement -> re.update (model { luckyNumber = model.increments + 2, decrements = model.decrements - 1 }) Bogus
-        Bogus -> pure model
+                view (_ { luckyNumber = model.increments - 2 })
+                pure $ _ { increments = model.increments + 1}
+        Decrement -> pure (_ { luckyNumber = model.increments + 2, decrements = model.decrements - 1 })
+        Bogus -> F.noChanges
 
 view :: Model -> Html Message
 view model = HE.main_ [

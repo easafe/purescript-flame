@@ -8,7 +8,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame (QuerySelector(..), Html)
+import Flame (QuerySelector(..), Html, AffUpdate)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -26,11 +26,11 @@ derive instance genericModle :: Generic Model _
 data Message = Increment | Decrement Event
 
 -- | `update` is called to handle events
-update :: _ -> Model -> Message -> Aff Model
-update _ (Model model) =
-        pure <<< Model <<< (case _ of
-                Increment -> model + 1
-                Decrement _ -> model - 1)
+update :: AffUpdate Model Message
+update { model: Model m, message } =
+        pure $ const (Model $ case message of
+                Increment -> m + 1
+                Decrement _ -> m - 1)
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message

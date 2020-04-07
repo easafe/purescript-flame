@@ -46,7 +46,7 @@ update :: Environment Model Message -> Aff (Model -> Model)
 update { model, message, view } =
         case message of
                 SetSocket connection -> pure (setIsOnline (DM.isJust connection) <<<  _ { connection = connection })
-                Receive text -> pure $ \model -> model { history = DA.snoc model.history text }
+                Receive text -> pure $ \model' -> model' { history = DA.snoc model'.history text }
                 Online isOnline -> pure (setIsOnline isOnline)
                 SetMessage text -> pure $ _ { message = text }
                 Send -> do

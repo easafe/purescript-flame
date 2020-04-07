@@ -8,7 +8,7 @@ import Data.Traversable as DF
 import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (QuerySelector(..), Html, (:>))
+import Flame (QuerySelector(..), Html, (:>), AffUpdate)
 import Flame as F
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
@@ -22,11 +22,11 @@ type Model = Int
 data Message = Increment | Decrement Event
 
 -- | `update` is called to handle events
-update :: _ -> Model -> Message -> Aff Model
-update _ model =
-        pure <<< (case _ of
-                Increment -> model + 1
-                Decrement _ -> model - 1)
+update :: AffUpdate Model Message
+update { model, message } =
+        pure $ (case message of
+                Increment -> (_ + 1)
+                Decrement _ -> (_ - 1))
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message

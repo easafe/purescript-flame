@@ -23,14 +23,13 @@ data Message = Increment Event | Decrement Event
 init :: Model
 init = 0
 
---update :: Model -> Message -> Model
-update _ model = case _ of
+update { model, message } = case message of
         Increment event -> do
                 liftEffect $ stopPropagation event
-                pure $ model + 1
+                pure (_ + 1)
         Decrement event -> do
                 liftEffect $ stopPropagation event
-                pure $ model - 1
+                pure (_ - 1)
 
 view :: Model -> Html Message
 view 0 = HE.text "alert('oi')"

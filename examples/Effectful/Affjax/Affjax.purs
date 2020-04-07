@@ -6,8 +6,9 @@ import Affjax as A
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
 import Effect (Effect)
+import Effect.Aff (Milliseconds(..))
+import Effect.Aff as AF
 import Flame (QuerySelector(..), Html, AffUpdate, (:>))
 import Flame as F
 import Flame.HTML.Attribute as HA
@@ -41,7 +42,6 @@ update { view, model, message } =
                                 Left error -> _ { result = Error $ A.printResponseFormatError error }
                                 Right ok -> _ { result =  Ok ok }
 
---
 view :: Model -> Html Message
 view { url, result } = HE.main "main" [
         HE.input [HA.onInput UpdateUrl, HA.value url, HA.type' "text"],

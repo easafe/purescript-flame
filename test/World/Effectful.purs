@@ -37,13 +37,13 @@ einit = TWEModel {
         previousModel : Nothing
 }
 
-update :: Environment TWEModel TWEMessage -> TWEModel -> TWEMessage -> Aff TWEModel
-update re (TWEModel model) message = do
-        pure $ TWEModel $ model {
+update :: Environment TWEModel TWEMessage -> Aff (TWEModel -> TWEModel)
+update { model, message } =
+        pure $ \t@(TWEModel model) -> TWEModel model {
                 times = model.times + 1,
-                previousMessages = model.previousMessages <> [re.previousMessage, Just message],
-                previousModel = re.previousModel
-}
+                previousMessages = model.previousMessages <> [Just message],
+                previousModel = Just t
+        }
 
 view :: TWEModel -> Html TWEMessage
 view (TWEModel model) = HE.main_ [

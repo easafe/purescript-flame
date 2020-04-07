@@ -16,11 +16,13 @@ where
 
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Either (Either(..))
+import Data.Either as DET
 import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -37,7 +39,6 @@ import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
-import Web.Event.Internal.Types (Event)
 
 type AffUpdate model message = Environment model message -> Aff (model -> model)
 
@@ -60,8 +61,9 @@ type ResumedApplication model message = App model message (
 )
 
 -- | `Environment` contains context information for `Application.update`
--- | * `update` – recurse `Application.update` with given model and message
--- | * `view` – forcefully update view with given model
+-- | * `model` – the current model
+-- | * `message` – the current message
+-- | * `view` – forcefully update view with given model changes
 type Environment model message = {
         model :: model,
         message :: message,
@@ -112,27 +114,20 @@ run el isResumed application = do
         let     --the function which actually run events
                 runUpdate message = do
                         { model } <- ER.read state
-                        EA.runAff_ (case _ of
-                                Left error -> EC.log $ EE.message error --shouldn't stay like this
-                                Right recordUpdate -> render $ recordUpdate model) $ application.update {
-                                        view: renderFromUpdate,
-                                        model,
-                                        message
-                                }
+                        EA.runAff_ (DET.either (EC.log <<< EE.message) render) $ application.update { view: renderFromUpdate, model, message }
 
                 --the function which renders to the dom
-                render model = do
-                        currentVNode <- _.vNode <$> ER.read state
-                        updatedVNode <- FR.render currentVNode runUpdate $ application.view model
-                        ER.modify_ (_ {
-                                model = model,
-                                vNode = updatedVNode
-                        }) state
+                render recordUpdate = do
+                        { vNode, model } <- ER.read state
+                        let updatedModel = recordUpdate model
+                        updatedVNode <- FR.render vNode runUpdate $ application.view updatedModel
+                        ER.write {
+                                model: updatedModel,
+                                vNode: updatedVNode
+                        } state
 
                 --the function used to arbitraly render the view from inside Environment.update
-                renderFromUpdate recordUpdate = liftEffect do
-                      { model } <- ER.read state
-                      render $ recordUpdate model
+                renderFromUpdate recordUpdate = liftEffect $ render recordUpdate
 
         initialVNode <-
                 if isResumed then
