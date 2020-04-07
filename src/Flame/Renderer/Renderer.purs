@@ -20,7 +20,7 @@ import Effect.Uncurried as EU
 import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Prelude (Unit, bind, discard, map, pure, ($), (<<<))
+import Prelude (Unit, bind, const, discard, map, pure, ($), (<<<))
 import Web.Event.Internal.Types (Event)
 
 foreign import emptyVNode :: VNode
@@ -110,7 +110,7 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                         case _ of
                                 Property name value -> record { properties = FO.insert name value properties }
                                 Attribute name value -> record { attributes = FO.insert name value attributes }
-                                Event name message -> record { events = FO.insert name updater events }
+                                Event name message -> record { events = FO.insert name (const (updater message)) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
 
                 vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty } nodeData

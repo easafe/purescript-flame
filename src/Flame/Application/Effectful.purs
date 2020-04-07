@@ -14,9 +14,6 @@ module Flame.Application.Effectful(
 )
 where
 
-import Flame.Types (App, DOMElement, (:>))
-import Prelude (Unit, bind, discard, map, pure, show, unit, ($), (<$>), (<<<), (<>))
-
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Either (Either(..))
 import Data.Foldable as DF
@@ -34,6 +31,8 @@ import Effect.Ref as ER
 import Flame.Application.DOM as FAD
 import Flame.Application.PreMount as FAP
 import Flame.Renderer as FR
+import Flame.Types (App, DOMElement, (:>))
+import Prelude (Unit, bind, discard, identity, map, pure, show, unit, void, ($), (<$>), (<<<), (<>))
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC

@@ -11,13 +11,12 @@ module Flame.Application.NoEffects(
 )
 where
 
-import Flame.Types (App, (:>))
-import Prelude (Unit, bind, pure, unit, ($))
-
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Generic.Rep (class Generic)
 import Effect (Effect)
 import Flame.Application.EffectList as FAE
+import Flame.Types (App, (:>))
+import Prelude (Unit, bind, pure, unit, void, ($))
 import Signal.Channel (Channel)
 import Web.DOM.ParentNode (QuerySelector)
 
