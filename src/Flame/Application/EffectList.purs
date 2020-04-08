@@ -2,7 +2,9 @@
 -- |
 -- | The update function returns an array of side effects
 module Flame.Application.EffectList(
+        ListUpdate,
         Application,
+        noMessages,
         mount,
         mount_,
         ResumedApplication,
@@ -11,19 +13,14 @@ module Flame.Application.EffectList(
 )
 where
 
-import Flame.Types
-import Prelude
+import Flame.Types (App, DOMElement, (:>))
+import Prelude (Unit, bind, discard, map, pure, show, unit, void, ($), (<$>), (<<<), (<>))
 
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Encode.Generic.Rep as EGR
-import Data.Array ((:))
-import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -33,13 +30,13 @@ import Effect.Exception as EE
 import Effect.Ref as ER
 import Flame.Application.DOM as FAD
 import Flame.Application.PreMount as FAP
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
 import Flame.Renderer as FR
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
+
+type ListUpdate model message = model -> message -> Tuple model (Array (Aff (Maybe message)))
 
 -- | `Application` contains
 -- | * `init` – the initial model and a list of messages to invoke `update` with
@@ -47,7 +44,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 -- | * `update` – a function to update your model
 type Application model message = App model message (
         init :: Tuple model (Array (Aff (Maybe message))),
-        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+        update :: ListUpdate model message
 )
 
 -- | `ResumedApplication` contains
@@ -56,8 +53,11 @@ type Application model message = App model message (
 -- | * `update` – a function to update your model
 type ResumedApplication model message = App model message (
         init :: Array (Aff (Maybe message)),
-        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+        update :: ListUpdate model message
 )
+
+noMessages :: forall model message. model -> Tuple model (Array (Aff (Maybe message)))
+noMessages model = model :> []
 
 -- | Mount a Flame application on the given selector which was rendered server-side
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))

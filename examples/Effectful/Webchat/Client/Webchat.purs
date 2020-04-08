@@ -45,12 +45,12 @@ init = {
 update :: Environment Model Message -> Aff (Model -> Model)
 update { model, message, view } =
         case message of
-                SetSocket connection -> pure (setIsOnline (DM.isJust connection) <<<  _ { connection = connection })
+                SetSocket connection -> pure (setIsOnline (DM.isJust connection) <<< _ { connection = connection })
                 Receive text -> pure $ \model' -> model' { history = DA.snoc model'.history text }
                 Online isOnline -> pure (setIsOnline isOnline)
                 SetMessage text -> pure $ _ { message = text }
                 Send -> do
-                        view $ _ { message = "" }
+                        view _ { message = "" }
                         let Connection socket = unsafePartial (DM.fromJust model.connection)
                         liftEffect $ socket.send $ W.Message model.message
                         F.noChanges

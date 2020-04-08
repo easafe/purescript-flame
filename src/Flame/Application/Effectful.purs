@@ -15,14 +15,12 @@ module Flame.Application.Effectful(
 where
 
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Either (Either(..))
 import Data.Either as DET
 import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -34,7 +32,7 @@ import Flame.Application.DOM as FAD
 import Flame.Application.PreMount as FAP
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement, (:>))
-import Prelude (Unit, bind, discard, identity, map, pure, show, unit, void, ($), (<$>), (<<<), (<>))
+import Prelude (Unit, bind, discard, identity, map, pure, show, unit, void, ($), (<<<), (<>))
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC

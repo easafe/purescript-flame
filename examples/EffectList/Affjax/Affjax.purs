@@ -1,4 +1,4 @@
-module Examples.Effectful.Affjax.Main where
+module Examples.EffectList.Affjax.Main where
 
 import Prelude
 
@@ -6,11 +6,12 @@ import Affjax as A
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple)
 import Effect (Effect)
-import Effect.Aff (Milliseconds(..))
+import Effect.Aff (Aff, Milliseconds(..), ListUpdate)
 import Effect.Aff as AF
-import Flame (QuerySelector(..), Html, AffUpdate, (:>))
-import Flame as F
+import Flame (QuerySelector(..), Html, (:>))
+import Flame.Application.EffectList as FE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
@@ -19,7 +20,7 @@ type Model = {
         result :: Result
 }
 
-data Message = UpdateUrl String | Fetch
+data Message = UpdateUrl String | Fetch | Fetched Result
 
 data Result = NotFetched | Fetching | Ok String | Error String
 
@@ -31,16 +32,18 @@ init = {
         result: NotFetched
 }
 
-update :: AffUpdate Model Message
-update { view, model, message } =
-        case message of
-                UpdateUrl url -> pure _ { url = url, result = NotFetched }
-                Fetch -> do
-                        view $ _ { result = Fetching }
-                        response <- A.get AR.string model.url
-                        pure $ case response.body of
-                                Left error -> _ { result = Error $ A.printResponseFormatError error }
-                                Right ok -> _ { result =  Ok ok }
+update :: ListUpdate Model Message
+update model =
+        case _ of
+                UpdateUrl url -> FE.noMessages $ model { url = url, result = NotFetched }
+                Fetch -> model { result = Fetching } :> [ do
+                                response <- A.get AR.string model.url
+                                AF.delay $ Milliseconds 1000.0
+                                pure <<< Just <<< Fetched $ case response.body of
+                                        Left error ->  Error $ A.printResponseFormatError error
+                                        Right ok -> Ok ok
+                        ]
+                Fetched result -> FE.noMessages $ model { result = result }
 
 view :: Model -> Html Message
 view { url, result } = HE.main "main" [
@@ -58,8 +61,8 @@ view { url, result } = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount_ (QuerySelector "main") {
-        init: init :> Nothing,
+main = FE.mount_ (QuerySelector "main") {
+        init: FE.noMessages init,
         update,
         view
 }
