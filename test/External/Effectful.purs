@@ -4,12 +4,10 @@ module Test.External.Effectful (mount) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Data.Traversable as DF
-import Data.Traversable as DT
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Flame (QuerySelector(..), Html, (:>), AffUpdate)
-import Flame as F
+import Flame (QuerySelector(..), Html, (:>))
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
 import Flame.External as FE
@@ -39,7 +37,7 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-        channel <- F.mount (QuerySelector "#mount-point") {
+        channel <- FAE.mount (QuerySelector "#mount-point") {
                 init : 5 :> Nothing,
                 update,
                 view

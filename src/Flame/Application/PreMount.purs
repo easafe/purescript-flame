@@ -67,7 +67,11 @@ preMount (QuerySelector selector) application = do
         pure rendered
         where   sanitizedSelector = onlyLetters selector
 
-                state = HE.createElement tagSerializedState [ HA.style { display: "none"}, HA.id $ idSerializedState sanitizedSelector, HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector] <<< DAC.stringify $ DAEGR.genericEncodeJson application.init
+                state = HE.createElement tagSerializedState [
+                        HA.style { display: "none" },
+                        HA.id $ idSerializedState sanitizedSelector,
+                        HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
+                ] <<< DAC.stringify $ DAEGR.genericEncodeJson application.init
 
                 isBody (Node tag _ _) = tag == "body"
                 isBody _ = false

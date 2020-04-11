@@ -5,8 +5,9 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Flame (QuerySelector(..), Html, Environment, (:>))
-import Flame as F
+import Flame (QuerySelector(..), Html, (:>))
+import Flame.Application.Effectful (Environment)
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
@@ -22,12 +23,12 @@ init :: Model
 init = { increments: 0, decrements: 0, luckyNumber: 0 }
 
 update :: Environment Model Message -> Aff (Model -> Model)
-update {view, model, message } = case message of
+update { display, model, message } = case message of
         Increment -> do
-                view (_ { luckyNumber = model.increments - 2 })
-                pure $ _ { increments = model.increments + 1}
+                display (const $ model { luckyNumber = model.increments - 2 })
+                pure <<< const $ model { increments = model.increments + 1}
         Decrement -> pure (_ { luckyNumber = model.increments + 2, decrements = model.decrements - 1 })
-        Bogus -> F.noChanges
+        Bogus -> FAE.noChanges
 
 view :: Model -> Html Message
 view model = HE.main_ [
@@ -41,7 +42,7 @@ view model = HE.main_ [
 ]
 
 mount :: Effect Unit
-mount = F.mount_ (QuerySelector "#mount-point") {
+mount = FAE.mount_ (QuerySelector "#mount-point") {
         init: init :> Just Decrement,
         update,
         view

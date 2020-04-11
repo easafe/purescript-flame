@@ -7,10 +7,9 @@ import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (Milliseconds(..))
-import Effect.Aff as AF
-import Flame (QuerySelector(..), Html, AffUpdate, (:>))
-import Flame as F
+import Flame (QuerySelector(..), Html, (:>))
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
@@ -32,11 +31,11 @@ init = {
 }
 
 update :: AffUpdate Model Message
-update { view, model, message } =
+update { display, model, message } =
         case message of
                 UpdateUrl url -> pure _ { url = url, result = NotFetched }
                 Fetch -> do
-                        view $ _ { result = Fetching }
+                        display $ _ { result = Fetching }
                         response <- A.get AR.string model.url
                         pure $ case response.body of
                                 Left error -> _ { result = Error $ A.printResponseFormatError error }
@@ -58,7 +57,7 @@ view { url, result } = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount_ (QuerySelector "main") {
+main = FAE.mount_ (QuerySelector "main") {
         init: init :> Nothing,
         update,
         view

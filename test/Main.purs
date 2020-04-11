@@ -3,15 +3,13 @@ module Test.Main where
 import Prelude
 
 import Data.Array as DA
-import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.CodeUnits as DSC
-import Data.Traversable as DF
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Aff (Milliseconds(..))
+import Effect.Aff as AF
 import Effect.Class (liftEffect)
 import Flame.Application.DOM as FAD
-import Test.Basic.PresentialAttributes as TBPA
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
@@ -21,6 +19,8 @@ import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
+import Test.Basic.PresentialAttributes as TBPA
+import Test.Effectful.SlowEffects as TES
 import Test.External.EffectList (TEELMessage(..))
 import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
@@ -31,8 +31,6 @@ import Test.TextContent.NoEffects as TTN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
-import Test.Environment.Effectful (TWEMessage(..), TWEModel(..), einit)
-import Test.Environment.Effectful as TWE
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
 import Web.DOM.Node as WDN
@@ -294,21 +292,29 @@ main =
                                 TUA.equal false currentNewChecked
                                 TUA.equal false currentNewDisabled
 
-                suite "Environment parameter test application" do
-                        test "effectful" do
+                suite "Effectful specific" do
+                        test "slower effects" do
                                 liftEffect $ do
                                         unsafeCreateEnviroment
-                                        TWE.mount
-                                let     ids = ["#times-span", "#previous-messages-span", "#previous-model-span"]
-                                        getSpans = unsafePartial \sp@[times, previousMessages, previousModel] -> sp
-                                spans <- textContentAll ids
-                                equalAll ["1", show [Nothing, Just TWEDecrement], show (Nothing :: Maybe TWEModel)] $ getSpans spans
-                                dispatchEvent clickEvent "#increment-button"
-                                spans2 <- textContentAll ids
-                                equalAll ["2", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement], show $ Just einit] $ getSpans spans2
-                                dispatchEvent clickEvent "#increment-button"
-                                spans3 <- textContentAll ids
-                                equalAll ["3", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement, Just TWEIncrement, Just TWEIncrement], show <<< Just $ TWEModel { previousMessages: [Nothing,(Just TWEDecrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
+                                        TES.mount
+                                outputCurrent <- textContent "#text-output-current"
+                                outputNumbers <- textContent "#text-output-numbers"
+                                TUA.equal "0" outputCurrent
+                                TUA.equal "[]" outputNumbers
+
+                                --the event for snoc has a delay, make sure it doesnt overwrite unrelated fields when updating
+                                dispatchEvent clickEvent "#snoc-button"
+                                dispatchEvent clickEvent "#bump-button"
+                                outputCurrent2 <- textContent "#text-output-current"
+                                outputNumbers2 <- textContent "#text-output-numbers"
+                                TUA.equal "1" outputCurrent2
+                                TUA.equal "[]" outputNumbers2
+
+                                AF.delay $ Milliseconds 4000.0
+                                outputCurrent3 <- textContent "#text-output-current"
+                                outputNumbers3 <- textContent "#text-output-numbers"
+                                TUA.equal "2" outputCurrent3
+                                TUA.equal "[0]" outputNumbers3
 
                 suite "Custom events test applications" do
                         test "noeffects" do
@@ -418,10 +424,6 @@ main =
                         mountPoint <- unsafeQuerySelector selector
                         children <- WDP.children $ WDE.toParentNode mountPoint
                         WDH.length children
-
-                textContentAll = DF.traverse textContent
-
-                equalAll expected = DF.traverse_ (\(Tuple a b) -> TUA.equal a b) <<< DA.zip expected
 
                 textContent selector = liftEffect do
                         element <- unsafeQuerySelector selector

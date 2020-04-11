@@ -11,8 +11,9 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Var (($=))
-import Flame (QuerySelector(..), Html, Environment, (:>))
-import Flame as F
+import Flame (QuerySelector(..), Html, (:>))
+import Flame.Application.Effectful (Environment)
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.External as FE
@@ -43,17 +44,17 @@ init = {
 
 -- | `update` is called to handle events
 update :: Environment Model Message -> Aff (Model -> Model)
-update { model, message, view } =
+update { model, message, display } =
         case message of
-                SetSocket connection -> pure (setIsOnline (DM.isJust connection) <<< _ { connection = connection })
-                Receive text -> pure $ \model' -> model' { history = DA.snoc model'.history text }
-                Online isOnline -> pure (setIsOnline isOnline)
+                SetSocket connection -> pure $ setIsOnline (DM.isJust connection) <<< _ { connection = connection }
+                Receive text -> pure $ \m -> m { history = DA.snoc m.history text }
+                Online isOnline -> pure $ setIsOnline isOnline
                 SetMessage text -> pure $ _ { message = text }
                 Send -> do
-                        view _ { message = "" }
+                        display _ { message = "" }
                         let Connection socket = unsafePartial (DM.fromJust model.connection)
                         liftEffect $ socket.send $ W.Message model.message
-                        F.noChanges
+                        FAE.noChanges
 
         where setIsOnline isIt = _ { isOnline = isIt }
 
@@ -75,7 +76,7 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector and bind WebSocket events to the app channel
 main :: Effect Unit
 main = do
-        channel <- F.mount (QuerySelector "main") {
+        channel <- FAE.mount (QuerySelector "main") {
                 init: init :> Nothing,
                 update,
                 view

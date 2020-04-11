@@ -1,4 +1,4 @@
--- | The default way to run a Flame application
+-- | Run a flame application with unbounded side effects
 -- |
 -- | The update function carries context information and runs on `Aff`
 module Flame.Application.Effectful(
@@ -65,7 +65,7 @@ type ResumedApplication model message = App model message (
 type Environment model message = {
         model :: model,
         message :: message,
-        view :: (model -> model) -> Aff Unit
+        display :: (model -> model) -> Aff Unit
 }
 
 noChanges :: forall model. Aff (model -> model)
@@ -112,7 +112,7 @@ run el isResumed application = do
         let     --the function which actually run events
                 runUpdate message = do
                         { model } <- ER.read state
-                        EA.runAff_ (DET.either (EC.log <<< EE.message) render) $ application.update { view: renderFromUpdate, model, message }
+                        EA.runAff_ (DET.either (EC.log <<< EE.message) render) $ application.update { display: renderFromUpdate, model, message }
 
                 --the function which renders to the dom
                 render recordUpdate = do

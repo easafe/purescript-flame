@@ -8,7 +8,6 @@ import Flame.Application.NoEffects as FAN
 import Flame.External as FE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model = Int
 
