@@ -11,8 +11,9 @@ module Flame.Application.Effectful(
         resumeMount,
         resumeMount_,
         noChanges,
-        diff,
-        diff'
+        class Diff,
+        diff',
+        diff
 )
 where
 
@@ -22,6 +23,8 @@ import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
+import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -34,12 +37,12 @@ import Flame.Application.DOM as FAD
 import Flame.Application.PreMount as FAP
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement, (:>))
-import Prelude (Unit, bind, discard, identity, map, pure, show, unit, void, ($), (<<<), (<>))
+import Prelude (class Functor, Unit, bind, discard, flip, identity, map, pure, show, unit, void, ($), (<<<), (<>))
+import Prim.Row (class Union, class Nub)
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
-import Prim.Row (class Union, class Nub)
 
 foreign import unsafeMergeFields :: forall model subset. Record model -> Record subset -> Record model
 
@@ -76,13 +79,22 @@ type Environment model message = {
 noChanges :: forall model. Aff (model -> model)
 noChanges = pure identity
 
--- | Update only the given fields of a model
-diff :: forall c model t changed. Union changed t model => Nub changed c => Record changed -> Aff (Record model -> Record model)
-diff = pure <<< diff'
+-- | Convenience type class to update only the given fields of a model
+class Diff changed model where
+        diff' :: changed -> (model -> model)
 
--- | Update only the given fields of a model
-diff' :: forall c model t changed. Union changed t model => Nub changed c => Record changed -> (Record model -> Record model)
-diff' subset = \model -> unsafeMergeFields model subset
+instance recordDiff :: (Union changed t model, Nub changed c) => Diff (Record changed) (Record model) where
+        diff' changed = \model -> unsafeMergeFields model changed
+else
+instance functorRecordDiff :: (Functor f, Union changed t model, Nub changed c) => Diff (Record changed) (f (Record model)) where
+        diff' changed = map (flip unsafeMergeFields changed)
+else
+instance newtypeRecordDiff :: (Newtype newtypeModel (Record model), Union changed t model, Nub changed c) => Diff (Record changed) newtypeModel where
+        diff' changed = \model -> DN.wrap $ unsafeMergeFields (DN.unwrap model) changed
+
+-- | Wraps diff' in Aff
+diff :: forall changed model. Diff changed model => changed -> Aff (model -> model)
+diff = pure <<< diff'
 
 -- | Mount a Flame application on the given selector which was rendered server-side
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Maybe message))

@@ -2,8 +2,11 @@ module Test.Main where
 
 import Prelude
 
-import Data.Array as DA
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show as DGRS
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
 import Data.String.CodeUnits as DSC
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
@@ -191,9 +194,17 @@ main =
                                 --events are part of virtual dom data and do not show up on the rendered markup
                                 TUA.equal """<a>TEST</a>""" html'
                 suite "diff" do
-                        test "updates fields" do
+                        test "updates record fields" do
                                 TUA.equal { a: 23, b: "hello", c: true } $ FAE.diff' {c: true} { a : 23, b: "hello", c: false }
                                 TUA.equal { a: 23, b: "hello", c: false } $ FAE.diff' {} { a : 23, b: "hello", c: false }
+
+                        test "updates record fields with newtype" do
+                                TUA.equal (TestNewtype { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ TestNewtype { a : 23, b: "hello", c: false }
+                                TUA.equal (TestNewtype { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ TestNewtype { a : 23, b: "hello", c: false }
+
+                        test "updates record fields with functor" do
+                                TUA.equal (Just { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ Just { a : 23, b: "hello", c: false }
+                                TUA.equal (Just { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ Just { a : 23, b: "hello", c: false }
 
                 suite "Basic test applications" do
                         test "noeffects" do
@@ -459,3 +470,10 @@ main =
                         event <- eventFunction
                         WEE.dispatchEvent event $ WHW.toEventTarget window
 
+newtype TestNewtype = TestNewtype { a :: Int, b :: String, c :: Boolean }
+
+derive instance genericTestNewtype :: Generic TestNewtype _
+derive instance newtypeTestNewtype :: Newtype TestNewtype _
+derive instance eqTestNewtype :: Eq TestNewtype
+instance showTestNewtype :: Show TestNewtype where
+        show = DGRS.genericShow

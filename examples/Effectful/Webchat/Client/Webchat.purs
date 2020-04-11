@@ -7,6 +7,8 @@ import Prelude
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
+import Data.Newtype as DN
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -24,19 +26,21 @@ import WebSocket (Connection(..), URL(..))
 import WebSocket as W
 
 -- | The model represents the state of the app
-type Model = {
+newtype Model = Model {
         history :: Array String,
         message :: String,
         isOnline :: Boolean,
         connection :: Maybe Connection
 }
 
+derive instance modelNewtype :: Newtype Model _
+
 -- | This datatype is used to signal events to `update`
 data Message = SetSocket (Maybe Connection) | SetMessage String | Send | Receive String | Online Boolean
 
 -- | Initial state of the app
 init :: Model
-init = {
+init = Model {
         history: ["Welcome to the chat!"],
         message: "",
         isOnline: true,
@@ -45,14 +49,14 @@ init = {
 
 -- | `update` is called to handle events
 update :: Environment Model Message -> Aff (Model -> Model)
-update { model, message, display } =
+update { model: Model model, message, display } =
         case message of
                 SetSocket connection -> FAE.diff $ R.merge (setIsOnline $ DM.isJust connection) { connection }
-                Receive text -> pure $ \m -> m { history = DA.snoc m.history text }
+                Receive text -> pure $ \(Model m@{ history }) -> Model $ m { history = DA.snoc history text }
                 Online isOnline -> FAE.diff $ setIsOnline isOnline
                 SetMessage text -> FAE.diff { message: text }
                 Send -> do
-                        display _ { message = "" }
+                        display $ FAE.diff' { message: "" }
                         let Connection socket = unsafePartial $ DM.fromJust model.connection
                         liftEffect $ socket.send $ W.Message model.message
                         FAE.noChanges
@@ -61,7 +65,7 @@ update { model, message, display } =
 
 -- | `view` updates the app markup whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main "main" [
+view (Model model) = HE.main "main" [
         HE.div "history" $ map HE.div_ model.history,
         HE.div "send" [
                 HE.input [
