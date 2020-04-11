@@ -14,10 +14,11 @@ import Effect.Var (($=))
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (Environment)
 import Flame.Application.Effectful as FAE
+import Flame.External as FE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.External as FE
 import Partial.Unsafe (unsafePartial)
+import Record as R
 import Signal.Channel as SC
 import WebSocket (Connection(..), URL(..))
 import WebSocket as W
@@ -46,17 +47,17 @@ init = {
 update :: Environment Model Message -> Aff (Model -> Model)
 update { model, message, display } =
         case message of
-                SetSocket connection -> pure $ setIsOnline (DM.isJust connection) <<< _ { connection = connection }
+                SetSocket connection -> FAE.diff $ R.merge (setIsOnline $ DM.isJust connection) { connection }
                 Receive text -> pure $ \m -> m { history = DA.snoc m.history text }
-                Online isOnline -> pure $ setIsOnline isOnline
-                SetMessage text -> pure $ _ { message = text }
+                Online isOnline -> FAE.diff $ setIsOnline isOnline
+                SetMessage text -> FAE.diff { message: text }
                 Send -> do
                         display _ { message = "" }
-                        let Connection socket = unsafePartial (DM.fromJust model.connection)
+                        let Connection socket = unsafePartial $ DM.fromJust model.connection
                         liftEffect $ socket.send $ W.Message model.message
                         FAE.noChanges
 
-        where setIsOnline isIt = _ { isOnline = isIt }
+        where setIsOnline isIt = { isOnline: isIt }
 
 -- | `view` updates the app markup whenever the model is updated
 view :: Model -> Html Message

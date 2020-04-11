@@ -33,13 +33,13 @@ init = {
 update :: AffUpdate Model Message
 update { display, model, message } =
         case message of
-                UpdateUrl url -> pure _ { url = url, result = NotFetched }
+                UpdateUrl url -> FAE.diff { url, result: NotFetched }
                 Fetch -> do
-                        display $ _ { result = Fetching }
+                        display $ FAE.diff' { result: Fetching }
                         response <- A.get AR.string model.url
-                        pure $ case response.body of
-                                Left error -> _ { result = Error $ A.printResponseFormatError error }
-                                Right ok -> _ { result =  Ok ok }
+                        FAE.diff <<< { result: _ } $ case response.body of
+                                Left error -> Error $ A.printResponseFormatError error
+                                Right ok -> Ok ok
 
 view :: Model -> Html Message
 view { url, result } = HE.main "main" [

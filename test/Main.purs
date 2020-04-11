@@ -10,6 +10,7 @@ import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
 import Effect.Class (liftEffect)
 import Flame.Application.DOM as FAD
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
@@ -189,9 +190,14 @@ main =
                                 html' <- liftEffect $ FRS.render html
                                 --events are part of virtual dom data and do not show up on the rendered markup
                                 TUA.equal """<a>TEST</a>""" html'
+                suite "diff" do
+                        test "updates fields" do
+                                TUA.equal { a: 23, b: "hello", c: true } $ FAE.diff' {c: true} { a : 23, b: "hello", c: false }
+                                TUA.equal { a: 23, b: "hello", c: false } $ FAE.diff' {} { a : 23, b: "hello", c: false }
+
                 suite "Basic test applications" do
                         test "noeffects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TBN.mount
                                 childrenLength <- childrenNodeLength
@@ -211,14 +217,14 @@ main =
                                 TUA.equal "1" current2
 
                         test "effectlist" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TBEL.mount
                                 childrenLength <- childrenNodeLength
                                 --span, input, input
                                 TUA.equal 3 childrenLength
 
-                                let     setInput text = liftEffect $ do
+                                let     setInput text = liftEffect do
                                                 element <- unsafeQuerySelector "#text-input"
                                                 WHH.setValue text $ unsafePartial (DM.fromJust $ WHH.fromElement element)
                                 initial <- textContent "#text-output"
@@ -236,7 +242,7 @@ main =
                                 TUA.assert "cut text" $ DSC.length cut < 4
 
                         test "effectful" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TBE.mount
                                 childrenLength <- childrenNodeLength
@@ -294,7 +300,7 @@ main =
 
                 suite "Effectful specific" do
                         test "slower effects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TES.mount
                                 outputCurrent <- textContent "#text-output-current"
@@ -318,7 +324,7 @@ main =
 
                 suite "Custom events test applications" do
                         test "noeffects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TEN.mount
                                 output <- textContent "#text-output"
@@ -335,7 +341,7 @@ main =
                                 TUA.equal "2" output3
 
                         test "effectlist" do
-                                channel <- liftEffect $ do
+                                channel <- liftEffect do
                                         unsafeCreateEnviroment
                                         TEEL.mount
                                 output <- textContent "#text-output"
@@ -350,7 +356,7 @@ main =
                                 TUA.equal "0" output3
 
                         test "effectful" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TEE.mount
                                 output <- textContent "#text-output"
@@ -366,9 +372,9 @@ main =
                                 output3 <- textContent "#text-output"
                                 TUA.equal "3" output3
 
-                suite "Text content views" $ do
-                        test "no effects" $ do
-                                liftEffect $ do
+                suite "Text content views" do
+                        test "no effects" do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TTN.mount
                                 childrenLength <- childrenNodeLengthOf "#mount-point"
@@ -382,9 +388,9 @@ main =
                                 childrenLength3 <- childrenNodeLength
                                 TUA.equal 0 childrenLength3
 
-                suite "Server side rendering" $ do
-                        test "effectful" $ do
-                                liftEffect $ do
+                suite "Server side rendering" do
+                        test "effectful" do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TSE.preMount
                                 childrenLength <- childrenNodeLengthOf "#mount-point"
@@ -407,7 +413,7 @@ main =
 
                 suite "SVG" do
                         test "noeffects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TSN.mount
                                 dispatchEvent clickEvent "#decrement-button"
@@ -420,7 +426,7 @@ main =
 
                 childrenNodeLength = childrenNodeLengthOf "main"
 
-                childrenNodeLengthOf selector = liftEffect $ do
+                childrenNodeLengthOf selector = liftEffect do
                         mountPoint <- unsafeQuerySelector selector
                         children <- WDP.children $ WDE.toParentNode mountPoint
                         WDH.length children

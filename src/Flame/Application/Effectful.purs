@@ -10,7 +10,9 @@ module Flame.Application.Effectful(
         ResumedApplication,
         resumeMount,
         resumeMount_,
-        noChanges
+        noChanges,
+        diff,
+        diff'
 )
 where
 
@@ -37,6 +39,9 @@ import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
+import Prim.Row (class Union, class Nub)
+
+foreign import unsafeMergeFields :: forall model subset. Record model -> Record subset -> Record model
 
 type AffUpdate model message = Environment model message -> Aff (model -> model)
 
@@ -70,6 +75,14 @@ type Environment model message = {
 
 noChanges :: forall model. Aff (model -> model)
 noChanges = pure identity
+
+-- | Update only the given fields of a model
+diff :: forall c model t changed. Union changed t model => Nub changed c => Record changed -> Aff (Record model -> Record model)
+diff = pure <<< diff'
+
+-- | Update only the given fields of a model
+diff' :: forall c model t changed. Union changed t model => Nub changed c => Record changed -> (Record model -> Record model)
+diff' subset = \model -> unsafeMergeFields model subset
 
 -- | Mount a Flame application on the given selector which was rendered server-side
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Maybe message))
