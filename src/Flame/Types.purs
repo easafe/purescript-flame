@@ -35,7 +35,7 @@ type App model message extension = {
         extension
 }
 
--- | `ResumedApplication` contains
+-- | `PreApplication` contains
 -- | * `init` – the initial model
 -- | * `view` – a function to update your markup
 type PreApplication model message = App model message (

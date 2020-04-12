@@ -2,7 +2,9 @@
 -- |
 -- | The update function returns an array of side effects
 module Flame.Application.EffectList(
+        ListUpdate,
         Application,
+        noMessages,
         mount,
         mount_,
         ResumedApplication,
@@ -11,19 +13,14 @@ module Flame.Application.EffectList(
 )
 where
 
-import Flame.Types
-import Prelude
+import Flame.Types (App, DOMElement, (:>))
+import Prelude (Unit, bind, discard, map, pure, show, unit, void, ($), (<$>), (<<<), (<>))
 
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Encode.Generic.Rep as EGR
-import Data.Array ((:))
-import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -33,13 +30,13 @@ import Effect.Exception as EE
 import Effect.Ref as ER
 import Flame.Application.DOM as FAD
 import Flame.Application.PreMount as FAP
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
 import Flame.Renderer as FR
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
+
+type ListUpdate model message = model -> message -> Tuple model (Array (Aff (Maybe message)))
 
 -- | `Application` contains
 -- | * `init` – the initial model and a list of messages to invoke `update` with
@@ -47,7 +44,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 -- | * `update` – a function to update your model
 type Application model message = App model message (
         init :: Tuple model (Array (Aff (Maybe message))),
-        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+        update :: ListUpdate model message
 )
 
 -- | `ResumedApplication` contains
@@ -56,8 +53,11 @@ type Application model message = App model message (
 -- | * `update` – a function to update your model
 type ResumedApplication model message = App model message (
         init :: Array (Aff (Maybe message)),
-        update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+        update :: ListUpdate model message
 )
+
+noMessages :: forall model message. model -> Tuple model (Array (Aff (Maybe message)))
+noMessages model = model :> []
 
 -- | Mount a Flame application on the given selector which was rendered server-side
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
@@ -74,9 +74,7 @@ resumeMount (QuerySelector selector) application = do
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
 resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
-resumeMount_ selector application = do
-        _ <- resumeMount selector application
-        pure unit
+resumeMount_ selector application = void $ resumeMount selector application
 
 -- | Mount a Flame application on the given selector
 mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Array message))
@@ -88,9 +86,7 @@ mount (QuerySelector selector) application = do
 
 -- | Mount a Flame application on the given selector, discarding the message Channel
 mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
-mount_ selector application = do
-        _ <- mount selector application
-        pure unit
+mount_ selector application = void $ mount selector application
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
 run :: forall model message. DOMElement -> Boolean -> Application model message -> Effect (Channel (Array message))
@@ -117,14 +113,17 @@ run el isResumed application = do
                 --the function which renders to the dom
                 render model = do
                         currentVNode <- _.vNode <$> ER.read state
-                        updatedVNode <- FR.render currentVNode (const <<< runUpdate) $ application.view model
-                        ER.write { model, vNode: updatedVNode } state
+                        updatedVNode <- FR.render currentVNode runUpdate $ application.view model
+                        ER.write {
+                                vNode: updatedVNode,
+                                model
+                        } state
 
         initialVNode <-
                 if isResumed then
-                        FR.renderInitialFrom el (const <<< runUpdate) $ application.view initialModel
+                        FR.renderInitialFrom el runUpdate $ application.view initialModel
                  else
-                        FR.renderInitial el (const <<< runUpdate) $ application.view initialModel
+                        FR.renderInitial el runUpdate $ application.view initialModel
         ER.modify_ (_ { vNode = initialVNode }) state
 
         runMessages initialAffs

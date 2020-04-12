@@ -19,8 +19,8 @@ is the `update` function. This is where we define our business logic by matching
 An update strategy is chosen by importing the `mount` (or `mount_`) function from a given module
 ```haskell
 import Flame.Application.NoEffects (mount) -- pure, or side effect free, updating
-import Flame.Application.EffectList (mount) -- Elm style updating, using a list of effects
-import Flame (mount) -- Aff based updating
+import Flame (mount) -- Elm style updating, using a list of effects
+import Flame.Application.Effectful (mount) -- Aff based updating
 ```
 which each asks for an application record with different `init` and `update` types. Let's take a look at each of them.
 
@@ -48,7 +48,7 @@ type Application model message = {
         update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
 }
 ```
-For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
+This is the default strategy to run a flame application. For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
 ```haskell
 type Model = Maybe Int
 
@@ -67,7 +67,7 @@ view model = HE.main "main" [
         HE.button [HA.onClick Roll] "Roll"
 ]
 ```
-Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operator `:>`) with the model and the effect list is returned . Performed the effect in the list in turn raises the `Update` message, which carries the generated random number that will be our new model.
+Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operator `:>`) of the model and effect list is returned. Performing the effect in the list raises the `Update` message, which carries the generated random number that will be the new model.
 
 Likewise, we could define a loading screen to appear before AJAX requests
 ```haskell
@@ -84,7 +84,7 @@ useResponse = ...
 useDifferentResponse :: Model -> String -> Aff Model
 useDifferentResponse = ...
 
-update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
+update :: ListUpdate Model Message -- type synonymum to reduce clutter
 update model = case _ of
         Loading -> model { isLoading = true } :> [
                 Just <<< Response <$> performAJAX "url",
@@ -93,8 +93,8 @@ update model = case _ of
                 Just <<< DifferentResponse <$> performAJAX "url4",
                 pure <<< Just $ Finish "Performed all"
         ]
-        Response contents -> useResponse model contents :> []
-        Finish contents -> model { isLoading = false, response = model.response <> contents } :> []
+        Response contents -> F.noMessages $ useResponse model contents -- noMessages is the same as _ :> []
+        Finish contents -> F.noMessages $ model { isLoading = false, response = model.response <> contents }
 
 view :: Model -> Html Message
 view model = HE.main "main" [
@@ -131,55 +131,87 @@ The effectful updating defines `Application` as
 type Application model message = {
         init :: Tuple model (Maybe message),
         view :: model -> Html message,
-        update :: World model message -> model -> message -> Aff model
+        update :: Environment model message -> Aff (model -> model)
 }
 ```
-Here instead of returning a list of effects, we perform them directly in the `Aff` monad. `init` also only receives a single optional startup message.
+Here instead of returning a list of effects, we perform them directly in the `Aff` monad. Because the `update` function is now fully asynchronous, its type is a little different. Instead of the model, we return a function to modify it -- this ensures slower computations don't overwrite unrelated updates that might happen in the meanwhile. `Environment` is defined as follows
 
-We can see that the dice example listed in the previous section becomes a little more straightforward
+```haskell
+type Environment model message = {
+        model :: model,
+        message :: message,
+        display :: (model -> model) -> Aff Unit
+}
+```
+
+`model` and `message` are grouped in a record. `display` is a function to arbitrarily re-render the view.
+
+Let's rewrite the dice application using the effectful strategy:
 ```haskell
 type Model = Maybe Int
 
 data Message = Roll
 
-update :: _ -> Model -> Message -> Aff Model
-update _ model Roll = Just <$> liftEffect (ER.randomInt 1 6)
+update :: Environment Model Message -> Aff (Model -> Model)
+update _ = map (const <<< Just) $ liftEffect $ ER.randomInt 1 6
 ```
-Before the AJAX example, we will need to examine the funny looking extra parameter of `update`. It is defined as a record with the fields
-```haskell
-type World model message = {
-        update :: model -> message -> Aff model,
-        view :: model -> Aff Unit,
-        event :: Maybe Event,
-        previousModel :: Maybe model,
-        previousMessage :: Maybe message
-}
-```
-`World.update` may be thought of a way to recurse the update function -- it is used to process a message in sequence. `World.view`, on the other hand, allows arbitraty rerendering of the view without raising a new message. `World.event` carries the current raw browser event. The last two fields are for convenience, if we ever need to backtrace model or messages.
 
-Using `World` we can write the AJAX example as
+Since we are always generating a new model, and don't need an intermediate message to update it, we can ignore the enviroment and perform the update in a single go.
+
+Let's see how we can use `display` to rewrite the AJAX example from above as well
+
 ```haskell
 type Model = { response :: String, isLoading :: boolean }
 
-data Message = Loading | Finish String
+data Message = Loading
 
-update :: World Model Message -> Model -> Message -> Aff Model
-update re model = case _ of
-        Loading -> do
-                let model' = model { isLoading = true }
-                newModel <- traverse (\rs -> re.view $ model' { response = rs}) [
+update :: AffUpdate Model Message -- type synonymum to reduce clutter
+update { display } = do
+                display _ { isLoading = true }
+                traverse (\rs -> display  _ { response = rs}) [
                         performAJAX "url",
                         performAJAX "url2",
                         performAJAX "url3",
                         performAJAX "url4",
                 ]
-                re.update newModel $ Finish "Performed all"
-        Finish contents -> pure $ model { isLoading = false, response = model.response <> contents }
+                pure $ _ { isLoading = false }
 
 init :: Tuple Model (Maybe Message)
 init = model :> Just Loading
 ```
-which is again a little more straightforward.
+`display` will render the view with the modified model as seen fit, which is again a little more straightforward.
+
+But juggling record update functions can quickly turn messy, specially if we are using records as a model. For that reason, helper functions are provided to modify only given fields:
+
+```haskell
+diff' :: forall changed model. Diff changed model => changed -> (model -> model)
+diff :: forall changed model. Diff changed model => changed -> Aff (model -> model)
+```
+
+the `Diff` type class guarantees that `changed` only includes fields present in `model` so instead of `pure _ { field = value }` we can write `diff { field: value }`. Let's see an example:
+
+```haskell
+newtype MyModel = MyModel {
+        url :: String,
+        result :: Result,
+        ...
+}
+derive instance myModelNewtype :: Newtype MyModel _
+
+update :: AffUpdate MyModel Message
+update { display, model: MyModel model, message } =
+        case message of
+                UpdateUrl url -> FAE.diff { url, result: NotFetched }
+                Fetch -> do
+                        display $ FAE.diff' { result: Fetching }
+                        response <- A.get AR.string model.url
+                        FAE.diff <<< { result: _ } $ case response.body of
+                                Left error -> Error $ A.printResponseFormatError error
+                                Right ok -> Ok ok
+                ... -> ...
+```
+
+Here, no matter how many fields `MyModel` has, we update only what's required in each case expression. Notice that `diff` takes always take a record as first parameter. The model, however, can be either a record or newtype (given a `Newtype` instance)/plain functor that holds a record to be updated.
 
 See all [effectful examples](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful).
 

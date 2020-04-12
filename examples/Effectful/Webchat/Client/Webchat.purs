@@ -7,34 +7,40 @@ import Prelude
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
+import Data.Newtype as DN
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Var (($=))
-import Flame (QuerySelector(..), Html, World, (:>))
-import Flame as F
+import Flame (QuerySelector(..), Html, (:>))
+import Flame.Application.Effectful (Environment)
+import Flame.Application.Effectful as FAE
+import Flame.External as FE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.External as FE
 import Partial.Unsafe (unsafePartial)
+import Record as R
 import Signal.Channel as SC
 import WebSocket (Connection(..), URL(..))
 import WebSocket as W
 
 -- | The model represents the state of the app
-type Model = {
+newtype Model = Model {
         history :: Array String,
         message :: String,
         isOnline :: Boolean,
         connection :: Maybe Connection
 }
 
+derive instance modelNewtype :: Newtype Model _
+
 -- | This datatype is used to signal events to `update`
 data Message = SetSocket (Maybe Connection) | SetMessage String | Send | Receive String | Online Boolean
 
 -- | Initial state of the app
 init :: Model
-init = {
+init = Model {
         history: ["Welcome to the chat!"],
         message: "",
         isOnline: true,
@@ -42,19 +48,24 @@ init = {
 }
 
 -- | `update` is called to handle events
-update :: World Model Message -> Model -> Message -> Aff Model
-update re model (SetSocket connection) = re.update (model { connection = connection }) <<< Online $ DM.isJust connection
-update _ model (Receive text) = pure $ model { history = DA.snoc model.history text }
-update _ model (Online isOnline) = pure $ model { isOnline = isOnline }
-update _ model (SetMessage text) = pure $ model { message = text }
-update re model Send = do
-        let Connection socket = unsafePartial (DM.fromJust model.connection)
-        liftEffect $ socket.send $ W.Message model.message
-        pure $ model { message = "" }
+update :: Environment Model Message -> Aff (Model -> Model)
+update { model: Model model, message, display } =
+        case message of
+                SetSocket connection -> FAE.diff $ R.merge (setIsOnline $ DM.isJust connection) { connection }
+                Receive text -> pure $ \(Model m@{ history }) -> Model $ m { history = DA.snoc history text }
+                Online isOnline -> FAE.diff $ setIsOnline isOnline
+                SetMessage text -> FAE.diff { message: text }
+                Send -> do
+                        display $ FAE.diff' { message: "" }
+                        let Connection socket = unsafePartial $ DM.fromJust model.connection
+                        liftEffect $ socket.send $ W.Message model.message
+                        FAE.noChanges
+
+        where setIsOnline isIt = { isOnline: isIt }
 
 -- | `view` updates the app markup whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main "main" [
+view (Model model) = HE.main "main" [
         HE.div "history" $ map HE.div_ model.history,
         HE.div "send" [
                 HE.input [
@@ -70,7 +81,7 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector and bind WebSocket events to the app channel
 main :: Effect Unit
 main = do
-        channel <- F.mount (QuerySelector "main") {
+        channel <- FAE.mount (QuerySelector "main") {
                 init: init :> Nothing,
                 update,
                 view

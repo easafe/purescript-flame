@@ -1,51 +1,55 @@
 -- | Testing playground, do not depend on this file
 module Test.ScratchPad where
 
-
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.String as DS
+import Data.String.CodeUnits as DSC
+import Data.Tuple (Tuple)
+import Debug.Trace (spy)
 import Effect (Effect)
+import Effect.Aff (Aff, Milliseconds(..))
+import Effect.Aff as AF
 import Effect.Class (liftEffect)
+import Effect.Random as ER
 import Flame (QuerySelector(..), Html, (:>))
-import Flame.Application.Effectful as FAE
-import Flame.External as FE
+import Flame.Application.EffectList as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Types (NodeData(..))
-import Web.DOM.ParentNode (QuerySelector(..))
-import Web.Event.Event (Event, stopPropagation)
 
 type Model = Int
 
-data Message = Increment Event | Decrement Event
+data Message = Overwrite Int | Overwrite0 Int | Overwrite1 Int
 
-init :: Model
-init = 0
+update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
+update model = case _ of
+        Overwrite m -> m :> []
+        Overwrite0 m -> m :> [do
+                AF.delay $ Milliseconds 4000.0
+                pure $ Just $ Overwrite (spy "overwrite 1" 1),
+                pure $ Just $ Overwrite (spy "overwrite 2" 2),
+                pure $ Just $ Overwrite1 (spy "overwrite 3" 2)
+        ]
+        Overwrite1 m -> m :> [     do
+                AF.delay $ Milliseconds 8000.0
+                pure $ Just $ Overwrite (spy "overwrite 4" 3),
+                pure $ Just $ Overwrite (spy "overwrite 5" 4),
+                pure $ Nothing]
 
---update :: Model -> Message -> Model
-update _ model = case _ of
-        Increment event -> do
-                liftEffect $ stopPropagation event
-                pure $ model + 1
-        Decrement event -> do
-                liftEffect $ stopPropagation event
-                pure $ model - 1
 
 view :: Model -> Html Message
-view 0 = HE.text "alert('oi')"
-view model = HE.template "oi" [
-        HE.button [HA.id "decrement-button", HA.onClick' Decrement] "-",
-        HE.span "text-output" $ show model,
-        HE.span_ "alert('oi')",
-        HE.button [HA.id "increment-button", HA.onClick' Increment] "+"
+view model = HE.main_ [
+        HE.span [HA.id "text-output"] $ show model,
+        HE.br,
+        HE.input [HA.id "cut-button", HA.value "click", HA.type' "button", HA.onClick $ Overwrite0 0],
+        HE.br,
+        HE.input [HA.id "cubutton", HA.value "click", HA.type' "button", HA.onClick $ Overwrite1 29]
 ]
 
 main :: Effect Unit
-main = do
-        channel <- FAE.mount (QuerySelector "#mount-point") {
-                init : init :> Nothing,
+main = FAE.mount_ (QuerySelector "#mount-point") {
+                init: 100 :> [],
                 update,
                 view
         }
-        FE.send [FE.onClick' (Just Increment), FE.onKeydown' (Just Decrement)] channel

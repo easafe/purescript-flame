@@ -51,19 +51,19 @@ The module `Flame.HTML.Element` exports HTML elements, such as `div`, `body`, et
 * Functions named `element` expects attributes and children elements
 
 ```haskell
-HE.div [HA.id "my-div"] [HE.text "text content"] --renders <div id="my-div">text content</div>
+HE.div [HA.id "my-div"] [HE.text "text content"] -- renders <div id="my-div">text content</div>
 ```
 
 * Functions named `element_` (trailing underscore) expects children elements but no attributes
 
 ```haskell
-HE.div_ [HE.text "text content"] --renders <div>text content</div>
+HE.div_ [HE.text "text content"] -- renders <div>text content</div>
 ```
 
 * Functions named `element'` (trailing quote) expects attributes but no children elements
 
 ```haskell
-HE.div' [HA.id "my-div"] --renders <div id="my-div"></div>
+HE.div' [HA.id "my-div"] -- renders <div id="my-div"></div>
 ```
 
 (a few elements that usually have no children like br or input have `element` behave as `element'`)

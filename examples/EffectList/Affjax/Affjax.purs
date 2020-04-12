@@ -1,4 +1,4 @@
-module Examples.Effectful.Affjax.Main where
+module Examples.EffectList.Affjax.Main where
 
 import Prelude
 
@@ -7,9 +7,8 @@ import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Flame (QuerySelector(..), Html, (:>))
-import Flame.Application.Effectful (AffUpdate)
-import Flame.Application.Effectful as FAE
+import Flame (QuerySelector(..), Html, (:>), ListUpdate)
+import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
@@ -18,7 +17,7 @@ type Model = {
         result :: Result
 }
 
-data Message = UpdateUrl String | Fetch
+data Message = UpdateUrl String | Fetch | Fetched Result
 
 data Result = NotFetched | Fetching | Ok String | Error String
 
@@ -30,16 +29,17 @@ init = {
         result: NotFetched
 }
 
-update :: AffUpdate Model Message
-update { display, model, message } =
-        case message of
-                UpdateUrl url -> FAE.diff { url, result: NotFetched }
-                Fetch -> do
-                        display $ FAE.diff' { result: Fetching }
-                        response <- A.get AR.string model.url
-                        FAE.diff <<< { result: _ } $ case response.body of
-                                Left error -> Error $ A.printResponseFormatError error
-                                Right ok -> Ok ok
+update :: ListUpdate Model Message
+update model =
+        case _ of
+                UpdateUrl url -> F.noMessages $ model { url = url, result = NotFetched }
+                Fetch -> model { result = Fetching } :> [ do
+                                response <- A.get AR.string model.url
+                                pure <<< Just <<< Fetched $ case response.body of
+                                        Left error ->  Error $ A.printResponseFormatError error
+                                        Right ok -> Ok ok
+                        ]
+                Fetched result -> F.noMessages $ model { result = result }
 
 view :: Model -> Html Message
 view { url, result } = HE.main "main" [
@@ -57,8 +57,8 @@ view { url, result } = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = FAE.mount_ (QuerySelector "main") {
-        init: init :> Nothing,
+main = F.mount_ (QuerySelector "main") {
+        init: F.noMessages init,
         update,
         view
 }

@@ -5,14 +5,14 @@ import Prelude
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (Aff)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
 import Flame (QuerySelector(..), Html)
-import Flame as F
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
+import Flame as F
 import Flame.HTML.Element as HE
-import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Internal.Types (Event)
 
 foreign import setInnerHTML :: EffectFn2 String String Unit
@@ -26,11 +26,11 @@ derive instance genericModle :: Generic Model _
 data Message = Increment | Decrement Event
 
 -- | `update` is called to handle events
-update :: _ -> Model -> Message -> Aff Model
-update _ (Model model) =
-        pure <<< Model <<< (case _ of
-                Increment -> model + 1
-                Decrement _ -> model - 1)
+update :: AffUpdate Model Message
+update { model: Model m, message } =
+        pure $ const (Model $ case message of
+                Increment -> m + 1
+                Decrement _ -> m - 1)
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
@@ -53,7 +53,7 @@ preMount = do
 
 -- | Mount the application on the given selector
 mount :: Effect Unit
-mount = F.resumeMount_ (QuerySelector "#my-id") {
+mount = FAE.resumeMount_ (QuerySelector "#my-id") {
                 init: Nothing,
                 update,
                 view

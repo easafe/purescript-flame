@@ -2,16 +2,18 @@ module Test.Main where
 
 import Prelude
 
-import Data.Array as DA
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show as DGRS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
 import Data.String.CodeUnits as DSC
-import Data.Traversable as DF
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Aff (Milliseconds(..))
+import Effect.Aff as AF
 import Effect.Class (liftEffect)
 import Flame.Application.DOM as FAD
-import Test.Basic.PresentialAttributes as TBPA
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
@@ -21,6 +23,8 @@ import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
+import Test.Basic.PresentialAttributes as TBPA
+import Test.Effectful.SlowEffects as TES
 import Test.External.EffectList (TEELMessage(..))
 import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
@@ -31,8 +35,6 @@ import Test.TextContent.NoEffects as TTN
 import Test.Unit (suite, test)
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
-import Test.World.Effectful (TWEMessage(..), TWEModel(..), einit)
-import Test.World.Effectful as TWE
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
 import Web.DOM.Node as WDN
@@ -191,9 +193,22 @@ main =
                                 html' <- liftEffect $ FRS.render html
                                 --events are part of virtual dom data and do not show up on the rendered markup
                                 TUA.equal """<a>TEST</a>""" html'
+                suite "diff" do
+                        test "updates record fields" do
+                                TUA.equal { a: 23, b: "hello", c: true } $ FAE.diff' {c: true} { a : 23, b: "hello", c: false }
+                                TUA.equal { a: 23, b: "hello", c: false } $ FAE.diff' {} { a : 23, b: "hello", c: false }
+
+                        test "updates record fields with newtype" do
+                                TUA.equal (TestNewtype { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ TestNewtype { a : 23, b: "hello", c: false }
+                                TUA.equal (TestNewtype { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ TestNewtype { a : 23, b: "hello", c: false }
+
+                        test "updates record fields with functor" do
+                                TUA.equal (Just { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ Just { a : 23, b: "hello", c: false }
+                                TUA.equal (Just { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ Just { a : 23, b: "hello", c: false }
+
                 suite "Basic test applications" do
                         test "noeffects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TBN.mount
                                 childrenLength <- childrenNodeLength
@@ -213,14 +228,14 @@ main =
                                 TUA.equal "1" current2
 
                         test "effectlist" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TBEL.mount
                                 childrenLength <- childrenNodeLength
                                 --span, input, input
                                 TUA.equal 3 childrenLength
 
-                                let     setInput text = liftEffect $ do
+                                let     setInput text = liftEffect do
                                                 element <- unsafeQuerySelector "#text-input"
                                                 WHH.setValue text $ unsafePartial (DM.fromJust $ WHH.fromElement element)
                                 initial <- textContent "#text-output"
@@ -238,7 +253,7 @@ main =
                                 TUA.assert "cut text" $ DSC.length cut < 4
 
                         test "effectful" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TBE.mount
                                 childrenLength <- childrenNodeLength
@@ -294,25 +309,33 @@ main =
                                 TUA.equal false currentNewChecked
                                 TUA.equal false currentNewDisabled
 
-                suite "World parameter test application" do
-                        test "effectful" do
-                                liftEffect $ do
+                suite "Effectful specific" do
+                        test "slower effects" do
+                                liftEffect do
                                         unsafeCreateEnviroment
-                                        TWE.mount
-                                let     ids = ["#times-span", "#previous-messages-span", "#previous-model-span"]
-                                        getSpans = unsafePartial \sp@[times, previousMessages, previousModel] -> sp
-                                spans <- textContentAll ids
-                                equalAll ["1", show [Nothing, Just TWEDecrement], show (Nothing :: Maybe TWEModel)] $ getSpans spans
-                                dispatchEvent clickEvent "#increment-button"
-                                spans2 <- textContentAll ids
-                                equalAll ["2", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement], show $ Just einit] $ getSpans spans2
-                                dispatchEvent clickEvent "#increment-button"
-                                spans3 <- textContentAll ids
-                                equalAll ["3", show [Nothing, Just TWEDecrement, Just TWEDecrement, Just TWEIncrement, Just TWEIncrement, Just TWEIncrement], show <<< Just $ TWEModel { previousMessages: [Nothing,(Just TWEDecrement)], previousModel: Nothing, times: 1 } ] $ getSpans spans3
+                                        TES.mount
+                                outputCurrent <- textContent "#text-output-current"
+                                outputNumbers <- textContent "#text-output-numbers"
+                                TUA.equal "0" outputCurrent
+                                TUA.equal "[]" outputNumbers
+
+                                --the event for snoc has a delay, make sure it doesnt overwrite unrelated fields when updating
+                                dispatchEvent clickEvent "#snoc-button"
+                                dispatchEvent clickEvent "#bump-button"
+                                outputCurrent2 <- textContent "#text-output-current"
+                                outputNumbers2 <- textContent "#text-output-numbers"
+                                TUA.equal "1" outputCurrent2
+                                TUA.equal "[]" outputNumbers2
+
+                                AF.delay $ Milliseconds 4000.0
+                                outputCurrent3 <- textContent "#text-output-current"
+                                outputNumbers3 <- textContent "#text-output-numbers"
+                                TUA.equal "2" outputCurrent3
+                                TUA.equal "[0]" outputNumbers3
 
                 suite "Custom events test applications" do
                         test "noeffects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TEN.mount
                                 output <- textContent "#text-output"
@@ -329,7 +352,7 @@ main =
                                 TUA.equal "2" output3
 
                         test "effectlist" do
-                                channel <- liftEffect $ do
+                                channel <- liftEffect do
                                         unsafeCreateEnviroment
                                         TEEL.mount
                                 output <- textContent "#text-output"
@@ -344,7 +367,7 @@ main =
                                 TUA.equal "0" output3
 
                         test "effectful" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TEE.mount
                                 output <- textContent "#text-output"
@@ -360,9 +383,9 @@ main =
                                 output3 <- textContent "#text-output"
                                 TUA.equal "3" output3
 
-                suite "Text content views" $ do
-                        test "no effects" $ do
-                                liftEffect $ do
+                suite "Text content views" do
+                        test "no effects" do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TTN.mount
                                 childrenLength <- childrenNodeLengthOf "#mount-point"
@@ -376,9 +399,9 @@ main =
                                 childrenLength3 <- childrenNodeLength
                                 TUA.equal 0 childrenLength3
 
-                suite "Server side rendering" $ do
-                        test "effectful" $ do
-                                liftEffect $ do
+                suite "Server side rendering" do
+                        test "effectful" do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TSE.preMount
                                 childrenLength <- childrenNodeLengthOf "#mount-point"
@@ -401,29 +424,23 @@ main =
 
                 suite "SVG" do
                         test "noeffects" do
-                                liftEffect $ do
+                                liftEffect do
                                         unsafeCreateEnviroment
                                         TSN.mount
                                 dispatchEvent clickEvent "#decrement-button"
                                 dispatchEvent clickEvent "#increment-button"
                                 dispatchEvent clickEvent "#increment-button"
                                 --we are only interested that updating a svg attr (e.g. viewBox) doesn't fail
-                                liftEffect $ do
-                                        _ <- unsafeQuerySelector """svg circle[cx="1"]"""
-                                        pure unit
+                                liftEffect <<< void $ unsafeQuerySelector """svg circle[cx="1"]"""
 
         where   unsafeQuerySelector selector = unsafePartial (DM.fromJust <$> FAD.querySelector selector)
 
                 childrenNodeLength = childrenNodeLengthOf "main"
 
-                childrenNodeLengthOf selector = liftEffect $ do
+                childrenNodeLengthOf selector = liftEffect do
                         mountPoint <- unsafeQuerySelector selector
                         children <- WDP.children $ WDE.toParentNode mountPoint
                         WDH.length children
-
-                textContentAll = DF.traverse textContent
-
-                equalAll expected = DF.traverse_ (\(Tuple a b) -> TUA.equal a b) <<< DA.zip expected
 
                 textContent selector = liftEffect do
                         element <- unsafeQuerySelector selector
@@ -437,22 +454,26 @@ main =
                         element <- unsafeQuerySelector selector
                         WHH.disabled $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
 
-                dispatchEvent eventFunction selector = liftEffect do
+                dispatchEvent eventFunction selector = liftEffect $ void do
                         element <- unsafeQuerySelector selector
                         event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WDE.toEventTarget element
-                        pure unit
+                        WEE.dispatchEvent event $ WDE.toEventTarget element
 
-                dispatchDocumentEvent eventFunction = liftEffect $ do
+                dispatchDocumentEvent eventFunction = liftEffect $ void do
                         window <- WH.window
                         document <- WHW.document window
                         event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WDD.toEventTarget document
-                        pure unit
+                        WEE.dispatchEvent event $ WDD.toEventTarget document
 
-                dispatchWindowEvent eventFunction = liftEffect $ do
+                dispatchWindowEvent eventFunction = liftEffect $ void do
                         window <- WH.window
                         event <- eventFunction
-                        _ <- WEE.dispatchEvent event $ WHW.toEventTarget window
-                        pure unit
+                        WEE.dispatchEvent event $ WHW.toEventTarget window
 
+newtype TestNewtype = TestNewtype { a :: Int, b :: String, c :: Boolean }
+
+derive instance genericTestNewtype :: Generic TestNewtype _
+derive instance newtypeTestNewtype :: Newtype TestNewtype _
+derive instance eqTestNewtype :: Eq TestNewtype
+instance showTestNewtype :: Show TestNewtype where
+        show = DGRS.genericShow
