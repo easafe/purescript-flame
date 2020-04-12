@@ -1,8 +1,8 @@
 language: node_js
 node_js:
-  - "11.15"
+  - "12.16"
 install:
-  - npm install -g bower purescript@0.12.5 pulp@13.0.0
+  - npm install -g bower purescript@0.13.6 pulp@13.0.0
 script:
   - npm install
   - bower install --force
