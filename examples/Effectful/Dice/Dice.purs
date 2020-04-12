@@ -1,31 +1,26 @@
-module Examples.EffectList.Dice.Main where
+module Examples.Effectful.Dice.Main where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Flame (QuerySelector(..), Html, (:>))
-import Flame as F
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Data.Tuple(Tuple)
 
 type Model = Maybe Int
 
 init :: Model
 init = Nothing
 
-data Message = Roll | Update Int
+data Message = Roll
 
-update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
-update model = case _ of
-        Roll -> model :> [
-                Just <<< Update <$> liftEffect (ER.randomInt 1 6)
-        ]
-        Update int -> Just int :> []
+update :: AffUpdate Model Message
+update { model } = map (const <<< Just) $ liftEffect $ ER.randomInt 1 6
 
 view :: Model -> Html Message
 view model = HE.main "main" [
@@ -34,8 +29,8 @@ view model = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount_ (QuerySelector "main") {
-        init: init :> [],
+main = FAE.mount_ (QuerySelector "main") {
+        init: init :> Nothing,
         update,
         view
 }

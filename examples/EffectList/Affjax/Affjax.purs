@@ -6,12 +6,9 @@ import Affjax as A
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple)
 import Effect (Effect)
-import Effect.Aff (Aff, Milliseconds(..), ListUpdate)
-import Effect.Aff as AF
-import Flame (QuerySelector(..), Html, (:>))
-import Flame.Application.EffectList as FE
+import Flame (QuerySelector(..), Html, (:>), ListUpdate)
+import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 
@@ -35,15 +32,14 @@ init = {
 update :: ListUpdate Model Message
 update model =
         case _ of
-                UpdateUrl url -> FE.noMessages $ model { url = url, result = NotFetched }
+                UpdateUrl url -> F.noMessages $ model { url = url, result = NotFetched }
                 Fetch -> model { result = Fetching } :> [ do
                                 response <- A.get AR.string model.url
-                                AF.delay $ Milliseconds 1000.0
                                 pure <<< Just <<< Fetched $ case response.body of
                                         Left error ->  Error $ A.printResponseFormatError error
                                         Right ok -> Ok ok
                         ]
-                Fetched result -> FE.noMessages $ model { result = result }
+                Fetched result -> F.noMessages $ model { result = result }
 
 view :: Model -> Html Message
 view { url, result } = HE.main "main" [
@@ -61,8 +57,8 @@ view { url, result } = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = FE.mount_ (QuerySelector "main") {
-        init: FE.noMessages init,
+main = F.mount_ (QuerySelector "main") {
+        init: F.noMessages init,
         update,
         view
 }

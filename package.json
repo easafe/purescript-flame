@@ -9,6 +9,7 @@
                 "package.json"
         ],
         "scripts": {
+                "example-dice-aff": "pulp browserify --main Examples.Effectful.Dice.Main --include examples/Effectful/Dice --optimise --to examples/Effectful/Dice/dist/dice.js",
                 "example-server-side-rendering-server": "pulp build --main Examples.EffectList.ServerSideRendering.Server.Main --include examples/EffectList/ServerSideRendering/Server:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
                 "example-server-side-rendering-client": "pulp browserify --main Examples.EffectList.ServerSideRendering.Client.Main --include examples/EffectList/ServerSideRendering/Client:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-client.js",
                 "example-server-side-rendering": "npm run example-server-side-rendering-server && npm run example-server-side-rendering-client",
