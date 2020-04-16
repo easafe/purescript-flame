@@ -20,7 +20,7 @@ import Effect.Uncurried as EU
 import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Prelude (Unit, bind, const, discard, map, pure, ($), (<<<))
+import Prelude (Unit, bind, const, discard, map, pure, ($))
 import Web.Event.Internal.Types (Event)
 
 foreign import emptyVNode :: VNode

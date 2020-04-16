@@ -1,25 +1,12 @@
-module Flame.External.Source where
+module Flame.External.Source (createEventSource, createRawEventSource, createSpecialEventSource, send) where
 
 import Prelude
 
 import Data.Foldable as DF
 import Effect (Effect)
-import Effect.Uncurried (EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
+import Flame.External.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
 import Signal.Channel (Channel)
-import Web.Event.Internal.Types (Event)
-
-type ToEventSource message = message -> Channel message -> Effect Unit
-
-type ToSpecialEventSource message parameter = forall f. Applicative f => f (parameter -> message) -> Channel (f message) -> Effect Unit
-
-type ToRawEventSource constructor = ToSpecialEventSource constructor Event
-
-type ToEventSource_ message = EffectFn2 message (Channel message) Unit
-
-type ToSpecialEventSource_ message parameter = forall f. Applicative f => EffectFn3 (parameter -> f (parameter -> message) -> f message) (f (parameter -> message)) (Channel (f message)) Unit
-
-type ToRawEventSource_ constructor = ToSpecialEventSource_ constructor Event
 
 createEventSource :: forall message. ToEventSource_ message -> ToEventSource message
 createEventSource ffi = EU.runEffectFn2 ffi
