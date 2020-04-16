@@ -17,7 +17,8 @@
     "purescript-nullable": "^4.1.1",
     "purescript-aff": "^5.1.0",
     "purescript-signal": "^10.1.0",
-    "purescript-foreign-object": "^2.0.1"
+    "purescript-foreign-object": "^2.0.1",
+    "purescript-argonaut-generic": "^5.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",
@@ -30,8 +31,7 @@
     "purescript-websocket-simple": "^3.0.0",
     "purescript-record": "^2.0.1",
     "purescript-node-http": "^5.0.1",
-    "purescript-httpure": "^0.8.3",
-    "purescript-argonaut-generic": "^5.0.0"
+    "purescript-httpure": "^0.8.3"
   },
   "repository": {
     "type": "git",
