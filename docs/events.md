@@ -211,7 +211,7 @@ update { display, model: MyModel model, message } =
                 ... -> ...
 ```
 
-Here, no matter how many fields `MyModel` has, we update only what's required in each case expression. Notice that `diff` takes always take a record as first parameter. The model, however, can be either a record or newtype (given a `Newtype` instance)/plain functor that holds a record to be updated.
+Here, no matter how many fields `MyModel` has, we update only what's required in each case expression. Notice that `diff` always takes a record as first parameter. The model, however, can be either a record or newtype (given a `Newtype` instance)/plain functor that holds a record to be updated.
 
 See all [effectful examples](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful).
 
