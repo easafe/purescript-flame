@@ -16,3 +16,5 @@ npm-debug.log
 _site/
 
 .jekyll-metadata
+
+scratchpad.*

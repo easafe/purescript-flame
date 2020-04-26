@@ -122,7 +122,7 @@ headers :: ToStringAttribute
 headers = createProperty "headers"
 
 href :: ToStringAttribute
-href = createProperty "href"
+href = createAttribute "href"
 
 hreflang :: ToStringAttribute
 hreflang = createAttribute "hreflang"
