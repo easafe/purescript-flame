@@ -46,7 +46,7 @@ which can used to render on server side the initial state of an application. On 
 ```haskell
 resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
 ```
-to install event handlers in the pre rendered markup. The `Generic` constraint is necessary since Flame will serialized the initial state of `PreApplication`
+to install event handlers in the pre rendered markup. The `Generic` constraint is necessary since Flame will serialize the initial state of `PreApplication`
 ```haskell
 type PreApplication model message = {
         init :: model,
