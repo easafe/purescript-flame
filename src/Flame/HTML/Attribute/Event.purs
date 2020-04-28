@@ -1,5 +1,5 @@
 -- | Definition of HTML events that can be fired from views
-module Flame.HTML.Event (EventName, ToEvent, ToRawEvent, ToSpecialEvent, createEvent, createEventMessage, createRawEvent, onBlur, onBlur', onCheck, onClick, onClick', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onError, onError', onFocus, onFocus', onFocusin, onFocusin', onFocusout, onFocusout', onInput, onInput', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onMousedown, onMousedown', onMouseenter, onMouseenter', onMouseleave, onMouseleave', onMousemove, onMousemove', onMouseout, onMouseout', onMouseover, onMouseover', onMouseup, onMouseup', onReset, onReset', onScroll, onScroll', onSelect, onSelect', onSubmit, onSubmit', onWheel, onWheel') where
+module Flame.HTML.Event (EventName, ToEvent, ToRawEvent, ToSpecialEvent, createEvent, createEventMessage, createRawEvent, onBlur, onBlur', onCheck, onClick, onClick', onChange, onChange', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onError, onError', onFocus, onFocus', onFocusin, onFocusin', onFocusout, onFocusout', onInput, onInput', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onMousedown, onMousedown', onMouseenter, onMouseenter', onMouseleave, onMouseleave', onMousemove, onMousemove', onMouseout, onMouseout', onMouseover, onMouseover', onMouseup, onMouseup', onReset, onReset', onScroll, onScroll', onSelect, onSelect', onSubmit, onSubmit', onWheel, onWheel') where
 
 import Prelude
 
@@ -40,7 +40,7 @@ key = FU.runEffectFn1 key_
 selection :: Event -> Effect String
 selection = FU.runEffectFn1 selection_
 
--- | Raises the given `message` for the given event
+-- | Raises the given `message` for the event
 createEvent :: forall message. EventName -> message -> NodeData message
 createEvent = Event
 
@@ -63,6 +63,12 @@ onClick = createEvent "click"
 
 onClick' :: forall message. ToRawEvent message
 onClick' = createEventMessage "click"
+
+onChange :: forall message. ToEvent message
+onChange = createEvent "change"
+
+onChange' :: forall message. ToRawEvent message
+onChange' = createEventMessage "change"
 
 -- | This event fires when the value of an input, select, textarea, contenteditable or designMode on elements changes
 onInput :: forall message. ToSpecialEvent message String
