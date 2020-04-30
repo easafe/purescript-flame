@@ -1,4 +1,7 @@
 exports.nodeValue_ = function (event) {
+	if (event.target.contentEditable)
+		return event.target.innerText;
+
 	return event.target.value;
 }
 
