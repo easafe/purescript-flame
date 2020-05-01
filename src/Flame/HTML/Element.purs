@@ -640,11 +640,8 @@ ol_ = createElement_ "ol"
 ol' :: forall a h. ToHtml' a h
 ol' = createElement' "ol"
 
-img :: forall a b h. ToHtml a b h
-img = createElement "img"
-
-img' :: forall a h. ToHtml' a h
-img' = createElement' "img"
+img :: forall a h. ToHtml' a h
+img = createElement' "img"
 
 optgroup :: forall a b h. ToHtml a b h
 optgroup = createElement "optgroup"
