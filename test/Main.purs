@@ -15,6 +15,7 @@ import Effect.Class (liftEffect)
 import Flame.Application.DOM as FAD
 import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
+import Test.Basic.ContentEditable as TBC
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Partial.Unsafe (unsafePartial)
@@ -308,6 +309,25 @@ main =
                                 currentNewDisabled <- isDisabled "#checkbox"
                                 TUA.equal false currentNewChecked
                                 TUA.equal false currentNewDisabled
+
+                        test "contentEditable" do
+                                --contentEditable is not supported by jsdom
+                                liftEffect do
+                                        unsafeCreateEnviroment
+                                        TBC.mount
+                                childrenLength <- childrenNodeLength
+                                TUA.equal 3 childrenLength
+
+                                initialOutput <- textContent "#text-output"
+                                TUA.equal "start" initialOutput
+
+                                dispatchEvent inputEvent "#content-div"
+                                currentOutput <- textContent "#text-output"
+                                TUA.equal "" currentOutput
+
+                                dispatchEvent inputEvent "#content-select"
+                                currentOutput2 <- textContent "#text-output"
+                                TUA.equal "2" currentOutput2
 
                 suite "Effectful specific" do
                         test "slower effects" do
