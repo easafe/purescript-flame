@@ -206,6 +206,11 @@ main =
                         test "updates record fields with functor" do
                                 TUA.equal (Just { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ Just { a : 23, b: "hello", c: false }
                                 TUA.equal (Just { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ Just { a : 23, b: "hello", c: false }
+                        test "new copy is returned" do
+                                --since diff uses unsafe javascript, make sure the reference is not being written to
+                                let model = { a: 1, b: 2}
+                                TUA.equal { a: 1, b: 3 } $ FAE.diff' { b: 3 } model
+                                TUA.equal { a: 12, b: 2 } $ FAE.diff' { a: 12 } model
 
                 suite "Basic test applications" do
                         test "noeffects" do

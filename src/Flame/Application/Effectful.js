@@ -1,9 +1,15 @@
 exports.unsafeMergeFields = function (model) {
         return function (subset) {
-                for (var key of Object.keys(subset)) {
-                        model[key] = subset[key];
+                var copy = {};
+
+                for (var key of Object.keys(model)) {
+                        copy[key] = model[key];
                 }
 
-                return model;
+                for (var key of Object.keys(subset)) {
+                        copy[key] = subset[key];
+                }
+
+                return copy;
         }
 }
