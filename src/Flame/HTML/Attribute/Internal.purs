@@ -1,5 +1,5 @@
 -- | Definition of HTML attributes
-module Flame.HTML.Attribute.Internal (class ToClassList, ToBooleanProperty, ToIntAttribute, ToNumberAttribute, ToStringAttribute, accentHeight, accept, acceptCharset, accessKey, accumulate, action, additive, align, alignmentBaseline, alt, ascent, autocomplete, autofocus, autoplay, azimuth, baseFrequency, baseProfile, baselineShift, begin, bias, calcMode, charset, checked, class', clipPathAttr, clipPathUnits, clipRule, color, colorInterpolation, colorInterpolationFilters, colorProfileAttr, colorRendering, cols, colspan, content, contentEditable, contentScriptType, contentStyleType, contextmenu, controls, coords, createAttribute, createAttributeName, createAttributeType, createProperty, cursorAttr, cx, cy, d, datetime, default, diffuseConstant, dir, direction, disabled, display, divisor, dominantBaseline, download, downloadAs, draggable, dropzone, dur, dx, dy, edgeMode, elevation, enctype, end, externalResourcesRequired, fill, fillOpacity, fillRule, filterAttr, filterUnits, floodColor, floodOpacity, fontFamily, fontSize, fontSizeAdjust, fontStretch, fontStyle, fontVariant, fontWeight, for, fr, from, fx, fy, gradientTransform, gradientUnits, headers, height, hidden, href, hreflang, id, imageRendering, in', in2, isMap, itemprop, k1, k2, k3, k4, kernelMatrix, kernelUnitLength, kerning, keySplines, keyTimes, kind, lang, lengthAdjust, letterSpacing, lightingColor, limitingConeAngle, list, local, loop, manifest, markerEnd, markerHeight, markerMid, markerStart, markerUnits, markerWidth, maskAttr, maskContentUnits, maskUnits, max, maxlength, media, method, min, minlength, mode, multiple, name, noValidate, numOctaves, opacity, operator, order, overflow, overlinePosition, overlineThickness, paintOrder, pathLength, pattern, patternContentUnits, patternTransform, patternUnits, ping, placeholder, pointerEvents, points, pointsAtX, pointsAtY, pointsAtZ, poster, preload, preserveAlpha, preserveAspectRatio, primitiveUnits, pubdate, r, radius, readOnly, refX, refY, rel, repeatCount, repeatDur, required, requiredFeatures, restart, result, reversed, rows, rowspan, rx, ry, sandbox, scale, scope, seed, selected, shape, shapeRendering, size, specularConstant, specularExponent, spellcheck, src, srcdoc, srclang, start, stdDeviation, step, stitchTiles, stopColor, stopOpacity, strikethroughPosition, strikethroughThickness, stroke, strokeDasharray, strokeDashoffset, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeOpacity, strokeWidth, style, styleAttr, surfaceScale, tabindex, target, targetX, targetY, textAnchor, textDecoration, textLength, textRendering, title, to, transform, type', underlinePosition, underlineThickness, useMap, value, values, vectorEffect, version, viewBox, visibility, width, wordSpacing, wrap, writingMode, x, x1, x2, xChannelSelector, y, y1, y2, yChannelSelector) where
+module Flame.HTML.Attribute.Internal (class ToClassList, ToBooleanAttribute, ToIntAttribute, ToNumberAttribute, ToStringAttribute, accentHeight, accept, acceptCharset, accessKey, accumulate, action, additive, align, alignmentBaseline, alt, ascent, autocomplete, autofocus, autoplay, azimuth, baseFrequency, baseProfile, baselineShift, begin, bias, calcMode, charset, checked, class', clipPathAttr, clipPathUnits, clipRule, color, colorInterpolation, colorInterpolationFilters, colorProfileAttr, colorRendering, cols, colspan, content, contentEditable, contentScriptType, contentStyleType, contextmenu, controls, coords, createAttribute, createAttributeName, createAttributeType, createProperty, cursorAttr, cx, cy, d, datetime, default, diffuseConstant, dir, direction, disabled, display, divisor, dominantBaseline, download, downloadAs, draggable, dropzone, dur, dx, dy, edgeMode, elevation, enctype, end, externalResourcesRequired, fill, fillOpacity, fillRule, filterAttr, filterUnits, floodColor, floodOpacity, fontFamily, fontSize, fontSizeAdjust, fontStretch, fontStyle, fontVariant, fontWeight, for, fr, from, fx, fy, gradientTransform, gradientUnits, headers, height, hidden, href, hreflang, id, imageRendering, in', in2, isMap, itemprop, k1, k2, k3, k4, kernelMatrix, kernelUnitLength, kerning, keySplines, keyTimes, kind, lang, lengthAdjust, letterSpacing, lightingColor, limitingConeAngle, list, local, loop, manifest, markerEnd, markerHeight, markerMid, markerStart, markerUnits, markerWidth, maskAttr, maskContentUnits, maskUnits, max, maxlength, media, method, min, minlength, mode, multiple, name, noValidate, numOctaves, opacity, operator, order, overflow, overlinePosition, overlineThickness, paintOrder, pathLength, pattern, patternContentUnits, patternTransform, patternUnits, ping, placeholder, pointerEvents, points, pointsAtX, pointsAtY, pointsAtZ, poster, preload, preserveAlpha, preserveAspectRatio, primitiveUnits, pubdate, r, radius, readOnly, refX, refY, rel, repeatCount, repeatDur, required, requiredFeatures, restart, result, reversed, rows, rowspan, rx, ry, sandbox, scale, scope, seed, selected, shape, shapeRendering, size, specularConstant, specularExponent, spellcheck, src, srcdoc, srclang, start, stdDeviation, step, stitchTiles, stopColor, stopOpacity, strikethroughPosition, strikethroughThickness, stroke, strokeDasharray, strokeDashoffset, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeOpacity, strokeWidth, style, styleAttr, surfaceScale, tabindex, target, targetX, targetY, textAnchor, textDecoration, textLength, textRendering, title, to, transform, type', underlinePosition, underlineThickness, useMap, value, values, vectorEffect, version, viewBox, visibility, width, wordSpacing, wrap, writingMode, x, x1, x2, xChannelSelector, y, y1, y2, yChannelSelector, innerHTML) where
 
 import Data.Array as DA
 import Data.Either as DE
@@ -17,7 +17,7 @@ type ToStringAttribute = ToNodeData String
 
 type ToIntAttribute = ToNodeData Int
 
-type ToBooleanProperty = ToNodeData Boolean
+type ToBooleanAttribute = ToNodeData Boolean
 
 type ToNumberAttribute = ToNodeData Number
 
@@ -72,6 +72,9 @@ caseify name'
 
 id :: ToStringAttribute
 id = createProperty "id"
+
+innerHTML :: ToStringAttribute
+innerHTML = createProperty "innerHTML"
 
 content :: ToStringAttribute
 content = createProperty "content"
@@ -742,62 +745,62 @@ version = createAttribute "version" <<< show
 numOctaves :: ToIntAttribute
 numOctaves = createAttribute "numOctaves" <<< show
 
-autocomplete :: ToBooleanProperty
+autocomplete :: ToBooleanAttribute
 autocomplete = createProperty "autocomplete" <<< booleanToFalsyString
 
-autofocus :: ToBooleanProperty
+autofocus :: ToBooleanAttribute
 autofocus = createProperty "autofocus" <<< booleanToFalsyString
 
-autoplay :: ToBooleanProperty
+autoplay :: ToBooleanAttribute
 autoplay = createProperty "autoplay" <<< booleanToFalsyString
 
-checked :: ToBooleanProperty
+checked :: ToBooleanAttribute
 checked = createProperty "checked" <<< booleanToFalsyString
 
-contentEditable :: ToBooleanProperty
+contentEditable :: ToBooleanAttribute
 contentEditable = createProperty "contentEditable" <<< booleanToFalsyString
 
-controls :: ToBooleanProperty
+controls :: ToBooleanAttribute
 controls = createProperty "controls" <<< booleanToFalsyString
 
-default :: ToBooleanProperty
+default :: ToBooleanAttribute
 default = createProperty "default" <<< booleanToFalsyString
 
-disabled :: ToBooleanProperty
+disabled :: ToBooleanAttribute
 disabled = createProperty "disabled" <<< booleanToFalsyString
 
-hidden :: ToBooleanProperty
+hidden :: ToBooleanAttribute
 hidden = createProperty "hidden" <<< booleanToFalsyString
 
-isMap :: ToBooleanProperty
+isMap :: ToBooleanAttribute
 isMap = createProperty "isMap" <<< booleanToFalsyString
 
-loop :: ToBooleanProperty
+loop :: ToBooleanAttribute
 loop = createProperty "loop" <<< booleanToFalsyString
 
-multiple :: ToBooleanProperty
+multiple :: ToBooleanAttribute
 multiple = createProperty "multiple" <<< booleanToFalsyString
 
-noValidate :: ToBooleanProperty
+noValidate :: ToBooleanAttribute
 noValidate = createProperty "noValidate" <<< booleanToFalsyString
 
-readOnly :: ToBooleanProperty
+readOnly :: ToBooleanAttribute
 readOnly = createProperty "readOnly" <<< booleanToFalsyString
 
-required :: ToBooleanProperty
+required :: ToBooleanAttribute
 required = createProperty "required" <<< booleanToFalsyString
 
-reversed :: ToBooleanProperty
+reversed :: ToBooleanAttribute
 reversed = createProperty "reversed" <<< booleanToFalsyString
 
-selected :: ToBooleanProperty
+selected :: ToBooleanAttribute
 selected = createProperty "selected" <<< booleanToFalsyString
 
-spellcheck :: ToBooleanProperty
+spellcheck :: ToBooleanAttribute
 spellcheck = createProperty "spellcheck" <<< booleanToFalsyString
 
-externalResourcesRequired :: ToBooleanProperty
+externalResourcesRequired :: ToBooleanAttribute
 externalResourcesRequired = createProperty "externalResourcesRequired" <<< booleanToFalsyString
 
-preserveAlpha :: ToBooleanProperty
+preserveAlpha :: ToBooleanAttribute
 preserveAlpha = createProperty "preserveAlpha" <<< booleanToFalsyString
