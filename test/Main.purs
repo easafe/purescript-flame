@@ -12,7 +12,6 @@ import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
 import Effect.Class (liftEffect)
-import Flame (Html)
 import Flame.Application.DOM as FAD
 import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
@@ -58,7 +57,6 @@ foreign import keydownEvent :: Effect Event
 foreign import errorEvent :: Effect Event
 foreign import offlineEvent :: Effect Event
 
-data Test = A | B
 
 
 main :: Effect Unit
@@ -201,13 +199,13 @@ main =
                 suite "show" do
                         test "simple element" do
                                 let html = HE.div [HA.id "1"] [HE.text "T"]
-                                TUA.equal """(Node "div" [(Property "id" "1")] [(Text "T")])""" $ show $ html
+                                TUA.equal """(Node div [(Property id 1)] [(Text T)])""" $ show $ html
                         test "events do not matter" do
                                 let html = HE.div [HA.id "1", HA.onClick "Test"] [HE.text "T"]
-                                TUA.equal """(Node "div" [(Property "id" "1")] [(Text "T")])""" $ show $ html
+                                TUA.equal """(Node div [(Property id 1)] [(Text T)])""" $ show $ html
                         test "element with childs" do
-                                let html = HE.div_ [HE.div_ [HE.br]] :: Html String
-                                TUA.equal """(Node "div" [] [(Node "div" [] [(Node "br" [] [])])])""" $ show $ html 
+                                let html = HE.div_ [HE.div_ [HE.br]]
+                                TUA.equal """(Node div [] [(Node div [] [(Node br [] [])])])""" $ show $ html 
                 suite "eq" do
                         test "simple element" do
                                 TUA.equal' "equal html" (HE.div [HA.id "1"] [HE.text "T"]) (HE.div [HA.id "1"] [HE.text "T"])
