@@ -3,6 +3,8 @@ module Flame.Types where
 
 import Prelude
 
+import Data.Array as DA
+import Data.Foldable as DF
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Foreign.Object (Object)
@@ -59,6 +61,24 @@ data Html message =
 
 derive instance elementFunctor :: Functor Html
 
+
+instance showHtml :: Show (Html message) where
+        show (Node tag nodeData children) = "(Node " <> tag <> " " <> show (isNonEventData nodeData) <> " " <> show children <> ")"
+        show (Text t) = "(Text " <> t <> ")"
+
+instance eqHtml :: Eq (Html message) where
+        eq (Node tag nodeData children) (Node tag2 nodeData2 children2) = tag == tag2 && eqArrayNodeData nodeData nodeData2 && children == children2
+                where eqArrayNodeData arr1 arr2 = DF.all (flip DF.elem (isNonEventData arr2)) (isNonEventData arr1)
+        eq (Text t) (Text t2) = t == t2
+        eq _ _ = false
+
+
+isNonEventData :: forall t. Array (NodeData t) -> Array (NodeData t)
+isNonEventData = DA.filter case _ of
+                        Attribute _ _ -> true
+                        Property _ _ -> true
+                        _ -> false
+
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
@@ -68,6 +88,17 @@ data NodeData message =
         RawEvent String (Event -> Effect message)
 
 derive instance nodeDataFunctor :: Functor NodeData
+
+instance showNodeData :: Show (NodeData message) where
+        show (Attribute name val) = "(Attribute " <> name <> " " <> val <> ")"
+        show (Property name val) = "(Property " <> name <> " " <> val <> ")"
+        show _ = ""
+
+instance eqNodeData :: Eq (NodeData message) where
+        eq (Attribute name val) (Attribute name2 val2) = name == name2 && val == val2
+        eq (Property name val) (Property name2 val2) = name == name2 && val == val2
+        eq _ _ = false
+
 
 -- | Infix tuple constructor
 infixr 6 Tuple as :>

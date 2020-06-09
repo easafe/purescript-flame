@@ -15,12 +15,12 @@ import Effect.Class (liftEffect)
 import Flame.Application.DOM as FAD
 import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
-import Test.Basic.ContentEditable as TBC
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Partial.Unsafe (unsafePartial)
 import Partial.Unsafe as PU
 import Signal.Channel as SC
+import Test.Basic.ContentEditable as TBC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.NoEffects as TBN
@@ -56,6 +56,8 @@ foreign import inputEvent :: Effect Event
 foreign import keydownEvent :: Effect Event
 foreign import errorEvent :: Effect Event
 foreign import offlineEvent :: Effect Event
+
+
 
 main :: Effect Unit
 main =
@@ -194,6 +196,29 @@ main =
                                 html' <- liftEffect $ FRS.render html
                                 --events are part of virtual dom data and do not show up on the rendered markup
                                 TUA.equal """<a>TEST</a>""" html'
+                suite "show" do
+                        test "simple element" do
+                                let html = HE.div [HA.id "1"] [HE.text "T"]
+                                TUA.equal """(Node div [(Property id 1)] [(Text T)])""" $ show $ html
+                        test "events do not matter" do
+                                let html = HE.div [HA.id "1", HA.onClick "Test"] [HE.text "T"]
+                                TUA.equal """(Node div [(Property id 1)] [(Text T)])""" $ show $ html
+                        test "element with childs" do
+                                let html = HE.div_ [HE.div_ [HE.br]]
+                                TUA.equal """(Node div [] [(Node div [] [(Node br [] [])])])""" $ show $ html 
+                suite "eq" do
+                        test "simple element" do
+                                TUA.equal' "equal html" (HE.div [HA.id "1"] [HE.text "T"]) (HE.div [HA.id "1"] [HE.text "T"])
+                                TUA.assert "diffent property" $ (HE.div [HA.id "1"] [HE.text "T"]) /= (HE.div [HA.id "2"] [HE.text "T"])
+                        test "events do not matter" do
+                                TUA.equal' "equal html" (HE.div [HA.id "1", HA.onClick unit] [HE.text "T"]) (HE.div [HA.id "1"] [HE.text "T"])
+                        test "property order does not matter" do
+                                TUA.assert "should equal" $
+                                        (HE.div [HA.class' "test", HA.id "1"] [HE.text "T"]) == (HE.div [HA.id "1", HA.class' "test"] [HE.text "T"]) 
+                        test "child order does matter" do
+                                TUA.assert "should not equal" $
+                                        (HE.div_ [HE.text "T", HE.br]) /= (HE.div_ [HE.br, HE.text "T"])
+
                 suite "diff" do
                         test "updates record fields" do
                                 TUA.equal { a: 23, b: "hello", c: true } $ FAE.diff' {c: true} { a : 23, b: "hello", c: false }
