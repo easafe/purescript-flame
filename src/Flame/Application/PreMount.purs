@@ -1,8 +1,5 @@
 module Flame.Application.PreMount where
 
-import Flame.Types (Html(..), PreApplication)
-import Prelude (bind, discard, otherwise, pure, ($), (<<<), (<>), (==))
-
 import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
@@ -13,6 +10,7 @@ import Data.Argonaut.Parser as DAP
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Either as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -25,7 +23,9 @@ import Flame.Application.DOM as FAD
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
+import Flame.Types (Html(..), PreApplication)
 import Partial.Unsafe (unsafePartial)
+import Prelude (bind, discard, otherwise, pure, show, ($), (<<<), (<>), (==))
 import Web.DOM.ParentNode (QuerySelector(..))
 
 tagSerializedState :: String
@@ -58,7 +58,7 @@ serializedState selector = do
                 Nothing -> EE.throw $ "Error resuming application mount: serialized state not found!"
         where   decoding contents = do
                         json <- DAP.jsonParser contents
-                        DADEGR.genericDecodeJson json
+                        DE.either (Left <<< show) Right $ DADEGR.genericDecodeJson json
 
 preMount :: forall model m message. Generic model m => EncodeRep m => QuerySelector -> PreApplication model message -> Effect String
 preMount (QuerySelector selector) application = do

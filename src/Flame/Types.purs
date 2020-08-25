@@ -61,7 +61,6 @@ data Html message =
 
 derive instance elementFunctor :: Functor Html
 
-
 instance showHtml :: Show (Html message) where
         show (Node tag nodeData children) = "(Node " <> tag <> " " <> show (isNonEventData nodeData) <> " " <> show children <> ")"
         show (Text t) = "(Text " <> t <> ")"
@@ -71,7 +70,6 @@ instance eqHtml :: Eq (Html message) where
                 where eqArrayNodeData arr1 arr2 = DF.all (flip DF.elem (isNonEventData arr2)) (isNonEventData arr1)
         eq (Text t) (Text t2) = t == t2
         eq _ _ = false
-
 
 isNonEventData :: forall t. Array (NodeData t) -> Array (NodeData t)
 isNonEventData = DA.filter case _ of
@@ -98,7 +96,6 @@ instance eqNodeData :: Eq (NodeData message) where
         eq (Attribute name val) (Attribute name2 val2) = name == name2 && val == val2
         eq (Property name val) (Property name2 val2) = name == name2 && val == val2
         eq _ _ = false
-
 
 -- | Infix tuple constructor
 infixr 6 Tuple as :>

@@ -18,3 +18,5 @@ _site/
 .jekyll-metadata
 
 scratchpad.*
+
+.spago
