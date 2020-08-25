@@ -18,7 +18,7 @@
     "purescript-aff": "^5.1.0",
     "purescript-signal": "^10.1.0",
     "purescript-foreign-object": "^2.0.1",
-    "purescript-argonaut-generic": "^5.0.0"
+    "purescript-argonaut-generic": "^6.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",
