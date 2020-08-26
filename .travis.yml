@@ -4,6 +4,7 @@ node_js:
 install:
   - npm install -g purescript@0.13.8 spago parcel-bundler
 script:
+  - npm install
   - spago build
   - spago test
   - npm run build-examples
