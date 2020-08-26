@@ -17,10 +17,8 @@ module Flame.Application.Effectful(
 )
 where
 
-import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Either as DET
 import Data.Foldable as DF
-import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
@@ -34,6 +32,7 @@ import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
 import Flame.Application.DOM as FAD
+import Flame.Application.PreMount (class UnserializeModel)
 import Flame.Application.PreMount as FAP
 import Flame.Renderer as FR
 import Flame.Types (App, DOMElement, (:>))
@@ -97,7 +96,7 @@ diff :: forall changed model. Diff changed model => changed -> Aff (model -> mod
 diff = pure <<< diff'
 
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Maybe message))
+resumeMount :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect (Channel (Maybe message))
 resumeMount (QuerySelector selector) application = do
         initialModel <- FAP.serializedState selector
         maybeElement <- FAD.querySelector selector
@@ -110,7 +109,7 @@ resumeMount (QuerySelector selector) application = do
                 Nothing -> EE.throw $ "Error resuming application mount: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
-resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect Unit
 resumeMount_ selector application = void $ resumeMount selector application
 
 -- | Mount a Flame application on the given selector

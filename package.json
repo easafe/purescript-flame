@@ -9,24 +9,24 @@
                 "package.json"
         ],
         "scripts": {
-                "example-dice-aff": "pulp browserify --main Examples.Effectful.Dice.Main --include examples/Effectful/Dice --optimise --to examples/Effectful/Dice/dist/dice.js",
-                "example-server-side-rendering-server": "pulp build --main Examples.EffectList.ServerSideRendering.Server.Main --include examples/EffectList/ServerSideRendering/Server:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
-                "example-server-side-rendering-client": "pulp browserify --main Examples.EffectList.ServerSideRendering.Client.Main --include examples/EffectList/ServerSideRendering/Client:examples/EffectList/ServerSideRendering/Shared --optimise --to examples/EffectList/ServerSideRendering/dist/server-side-rendering-client.js",
+                "example-dice-aff": "parcel build examples/Effectful/Dice/dice.js -d examples/Effectful/Dice/dist/",
+                "example-server-side-rendering-server": "parcel build examples/EffectList/ServerSideRendering/Server/dist/server-side-rendering-server.js -d examples/EffectList/ServerSideRendering/Server/dist -t node",
+                "example-server-side-rendering-client": "parcel build examples/EffectList/ServerSideRendering/Client/server-side-rendering-client.js -d examples/EffectList/ServerSideRendering/Client/dist",
                 "example-server-side-rendering": "npm run example-server-side-rendering-server && npm run example-server-side-rendering-client",
-                "example-webchat-server": "pulp build --main Examples.Effectful.Webchat.Server.Main --include examples/Effectful/Webchat/Server:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-server.js",
-                "example-webchat-client": "pulp browserify --main Examples.Effectful.Webchat.Client.Main --include examples/Effectful/Webchat/Client:examples/Effectful/Webchat/Shared --optimise --to examples/Effectful/Webchat/dist/webchat-client.js",
+                "example-webchat-server": "parcel build examples/Effectful/Webchat/Server/webchat-server.js -d examples/Effectful/Webchat/dist -t node",
+                "example-webchat-client": "parcel build examples/Effectful/Webchat/Client/webchat-client.js -d examples/Effectful/Webchat/dist",
                 "example-webchat": "npm run example-webchat-server && npm run example-webchat-client",
-                "example-affjax": "pulp browserify --main Examples.Effectful.Affjax.Main --include examples/Effectful/Affjax --optimise --to examples/Effectful/Affjax/dist/affjax.js",
-                "example-affjax-list": "pulp browserify --main Examples.EffectList.Affjax.Main --include examples/EffectList/Affjax --optimise --to examples/EffectList/Affjax/dist/affjax.js",
-                "example-counter": "pulp browserify --main Examples.NoEffects.Counter.Main --include examples/NoEffects/Counter --optimise --to examples/NoEffects/Counter/dist/counter.js",
-                "example-counters": "pulp browserify --main Examples.NoEffects.Counters.Main --include examples/NoEffects/Counters:examples/NoEffects/Counter --optimise --to examples/NoEffects/Counters/dist/counters.js",
-                "example-dice": "pulp browserify --main Examples.EffectList.Dice.Main --include examples/EffectList/Dice --optimise --to examples/EffectList/Dice/dist/dice.js",
-                "example-todo": "pulp browserify --main Examples.EffectList.Todo.Main --include examples/EffectList/Todo --optimise --to examples/EffectList/Todo/dist/todo.js",
+                "example-affjax": "parcel build examples/Effectful/Affjax/affjax.js -d examples/Effectful/Affjax/dist",
+                "example-affjax-list": "parcel build examples/EffectList/Affjax/affjax.js -d examples/EffectList/Affjax/dist",
+                "example-counter": "parcel build examples/NoEffects/Counter/counter.js -d examples/NoEffects/Counter/dist",
+                "example-counters": "parcel build examples/NoEffects/Counters/counters.js -d examples/NoEffects/Counters/dist",
+                "example-dice": "parcel build examples/EffectList/Dice/dice.js -d examples/EffectList/Dice/dist",
+                "example-todo": "parcel build examples/EffectList/Todo/todo.js -d examples/EffectList/Todo/dist",
                 "build-examples": "npm run example-webchat && npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
-                "scratch": "pulp browserify --main Test.ScratchPad --include test --to test/dist/scratchpad.js",
+                "scratch": "parcel build test/scratchpad.js -d test/dist",
                 "webchat": "npm run example-webchat && node examples/Effectful/Webchat/dist/webchat-server.js",
                 "server-side-rendering": "npm run example-server-side-rendering && node examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
-                "test": "pulp test && npm run build-examples"
+                "test": "spago test && npm run build-examples"
         },
         "dependencies": {
                 "snabbdom": "^0.7.4",
@@ -34,7 +34,7 @@
         },
         "devDependencies": {
                 "jsdom": "^14.1.0",
-                "pulp": "^12.4.2",
+                "parcel-bundler": "^1.12.4",
                 "ws": "^7.0.0"
         }
 }

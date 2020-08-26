@@ -1,0 +1,1 @@
+require('../../../output/Examples.EffectList.Todo.Main').main();

@@ -1,16 +1,19 @@
 module Flame.Application.PreMount where
 
-import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
+import Data.Argonaut.Decode (JsonDecodeError)
+import Data.Argonaut.Decode as DAD
+import Data.Argonaut.Decode.Class (class GDecodeJson)
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DADEGR
+import Data.Argonaut.Encode as DAE
+import Data.Argonaut.Encode.Class (class GEncodeJson)
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
-import Data.Argonaut.Parser as DAP
 import Data.Array ((:))
 import Data.Array as DA
+import Data.Bifunctor as DB
 import Data.Either (Either(..))
-import Data.Either as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -25,7 +28,8 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Flame.Types (Html(..), PreApplication)
 import Partial.Unsafe (unsafePartial)
-import Prelude (bind, discard, otherwise, pure, show, ($), (<<<), (<>), (==))
+import Prelude (bind, discard, otherwise, pure, ($), (<<<), (<>), (==))
+import Prim.RowList (class RowToList)
 import Web.DOM.ParentNode (QuerySelector(..))
 
 tagSerializedState :: String
@@ -43,24 +47,46 @@ onlyLetters = DSR.replace (DSRU.unsafeRegex "[^aA-zZ]" global) ""
 selectorSerializedState :: String -> String
 selectorSerializedState selector = tagSerializedState <> "#" <> idSerializedState selector <> "[" <> attributeSerializedState selector <> "=" <> selector <> "]"
 
-serializedState :: forall model m. Generic model m => DecodeRep m => String -> Effect model
+class UnserializeModel m where
+        unserializeModel :: String -> Either String m
+
+instance recordUnserializeModel :: (GDecodeJson m list, RowToList m list) => UnserializeModel (Record m) where
+        unserializeModel model = jsonStringError do
+                json <- DAD.parseJson model
+                DAD.decodeJson json
+else
+instance genericUnserializeModel :: (Generic m r, DecodeRep r) => UnserializeModel m where
+        unserializeModel model = jsonStringError do
+                json <- DAD.parseJson model
+                DADEGR.genericDecodeJson json
+
+jsonStringError :: forall a. Either JsonDecodeError a -> Either String a
+jsonStringError = DB.lmap DAD.printJsonDecodeError
+
+serializedState :: forall model. UnserializeModel model => String -> Effect model
 serializedState selector = do
         let sanitizedSelector = onlyLetters selector
         maybeElement <- FAD.querySelector $ selectorSerializedState sanitizedSelector
         case maybeElement of
                 Just el -> do
                         contents <- FAD.textContent el
-                        case CME.runExcept <<< CME.except $ decoding contents of
+                        case unserializeModel contents of
                                 Right model -> do
                                         FAD.removeElement $ selectorSerializedState sanitizedSelector
                                         pure model
                                 Left message -> EE.throw $ "Error resuming application mount: serialized state is invalid! " <> message
                 Nothing -> EE.throw $ "Error resuming application mount: serialized state not found!"
-        where   decoding contents = do
-                        json <- DAP.jsonParser contents
-                        DE.either (Left <<< show) Right $ DADEGR.genericDecodeJson json
 
-preMount :: forall model m message. Generic model m => EncodeRep m => QuerySelector -> PreApplication model message -> Effect String
+class SerializeModel m where
+        serializeModel :: m -> String
+
+instance encodeJsonSerializeModel :: (GEncodeJson m list, RowToList m list) => SerializeModel (Record m) where
+        serializeModel = DAC.stringify <<< DAE.encodeJson
+else
+instance genericSerializeModel :: (Generic m r, EncodeRep r) => SerializeModel m where
+        serializeModel = DAC.stringify <<< DAEGR.genericEncodeJson
+
+preMount :: forall model message. SerializeModel model => QuerySelector -> PreApplication model message -> Effect String
 preMount (QuerySelector selector) application = do
         markup <- injectState $ application.view application.init
         rendered <- FRS.render markup
@@ -71,7 +97,7 @@ preMount (QuerySelector selector) application = do
                         HA.style { display: "none" },
                         HA.id $ idSerializedState sanitizedSelector,
                         HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
-                ] <<< DAC.stringify $ DAEGR.genericEncodeJson application.init
+                ] $ serializeModel application.init
 
                 isBody (Node tag _ _) = tag == "body"
                 isBody _ = false

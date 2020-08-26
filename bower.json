@@ -18,7 +18,8 @@
     "purescript-aff": "^5.1.0",
     "purescript-signal": "^10.1.0",
     "purescript-foreign-object": "^2.0.1",
-    "purescript-argonaut-generic": "^6.0.0"
+    "purescript-argonaut-generic": "^6.0.0",
+    "purescript-argonaut-codecs": "^7.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",
@@ -27,8 +28,7 @@
     "purescript-affjax": "^7.0.0",
     "purescript-test-unit": "^14.0.0",
     "purescript-debug": "^4.0.0",
-    "purescript-argonaut-codecs": "^6.0.2",
-    "purescript-websocket-simple": "^3.0.0",
+    "purescript-websocket-simple": "^3.0.1",
     "purescript-record": "^2.0.1",
     "purescript-node-http": "^5.0.1",
     "purescript-httpure": "^0.8.3"

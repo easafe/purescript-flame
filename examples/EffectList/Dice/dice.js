@@ -1,0 +1,1 @@
+require('../../../output/Examples.EffectList.Dice.Main').main();

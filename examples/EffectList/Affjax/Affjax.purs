@@ -35,9 +35,9 @@ update model =
                 UpdateUrl url -> F.noMessages $ model { url = url, result = NotFetched }
                 Fetch -> model { result = Fetching } :> [ do
                                 response <- A.get AR.string model.url
-                                pure <<< Just <<< Fetched $ case response.body of
-                                        Left error ->  Error $ A.printResponseFormatError error
-                                        Right ok -> Ok ok
+                                pure <<< Just <<< Fetched $ case response of
+                                        Left error ->  Error $ A.printError error
+                                        Right payload -> Ok payload.body
                         ]
                 Fetched result -> F.noMessages $ model { result = result }
 
