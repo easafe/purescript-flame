@@ -7,6 +7,7 @@ import Data.Array as DA
 import Data.Foldable as DF
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Foreign (Foreign)
 import Foreign.Object (Object)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
@@ -20,7 +21,8 @@ type VNodeData = {
         -- we need attrs mainly for svg
         attrs :: Object String,
         props :: Object String,
-        on :: VNodeEvents
+        on :: VNodeEvents,
+        hook :: Object Foreign
 }
 
 -- | Virtual DOM representation
@@ -77,13 +79,30 @@ isNonEventData = DA.filter case _ of
                         Property _ _ -> true
                         _ -> false
 
+
+type HookFn1 = VNode -> Effect Unit
+type HookFn2 = VNode -> VNode -> Effect Unit
+type HookFnRemove = VNode -> Effect Unit -> Effect Unit
+
+data HookData =
+  HookInit HookFn1 |
+  HookCreate HookFn2 |
+  HookInsert HookFn1 |
+  HookPrepatch HookFn2 |
+  HookUpdate HookFn2 |
+  HookPostpatch HookFn2 |
+  HookDestroy HookFn1 |
+  HookRemove HookFnRemove
+
+
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
         Attribute String String |
         Property String String |
         Event String message |
-        RawEvent String (Event -> Effect message)
+        RawEvent String (Event -> Effect message) |
+        Hook HookData
 
 derive instance nodeDataFunctor :: Functor NodeData
 

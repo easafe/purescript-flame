@@ -17,6 +17,7 @@ import Data.Function.Uncurried as DFU
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
+import Flame.Renderer.Hook (hookName, hookFn)
 import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -96,21 +97,23 @@ render oldVNode updater element = do
 toVNode :: forall message. (message -> Effect Unit) -> Html message -> VNode
 toVNode updater (Text value) = text value
 toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
-        where   toVNodeData { properties, attributes, events } = {
+        where   toVNodeData { properties, attributes, events, hooks } = {
                         attrs: attributes,
                         props: properties,
-                        on: toVNodeEvents events
+                        on: toVNodeEvents events,
+                        hook: hooks
                 }
 
                 handleRawEvent handler event = do
                         message <- handler event
                         updater message
 
-                unions record@{ properties, attributes, events } =
+                unions record@{ properties, attributes, events, hooks } =
                         case _ of
                                 Property name value -> record { properties = FO.insert name value properties }
                                 Attribute name value -> record { attributes = FO.insert name value attributes }
                                 Event name message -> record { events = FO.insert name (const (updater message)) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
+                                Hook hook -> record { hooks = FO.insert (hookName hook) (hookFn hook) hooks }
 
-                vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty } nodeData
+                vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty, hooks: FO.empty } nodeData
