@@ -11,10 +11,9 @@ module Flame.Application.NoEffects(
 )
 where
 
-import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Generic.Rep (class Generic)
 import Effect (Effect)
 import Flame.Application.EffectList as FAE
+import Flame.Application.PreMount (class UnserializeModel)
 import Flame.Types (App, (:>))
 import Prelude (Unit, void, ($))
 import Signal.Channel (Channel)
@@ -37,7 +36,7 @@ type ResumedApplication model message = App model message (
 )
 
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
+resumeMount :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
 resumeMount selector application = FAE.resumeMount selector {
         init: [],
         update: update',
@@ -46,7 +45,7 @@ resumeMount selector application = FAE.resumeMount selector {
         where   update' model message = application.update model message :> []
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
-resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect Unit
 resumeMount_ selector application = void $ resumeMount selector application
 
 -- | Mount a Flame application on the given selector

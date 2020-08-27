@@ -1,0 +1,1 @@
+require('../../../../output/Examples.Effectful.Webchat.Client.Main').main();

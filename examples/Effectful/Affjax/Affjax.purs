@@ -37,9 +37,9 @@ update { display, model, message } =
                 Fetch -> do
                         display $ FAE.diff' { result: Fetching }
                         response <- A.get AR.string model.url
-                        FAE.diff <<< { result: _ } $ case response.body of
-                                Left error -> Error $ A.printResponseFormatError error
-                                Right ok -> Ok ok
+                        FAE.diff <<< { result: _ } $ case response of
+                                Left error -> Error $ A.printError error
+                                Right payload -> Ok payload.body
 
 view :: Model -> Html Message
 view { url, result } = HE.main "main" [

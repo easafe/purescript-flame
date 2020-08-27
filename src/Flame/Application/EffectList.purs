@@ -13,13 +13,8 @@ module Flame.Application.EffectList(
 )
 where
 
-import Flame.Types (App, DOMElement, (:>))
-import Prelude (Unit, bind, discard, map, pure, show, unit, void, ($), (<$>), (<<<), (<>))
-
-import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Either (Either(..))
 import Data.Foldable as DF
-import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -29,8 +24,11 @@ import Effect.Console as EC
 import Effect.Exception as EE
 import Effect.Ref as ER
 import Flame.Application.DOM as FAD
+import Flame.Application.PreMount (class UnserializeModel)
 import Flame.Application.PreMount as FAP
 import Flame.Renderer as FR
+import Flame.Types (App, DOMElement, (:>))
+import Prelude (Unit, bind, discard, map, pure, show, unit, void, ($), (<$>), (<<<), (<>))
 import Signal as S
 import Signal.Channel (Channel)
 import Signal.Channel as SC
@@ -60,7 +58,7 @@ noMessages :: forall model message. model -> Tuple model (Array (Aff (Maybe mess
 noMessages model = model :> []
 
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
+resumeMount :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
 resumeMount (QuerySelector selector) application = do
         initialModel <- FAP.serializedState selector
         maybeElement <- FAD.querySelector selector
@@ -73,7 +71,7 @@ resumeMount (QuerySelector selector) application = do
                 Nothing -> EE.throw $ "Error resuming application mount: no element matching selector " <> show selector <> " found!"
 
 -- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
-resumeMount_ :: forall model m message. Generic model m => DecodeRep m => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect Unit
 resumeMount_ selector application = void $ resumeMount selector application
 
 -- | Mount a Flame application on the given selector

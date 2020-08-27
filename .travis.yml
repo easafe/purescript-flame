@@ -1,9 +1,11 @@
 language: node_js
 node_js:
-  - "11.15"
+  - 13
 install:
-  - npm install -g bower purescript@0.13.6 pulp@13.0.0
+  - npm install -g purescript@0.13.8 spago parcel-bundler
 script:
   - npm install
-  - bower install --force
-  - npm test
+  - spago build
+  - spago test
+  - spago -x examples.dhall build
+  - npm run build-examples
