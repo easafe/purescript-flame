@@ -7,6 +7,7 @@ import Data.Array as DA
 import Data.Foldable as DF
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Uncurried (EffectFn1, EffectFn2)
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Web.DOM.Element as WDE
@@ -80,19 +81,19 @@ isNonEventData = DA.filter case _ of
                         _ -> false
 
 
-type HookFn1 = VNode -> Effect Unit
-type HookFn2 = VNode -> VNode -> Effect Unit
-type HookFnRemove = VNode -> Effect Unit -> Effect Unit
+type HookFn1 = EffectFn1 VNode Unit
+type HookFn2 = EffectFn2 VNode VNode Unit
+type HookFnRemove = EffectFn2 VNode (Effect Unit) Unit
 
 data HookData =
-  HookInit HookFn1 |
-  HookCreate HookFn2 |
-  HookInsert HookFn1 |
-  HookPrepatch HookFn2 |
-  HookUpdate HookFn2 |
-  HookPostpatch HookFn2 |
-  HookDestroy HookFn1 |
-  HookRemove HookFnRemove
+        HookInit HookFn1 |
+        HookCreate HookFn2 |
+        HookInsert HookFn1 |
+        HookPrepatch HookFn2 |
+        HookUpdate HookFn2 |
+        HookPostpatch HookFn2 |
+        HookDestroy HookFn1 |
+        HookRemove HookFnRemove
 
 
 -- | Convenience wrapper around `VNodeData`
