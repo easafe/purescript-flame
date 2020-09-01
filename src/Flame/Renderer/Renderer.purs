@@ -17,7 +17,6 @@ import Data.Function.Uncurried as DFU
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame.Renderer.Hook as FRH
 import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -114,6 +113,6 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                                 Attribute name value -> record { attributes = FO.insert name value attributes }
                                 Event name message -> record { events = FO.insert name (const (updater message)) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
-                                Hook hook -> record { hooks = FO.insert (FRH.hookName hook) (FRH.hookFn hook) hooks }
+                                Hook name fn -> record { hooks = FO.insert name fn hooks }
 
                 vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty, hooks: FO.empty } nodeData

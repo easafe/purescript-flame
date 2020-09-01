@@ -7,7 +7,6 @@ import Data.Array as DA
 import Data.Foldable as DF
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Uncurried (EffectFn1, EffectFn2)
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Web.DOM.Element as WDE
@@ -80,22 +79,6 @@ isNonEventData = DA.filter case _ of
                         Property _ _ -> true
                         _ -> false
 
-
-type HookFn1 = EffectFn1 VNode Unit
-type HookFn2 = EffectFn2 VNode VNode Unit
-type HookFnRemove = EffectFn2 VNode (Effect Unit) Unit
-
-data HookData =
-        HookInit HookFn1 |
-        HookCreate HookFn2 |
-        HookInsert HookFn1 |
-        HookPrepatch HookFn2 |
-        HookUpdate HookFn2 |
-        HookPostpatch HookFn2 |
-        HookDestroy HookFn1 |
-        HookRemove HookFnRemove
-
-
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
@@ -103,7 +86,7 @@ data NodeData message =
         Property String String |
         Event String message |
         RawEvent String (Event -> Effect message) |
-        Hook HookData
+        Hook String Foreign
 
 derive instance nodeDataFunctor :: Functor NodeData
 

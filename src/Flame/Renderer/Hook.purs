@@ -1,66 +1,54 @@
 -- | Snabbdom VNode hooks
 module Flame.Renderer.Hook where
 
-import Prelude ((<<<))
+import Prelude ((<<<), Unit)
+import Effect (Effect)
+import Effect.Uncurried (EffectFn1, EffectFn2)
+import Foreign (Foreign)
+import Foreign as F
+import Flame.Types (NodeData(Hook), VNode)
 
-import Foreign (Foreign, unsafeToForeign)
-import Flame.Types (NodeData(Hook), HookData(..), HookFn1, HookFn2, HookFnRemove)
+-- | Foreign VNode hook function with single parameter
+type HookFn1 = EffectFn1 VNode Unit
+
+-- | Foreign VNode hook function with two parameters
+type HookFn2 = EffectFn2 VNode VNode Unit
+
+-- | Foreign VNode hook function with VNode and remove callback parameters
+type HookFnRemove = EffectFn2 VNode (Effect Unit) Unit
+
+-- | Creates a hook for given `name` and provided foreign function
+createHook :: ∀ msg. String -> Foreign -> NodeData msg
+createHook name = Hook name
 
 -- | Attaches a hook for a vnode been added
 atInit :: ∀ msg. HookFn1 -> NodeData msg
-atInit = Hook <<< HookInit
+atInit = createHook "init" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a DOM element been created based on a vnode
 atCreate :: ∀ msg. HookFn2 -> NodeData msg
-atCreate = Hook <<< HookCreate
+atCreate = createHook "create" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a vnode element been inserted into the DOM
 atInsert :: ∀ msg. HookFn1 -> NodeData msg
-atInsert = Hook <<< HookInsert
+atInsert = createHook "insert" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a vnode element about to be patched
 atPrepatch :: ∀ msg. HookFn2 -> NodeData msg
-atPrepatch = Hook <<< HookPrepatch
+atPrepatch = createHook "prepatch" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a vnode element being updated
 atUpdate :: ∀ msg. HookFn2 -> NodeData msg
-atUpdate = Hook <<< HookUpdate
+atUpdate = createHook "update" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a vnode element been patched
 atPostpatch :: ∀ msg. HookFn2 -> NodeData msg
-atPostpatch = Hook <<< HookPostpatch
+atPostpatch = createHook "postpatch" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a vnode element directly or indirectly being removed
 atDestroy :: ∀ msg. HookFn1 -> NodeData msg
-atDestroy = Hook <<< HookDestroy
+atDestroy = createHook "destroy" <<< F.unsafeToForeign
 
 -- | Attaches a hook for a vnode element directly being removed
 atRemove :: ∀ msg. HookFnRemove -> NodeData msg
-atRemove = Hook <<< HookRemove
-
-
--- | Retrieve hook's name
-hookName :: HookData -> String
-hookName hd = case hd of
-        HookInit _ -> "init"
-        HookCreate _ -> "create"
-        HookInsert _ -> "insert"
-        HookPrepatch _ -> "prepatch"
-        HookUpdate _ -> "update"
-        HookPostpatch _ -> "postpatch"
-        HookDestroy _ -> "destroy"
-        HookRemove _ -> "remove"
-
--- | Retrieve hook's function.
--- We need this to transfer the function to Snabbdom outside,
--- so we have to implement a dirty hack.
-hookFn :: HookData -> Foreign
-hookFn hd = case hd of
-        HookInit fn -> unsafeToForeign fn
-        HookCreate fn -> unsafeToForeign fn
-        HookInsert fn -> unsafeToForeign fn
-        HookPrepatch fn -> unsafeToForeign fn
-        HookUpdate fn -> unsafeToForeign fn
-        HookPostpatch fn -> unsafeToForeign fn
-        HookDestroy fn -> unsafeToForeign fn
-        HookRemove fn -> unsafeToForeign fn
+atRemove = createHook "remove" <<< F.unsafeToForeign
