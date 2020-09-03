@@ -7,6 +7,7 @@ import Data.Array as DA
 import Data.Foldable as DF
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Foreign (Foreign)
 import Foreign.Object (Object)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
@@ -20,7 +21,8 @@ type VNodeData = {
         -- we need attrs mainly for svg
         attrs :: Object String,
         props :: Object String,
-        on :: VNodeEvents
+        on :: VNodeEvents,
+        hook :: Object Foreign
 }
 
 -- | Virtual DOM representation
@@ -83,7 +85,8 @@ data NodeData message =
         Attribute String String |
         Property String String |
         Event String message |
-        RawEvent String (Event -> Effect message)
+        RawEvent String (Event -> Effect message) |
+        Hook String Foreign
 
 derive instance nodeDataFunctor :: Functor NodeData
 

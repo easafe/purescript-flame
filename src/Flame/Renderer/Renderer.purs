@@ -96,21 +96,23 @@ render oldVNode updater element = do
 toVNode :: forall message. (message -> Effect Unit) -> Html message -> VNode
 toVNode updater (Text value) = text value
 toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
-        where   toVNodeData { properties, attributes, events } = {
+        where   toVNodeData { properties, attributes, events, hooks } = {
                         attrs: attributes,
                         props: properties,
-                        on: toVNodeEvents events
+                        on: toVNodeEvents events,
+                        hook: hooks
                 }
 
                 handleRawEvent handler event = do
                         message <- handler event
                         updater message
 
-                unions record@{ properties, attributes, events } =
+                unions record@{ properties, attributes, events, hooks } =
                         case _ of
                                 Property name value -> record { properties = FO.insert name value properties }
                                 Attribute name value -> record { attributes = FO.insert name value attributes }
                                 Event name message -> record { events = FO.insert name (const (updater message)) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
+                                Hook name fn -> record { hooks = FO.insert name fn hooks }
 
-                vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty } nodeData
+                vNodeData = toVNodeData $ DF.foldl unions { properties: FO.empty, attributes: FO.empty, events: FO.empty, hooks: FO.empty } nodeData
