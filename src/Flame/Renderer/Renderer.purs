@@ -14,13 +14,14 @@ module Flame.Renderer(
 import Data.Foldable as DF
 import Data.Function.Uncurried (Fn1, Fn2, Fn3, runFn3)
 import Data.Function.Uncurried as DFU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
 import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Prelude (Unit, bind, const, discard, map, pure, ($))
+import Prelude (Unit, bind, const, discard, map, pure, unit, ($))
 import Web.Event.Internal.Types (Event)
 
 foreign import emptyVNode :: VNode
@@ -104,8 +105,10 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                 }
 
                 handleRawEvent handler event = do
-                        message <- handler event
-                        updater message
+                        result <- handler event
+                        case result of
+                                Just message -> updater message
+                                Nothing -> pure unit
 
                 unions record@{ properties, attributes, events, hooks } =
                         case _ of
