@@ -54,6 +54,7 @@ foreign import unsafeCreateEnviroment :: Effect Unit
 foreign import clickEvent :: Effect Event
 foreign import inputEvent :: Effect Event
 foreign import keydownEvent :: Effect Event
+foreign import enterPressedEvent :: Effect Event
 foreign import errorEvent :: Effect Event
 foreign import offlineEvent :: Effect Event
 
@@ -282,6 +283,11 @@ main =
                                 cut <- textContent "#text-output"
                                 --always remove at least one character
                                 TUA.assert "cut text" $ DSC.length cut < 4
+
+                                dispatchEvent inputEvent "#text-input"
+                                dispatchEvent enterPressedEvent "#text-input"
+                                submitted <- textContent "#text-output"
+                                TUA.equal "thanks" submitted
 
                         test "effectful" do
                                 liftEffect do

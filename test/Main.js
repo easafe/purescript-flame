@@ -20,6 +20,10 @@ exports.keydownEvent = function () {
 	return new window.KeyboardEvent('keydown', {key: 'q'});
 }
 
+exports.enterPressedEvent = function () {
+	return new window.KeyboardEvent('keypress', {key: 'Enter'});
+}
+
 exports.errorEvent = function () {
 	return new window.Event('error');
 }
