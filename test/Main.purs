@@ -182,7 +182,7 @@ main =
                                                         HE.br,
                                                         HE.text "Test",
                                                         HE.button (HA.createAttribute "my-attribute" "myValue") "+",
-                                                        HE.hr' [HA.autocomplete false, HA.style { border: "200px solid blue"}] ,
+                                                        HE.hr' [HA.autocomplete "off", HA.style { border: "200px solid blue"}] ,
                                                         HE.div_ $ HE.div_ [
                                                                 HE.span_ [ HE.a [HA.autofocus true] "here" ]
                                                         ]
@@ -190,7 +190,7 @@ main =
                                         ]
                                 ]
                                 html' <- liftEffect $ FRS.render html
-                                TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
+                                TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr autocomplete="off" style="border:200px solid blue"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
 
                         test "events" do
                                 let html = HE.a [HA.onClick unit, HA.onInput (const unit)] [HE.text "TEST"]

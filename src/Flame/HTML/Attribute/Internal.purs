@@ -745,8 +745,8 @@ version = createAttribute "version" <<< show
 numOctaves :: ToIntAttribute
 numOctaves = createAttribute "numOctaves" <<< show
 
-autocomplete :: ToBooleanAttribute
-autocomplete = createProperty "autocomplete" <<< booleanToFalsyString
+autocomplete :: ToStringAttribute
+autocomplete = createProperty "autocomplete"
 
 autofocus :: ToBooleanAttribute
 autofocus = createProperty "autofocus" <<< booleanToFalsyString
