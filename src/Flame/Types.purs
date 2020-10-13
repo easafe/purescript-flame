@@ -5,6 +5,7 @@ import Prelude
 
 import Data.Array as DA
 import Data.Foldable as DF
+import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Foreign (Foreign)
@@ -85,7 +86,7 @@ data NodeData message =
         Attribute String String |
         Property String String |
         Event String message |
-        RawEvent String (Event -> Effect message) |
+        RawEvent String (Event -> Effect (Maybe message)) |
         Hook String Foreign
 
 derive instance nodeDataFunctor :: Functor NodeData

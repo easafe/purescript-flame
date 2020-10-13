@@ -1,8 +1,9 @@
 -- | Definition of HTML events that can be fired from views
-module Flame.HTML.Event (EventName, ToEvent, ToRawEvent, ToSpecialEvent, createEvent, createEventMessage, createRawEvent, onBlur, onBlur', onCheck, onClick, onClick', onChange, onChange', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onError, onError', onFocus, onFocus', onFocusin, onFocusin', onFocusout, onFocusout', onInput, onInput', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onMousedown, onMousedown', onMouseenter, onMouseenter', onMouseleave, onMouseleave', onMousemove, onMousemove', onMouseout, onMouseout', onMouseover, onMouseover', onMouseup, onMouseup', onReset, onReset', onScroll, onScroll', onSelect, onSelect', onSubmit, onSubmit', onWheel, onWheel') where
+module Flame.HTML.Event (EventName, ToEvent, ToRawEvent, ToMaybeEvent, ToSpecialEvent, createEvent, createEventMessage, createRawEvent, onBlur, onBlur', onCheck, onClick, onClick', onChange, onChange', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onError, onError', onFocus, onFocus', onFocusin, onFocusin', onFocusout, onFocusout', onInput, onInput', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onMousedown, onMousedown', onMouseenter, onMouseenter', onMouseleave, onMouseleave', onMousemove, onMousemove', onMouseout, onMouseout', onMouseover, onMouseover', onMouseup, onMouseup', onReset, onReset', onScroll, onScroll', onSelect, onSelect', onSubmit, onSubmit', onWheel, onWheel') where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1)
@@ -15,6 +16,8 @@ type EventName = String
 type ToEvent message = message -> NodeData message
 
 type ToRawEvent message = (Event -> message) -> NodeData message
+
+type ToMaybeEvent message = (Event -> Maybe message) -> NodeData message
 
 type ToSpecialEvent message t = (t -> message) -> NodeData message
 
@@ -45,12 +48,12 @@ createEvent :: forall message. EventName -> message -> NodeData message
 createEvent = Event
 
 -- | Raises the given `message` for the given event, but also supplies the event itself
-createRawEvent :: forall message. String -> (Event -> Effect message) -> NodeData message
+createRawEvent :: forall message. String -> (Event -> Effect (Maybe message)) -> NodeData message
 createRawEvent = RawEvent
 
 -- | Helper for `message`s that expect an event
 createEventMessage :: forall message. EventName -> (Event -> message) -> NodeData message
-createEventMessage eventName constructor = createRawEvent eventName (pure <<< constructor)
+createEventMessage eventName constructor = createRawEvent eventName (pure <<< Just <<< constructor)
 
 onScroll :: forall message. ToEvent message
 onScroll = createEvent "scroll"
@@ -73,7 +76,7 @@ onChange' = createEventMessage "change"
 -- | This event fires when the value of an input, select, textarea, contenteditable or designMode on elements changes
 onInput :: forall message. ToSpecialEvent message String
 onInput constructor = createRawEvent "input" handler
-        where   handler event = constructor <$> nodeValue event
+        where   handler event = Just <<< constructor <$> nodeValue event
 
 onInput' :: forall message. ToRawEvent message
 onInput' = createEventMessage "input"
@@ -81,19 +84,19 @@ onInput' = createEventMessage "input"
 -- | Helper for `input` event of checkboxes and radios
 onCheck :: forall message. ToSpecialEvent message Boolean
 onCheck constructor = createRawEvent "input" handler
-        where   handler event = constructor <$> checkedValue event
+        where   handler event = Just <<< constructor <$> checkedValue event
 
 onSubmit :: forall message. ToEvent message
 onSubmit message = createRawEvent "submit" handler
         where   handler event = do
                         preventDefault event
-                        pure message
+                        pure $ Just message
 
 onSubmit' :: forall message. ToRawEvent message
 onSubmit' constructor = createRawEvent "submit" handler
         where   handler event = do
                         preventDefault event
-                        pure $ constructor event
+                        pure <<< Just $ constructor event
 
 onFocus :: forall message. ToEvent message
 onFocus = createEvent "focus"
@@ -143,11 +146,11 @@ onKeyup constructor = createRawEvent "keyup" (keyInput constructor)
 onKeyup' :: forall message. ToRawEvent message
 onKeyup' = createEventMessage "keyup"
 
-keyInput :: forall message . (Tuple Key String -> message) -> Event -> Effect message
+keyInput :: forall message . (Tuple Key String -> message) -> Event -> Effect (Maybe message)
 keyInput constructor event = do
         down <- key event
         value <- nodeValue event
-        pure <<< constructor $ Tuple down value
+        pure <<< Just <<< constructor $ Tuple down value
 
 onContextmenu :: forall message. ToEvent message
 onContextmenu = createEvent "contextmenu"
@@ -205,7 +208,7 @@ onMouseup' = createEventMessage "mouseup"
 
 onSelect :: forall message. ToSpecialEvent message String
 onSelect constructor = createRawEvent "select" handler
-        where   handler event = constructor <$> selection event
+        where   handler event = Just <<< constructor <$> selection event
 
 onSelect' :: forall message. ToRawEvent message
 onSelect' = createEventMessage "select"
