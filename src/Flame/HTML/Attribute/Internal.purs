@@ -472,6 +472,7 @@ kernelUnitLength = createAttribute "kernelUnitLength"
 kerning :: ToStringAttribute
 kerning = createAttribute "kerning"
 
+-- | Set the key attribute for "keyed" rendering
 key :: ToStringAttribute
 key = Key
 
