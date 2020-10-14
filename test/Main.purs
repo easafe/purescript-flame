@@ -58,8 +58,6 @@ foreign import enterPressedEvent :: Effect Event
 foreign import errorEvent :: Effect Event
 foreign import offlineEvent :: Effect Event
 
-
-
 main :: Effect Unit
 main =
         runTest do
@@ -154,6 +152,11 @@ main =
                                 html' <- liftEffect $ FRS.render html
                                 TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><hr><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
+                        test "key data property is not part of the dom" do
+                                let html = HE.div (HA.key "23") "oi"
+                                html' <- liftEffect $ FRS.render html
+                                TUA.equal """<div>oi</div>""" html'
+
                         test "nested elements with attributes" do
                                 let html = HE.html [HA.lang "en"] [
                                         HE.head_ [HE.title "title"],
@@ -206,7 +209,7 @@ main =
                                 TUA.equal """(Node div [(Property id 1)] [(Text T)])""" $ show $ html
                         test "element with childs" do
                                 let html = HE.div_ [HE.div_ [HE.br]]
-                                TUA.equal """(Node div [] [(Node div [] [(Node br [] [])])])""" $ show $ html 
+                                TUA.equal """(Node div [] [(Node div [] [(Node br [] [])])])""" $ show $ html
                 suite "eq" do
                         test "simple element" do
                                 TUA.equal' "equal html" (HE.div [HA.id "1"] [HE.text "T"]) (HE.div [HA.id "1"] [HE.text "T"])
@@ -215,7 +218,7 @@ main =
                                 TUA.equal' "equal html" (HE.div [HA.id "1", HA.onClick unit] [HE.text "T"]) (HE.div [HA.id "1"] [HE.text "T"])
                         test "property order does not matter" do
                                 TUA.assert "should equal" $
-                                        (HE.div [HA.class' "test", HA.id "1"] [HE.text "T"]) == (HE.div [HA.id "1", HA.class' "test"] [HE.text "T"]) 
+                                        (HE.div [HA.class' "test", HA.id "1"] [HE.text "T"]) == (HE.div [HA.id "1", HA.class' "test"] [HE.text "T"])
                         test "child order does matter" do
                                 TUA.assert "should not equal" $
                                         (HE.div_ [HE.text "T", HE.br]) /= (HE.div_ [HE.br, HE.text "T"])

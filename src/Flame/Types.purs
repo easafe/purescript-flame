@@ -6,6 +6,7 @@ import Prelude
 import Data.Array as DA
 import Data.Foldable as DF
 import Data.Maybe (Maybe)
+import Data.Nullable (Nullable)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Foreign (Foreign)
@@ -22,6 +23,7 @@ type VNodeData = {
         -- we need attrs mainly for svg
         attrs :: Object String,
         props :: Object String,
+        key :: Nullable String,
         on :: VNodeEvents,
         hook :: Object Foreign
 }
@@ -50,7 +52,7 @@ type PreApplication model message = App model message (
 -- | A native HTML element
 type DOMElement = WDE.Element
 
-type ToNodeData message = forall b. message -> NodeData b
+type ToNodeData value = forall message. value -> NodeData message
 
 type Tag = String
 
@@ -84,6 +86,7 @@ isNonEventData = DA.filter case _ of
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
         Attribute String String |
+        Key String |
         Property String String |
         Event String message |
         RawEvent String (Event -> Effect (Maybe message)) |

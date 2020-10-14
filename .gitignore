@@ -18,6 +18,7 @@ _site/
 .jekyll-metadata
 
 scratchpad.*
+scratchpadloader.*
 
 .cache
 
