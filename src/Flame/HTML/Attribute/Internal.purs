@@ -212,7 +212,7 @@ height :: ToIntAttribute
 height = createAttribute "height" <<< show
 
 maxlength :: ToIntAttribute
-maxlength = createProperty "maxlength" <<< show
+maxlength = createAttribute "maxlength" <<< show
 
 minlength :: ToIntAttribute
 minlength = createProperty "minlength" <<< show
