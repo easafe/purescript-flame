@@ -97,9 +97,10 @@ render oldVNode updater element = do
 toVNode :: forall message. (message -> Effect Unit) -> Html message -> VNode
 toVNode updater (Text value) = text value
 toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
-        where   toVNodeData { key, properties, attributes, events, hooks } = {
+        where   toVNodeData { key, properties, attributes, styles, events, hooks } = {
                         attrs: attributes,
                         props: properties,
+                        style: styles,
                         on: toVNodeEvents events,
                         hook: hooks,
                         key
@@ -111,11 +112,12 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                                 Just message -> updater message
                                 Nothing -> pure unit
 
-                unions record@{ properties, attributes, events, hooks } =
+                unions record@{ properties, attributes, styles, events, hooks } =
                         case _ of
                                 Key value -> record { key = DN.notNull value }
                                 Property name value -> record { properties = FO.insert name value properties }
                                 Attribute name value -> record { attributes = FO.insert name value attributes }
+                                StyleList styles' -> record { styles = FO.union styles' styles }
                                 Event name message -> record { events = FO.insert name (const (updater message)) events }
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
                                 Hook name fn -> record { hooks = FO.insert name fn hooks }
@@ -124,6 +126,7 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                         key: DN.null,
                         properties: FO.empty,
                         attributes: FO.empty,
+                        styles: FO.empty,
                         events: FO.empty,
                         hooks: FO.empty
                 } nodeData

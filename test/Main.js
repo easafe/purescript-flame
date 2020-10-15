@@ -4,6 +4,9 @@ const enviroment = (new jsdom.JSDOM('', { runScripts: "outside-only" }));
 global.window = enviroment.window;
 global.document	= enviroment.window.document;
 
+// a dirty hack to make snabbdom style module import properly
+window.requestAnimationFrame = setTimeout;
+
 exports.unsafeCreateEnviroment = function () {
 	document.body.innerHTML = '<div id=mount-point></div>';
 }
