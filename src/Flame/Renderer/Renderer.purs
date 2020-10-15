@@ -12,7 +12,7 @@ module Flame.Renderer(
 ) where
 
 import Data.Foldable as DF
-import Data.Function.Uncurried (Fn1, Fn2, Fn3, runFn3)
+import Data.Function.Uncurried (Fn1, Fn2, Fn3, Fn4)
 import Data.Function.Uncurried as DFU
 import Data.Maybe (Maybe(..))
 import Data.Nullable as DN
@@ -20,9 +20,10 @@ import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
 import Flame.Types (DOMElement, Html(..), NodeData(..), VNode(..), VNodeData, VNodeEvents)
+import Foreign (Foreign)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Prelude (Unit, bind, const, discard, map, pure, unit, ($))
+import Prelude (Unit, bind, const, discard, map, pure, unit, ($), (<<<))
 import Web.Event.Internal.Types (Event)
 
 foreign import emptyVNode :: VNode
@@ -33,6 +34,7 @@ foreign import patchInitialFrom_ :: EffectFn2 DOMElement VNode Unit
 foreign import toTextVNode_ :: Fn2 DOMElement String VNode
 foreign import text_ :: Fn1 String VNode
 foreign import h_ :: Fn3 String VNodeData (Array VNode) VNode
+foreign import thunk_ :: Fn4 String String (Foreign -> VNode) (Array Foreign) VNode
 
 -- | Transforms an event function into an actual JavaScript event handler
 toVNodeEvents :: Object (Event -> Effect Unit) -> VNodeEvents
@@ -60,7 +62,11 @@ toTextVNode = DFU.runFn2 toTextVNode_
 
 -- | snabbdom h function
 h :: String -> VNodeData -> Array VNode -> VNode
-h = runFn3 h_
+h = DFU.runFn3 h_
+
+-- | snabbdom thunk function
+thunk :: String -> String -> (Foreign -> VNode) -> Array Foreign -> VNode
+thunk = DFU.runFn4 thunk_
 
 -- | Renders markup to a given selector
 -- |
@@ -95,8 +101,13 @@ render oldVNode updater element = do
 
 -- | Transforms an `Html` into a `VNode`
 toVNode :: forall message. (message -> Effect Unit) -> Html message -> VNode
-toVNode updater (Text value) = text value
-toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode updater) children
+toVNode updater =
+        case _ of
+                Text value -> text value
+                Node tag nodeData children  ->
+                        let vNodeData = toVNodeData $ DF.foldl unions emptyVNodeData nodeData
+                        in h tag vNodeData $ map (toVNode updater) children
+                Thunk selector key fn state -> thunk selector key (toVNode updater <<< fn) [state]
         where   toVNodeData { key, properties, attributes, events, hooks } = {
                         attrs: attributes,
                         props: properties,
@@ -104,12 +115,6 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                         hook: hooks,
                         key
                 }
-
-                handleRawEvent handler event = do
-                        result <- handler event
-                        case result of
-                                Just message -> updater message
-                                Nothing -> pure unit
 
                 unions record@{ properties, attributes, events, hooks } =
                         case _ of
@@ -120,10 +125,18 @@ toVNode updater (Node tag nodeData children) = h tag vNodeData $ map (toVNode up
                                 RawEvent name handler -> record { events = FO.insert name (handleRawEvent handler) events }
                                 Hook name fn -> record { hooks = FO.insert name fn hooks }
 
-                vNodeData = toVNodeData $ DF.foldl unions {
+                handleRawEvent handler event = do
+                        result <- handler event
+                        case result of
+                                Just message -> updater message
+                                Nothing -> pure unit
+
+                emptyVNodeData = {
                         key: DN.null,
                         properties: FO.empty,
                         attributes: FO.empty,
                         events: FO.empty,
                         hooks: FO.empty
-                } nodeData
+                }
+
+

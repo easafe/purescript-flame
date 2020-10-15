@@ -28,7 +28,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Flame.Types (Html(..), PreApplication)
 import Partial.Unsafe (unsafePartial)
-import Prelude (bind, discard, otherwise, pure, ($), (<<<), (<>), (==))
+import Prelude (bind, discard, pure, ($), (<<<), (<>), (==))
 import Prim.RowList (class RowToList)
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -99,17 +99,21 @@ preMount (QuerySelector selector) application = do
                         HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
                 ] $ serializeModel application.init
 
-                isBody (Node tag _ _) = tag == "body"
-                isBody _ = false
+                isBody = case _ of
+                        Node tag _ _ -> tag == "body"
+                        _ -> false
 
-                inject (Node tag nodeData children) = Node tag nodeData (state : children)
-                inject node2 = node2
+                inject = case _ of
+                        Node tag nodeData children -> Node tag nodeData (state : children)
+                        node2 -> node2
 
-                injectState (Text _) = EE.throw "Error pre mounting application: cannot mount on text node!"
-                injectState node@(Node tag nodeData children)
-                        | tag == "html" =
-                                pure <<< Node tag nodeData $
-                                        case DA.findIndex isBody children of
-                                                Nothing -> state : children
-                                                Just index -> unsafePartial (DM.fromJust $ DA.modifyAt index inject children)
-                        | otherwise = pure $ inject node
+                injectState = case _ of
+                        node@(Node tag nodeData children) ->
+                                if tag == "html" then
+                                        pure <<< Node tag nodeData $
+                                                case DA.findIndex isBody children of
+                                                        Nothing -> state : children
+                                                        Just index -> unsafePartial (DM.fromJust $ DA.modifyAt index inject children)
+                                 else
+                                        pure $ inject node
+                        _ -> EE.throw "Error pre mounting application: cannot mount on text node or thunk!"

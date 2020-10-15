@@ -18,9 +18,7 @@ import Web.Event.Event (Event)
 foreign import data VNodeEvents :: Type
 
 -- | Data (properties, attributes, events) attached to a VNode
--- something missing here is the support for thunks
 type VNodeData = {
-        -- we need attrs mainly for svg
         attrs :: Object String,
         props :: Object String,
         key :: Nullable String,
@@ -62,13 +60,16 @@ type Key = String
 -- | Convenience wrapper around `VNode`
 data Html message =
         Node Tag (Array (NodeData message)) (Array (Html message)) |
-        Text String
+        Text String |
+        Thunk String Key (Foreign -> Html message) Foreign
 
 derive instance elementFunctor :: Functor Html
 
 instance showHtml :: Show (Html message) where
-        show (Node tag nodeData children) = "(Node " <> tag <> " " <> show (isNonEventData nodeData) <> " " <> show children <> ")"
-        show (Text t) = "(Text " <> t <> ")"
+        show = case _ of
+                Node tag nodeData children -> "(Node " <> tag <> " " <> show (isNonEventData nodeData) <> " " <> show children <> ")"
+                Text t -> "(Text " <> t <> ")"
+                Thunk selector key _ _ -> "(Thunk " <> selector <> " " <> key <> ")"
 
 instance eqHtml :: Eq (Html message) where
         eq (Node tag nodeData children) (Node tag2 nodeData2 children2) = tag == tag2 && eqArrayNodeData nodeData nodeData2 && children == children2
@@ -83,7 +84,6 @@ isNonEventData = DA.filter case _ of
                         _ -> false
 
 -- | Convenience wrapper around `VNodeData`
---snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
         Attribute String String |
         Key String |
