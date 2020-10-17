@@ -16,6 +16,7 @@ import Flame.Application.DOM as FAD
 import Flame.Application.Effectful as FAE
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Flame.Renderer.Key as FRK
 import Flame.Renderer.String as FRS
 import Partial.Unsafe (unsafePartial)
 import Partial.Unsafe as PU
@@ -153,7 +154,7 @@ main =
                                 TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><hr><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
                         test "key data property is not part of the dom" do
-                                let html = HE.div (HA.key "23") "oi"
+                                let html = HE.div (FRK.key "23") "oi"
                                 html' <- liftEffect $ FRS.render html
                                 TUA.equal """<div>oi</div>""" html'
 
