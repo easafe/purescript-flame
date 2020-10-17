@@ -100,7 +100,7 @@ preMount (QuerySelector selector) application = do
                 ] $ serializeModel application.init
 
                 isBody = case _ of
-                        Node tag _ _ -> tag == "body"
+                        Node "body" _ _ -> true
                         _ -> false
 
                 inject = case _ of
