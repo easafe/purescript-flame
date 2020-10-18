@@ -4,6 +4,7 @@ var patch = require('snabbdom').init([
 	require('snabbdom/modules/props').default,
 	require('snabbdom/modules/attributes').default,
 	require('snabbdom/modules/eventlisteners').default,
+	require('snabbdom/modules/style').default,
 ]);
 var h = require('snabbdom/h').default;
 var toVNode = require('snabbdom/tovnode').default;

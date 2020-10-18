@@ -95,11 +95,20 @@ main =
                         test "inline style" do
                                 let html = HE.a (HA.style { mystyle: "test" }) [HE.text "TEST"]
                                 html' <- liftEffect $ FRS.render html
-                                TUA.equal """<a style="mystyle:test">TEST</a>""" html'
+                                TUA.equal """<a style="mystyle: test">TEST</a>""" html'
 
                                 let html2 = HE.a [HA.style { width: "23px", display: "none" }] [HE.text "TEST"]
                                 html2' <- liftEffect $ FRS.render html2
-                                TUA.equal """<a style="width:23px;display:none">TEST</a>""" html2'
+                                TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
+
+                        test "style merging" do
+                                let html = HE.a [ HA.style { mystyle: "test", mylife: "good" }, HA.style { mystyle: "check" } ] [HE.text "TEST"]
+                                html' <- liftEffect $ FRS.render html
+                                TUA.equal """<a style="mystyle: check; mylife: good">TEST</a>""" html'
+
+                                let html2 = HE.a [HA.style { width: "23px", display: "none" }, HA.style { height: "10px" } ] [HE.text "TEST"]
+                                html2' <- liftEffect $ FRS.render html2
+                                TUA.equal """<a style="width: 23px; display: none; height: 10px">TEST</a>""" html2'
 
                         test "style/class name case" do
                                 html <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "superClass"
@@ -115,7 +124,7 @@ main =
                                 TUA.equal """<element class="superclass"></element>""" html4
 
                                 html5 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.style { borderBox : "23", s : "34", borderLeftTopRadius : "20px"}
-                                TUA.equal """<element style="border-box:23;s:34;border-left-top-radius:20px"></element>""" html5
+                                TUA.equal """<element style="border-box: 23; s: 34; border-left-top-radius: 20px"></element>""" html5
 
                                 html6 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' { borderBox : true, s : false, borderLeftTopRadius : true}
                                 TUA.equal """<element class="border-box border-left-top-radius"></element>""" html6
@@ -174,7 +183,7 @@ main =
                                         ]
                                 ]
                                 html' <- liftEffect $ FRS.render html
-                                TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border:200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
+                                TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
                         test "nested elements with properties and attributes" do
                                 let html = HE.html [HA.lang "en"] [
@@ -193,7 +202,7 @@ main =
                                         ]
                                 ]
                                 html' <- liftEffect $ FRS.render html
-                                TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display:block;width:20px">-</button><br>Test<button my-attribute="myValue">+</button><hr autocomplete="off" style="border:200px solid blue"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
+                                TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr autocomplete="off" style="border: 200px solid blue"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
 
                         test "events" do
                                 let html = HE.a [HA.onClick unit, HA.onInput (const unit)] [HE.text "TEST"]

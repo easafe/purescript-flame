@@ -23,6 +23,7 @@ type VNodeData = {
         -- we need attrs mainly for svg
         attrs :: Object String,
         props :: Object String,
+        style :: Object String,
         key :: Nullable String,
         on :: VNodeEvents,
         hook :: Object Foreign
@@ -88,6 +89,7 @@ data NodeData message =
         Attribute String String |
         Key String |
         Property String String |
+        StyleList (Object String) |
         Event String message |
         RawEvent String (Event -> Effect (Maybe message)) |
         Hook String Foreign

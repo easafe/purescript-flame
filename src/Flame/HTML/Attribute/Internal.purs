@@ -51,10 +51,7 @@ class' :: forall a b. ToClassList b => b -> NodeData a
 class' = createAttribute "class" <<< caseify <<< to
 
 style :: forall a r. Homogeneous r String => { | r } -> NodeData a
-style record = Property "style" <<< DS.joinWith ";" <<< DA.zipWith zipper (FO.keys object) $ FO.values object
-        where   object = FO.fromHomogeneous record
-
-                zipper name' value' = caseify name' <> ":" <> value'
+style record = StyleList $ FO.fromHomogeneous record
 
 -- | Transforms its input into a proper html attribute/tag name, i.e. lower case and hyphenated
 caseify :: String -> String
