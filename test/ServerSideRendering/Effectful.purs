@@ -10,9 +10,9 @@ import Effect.Uncurried as EU
 import Flame (QuerySelector(..), Html)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
-import Flame.HTML.Attribute as HA
+import Flame.Html.Attribute as HA
 import Flame as F
-import Flame.HTML.Element as HE
+import Flame.Html.Element as HE
 import Web.Event.Internal.Types (Event)
 
 foreign import setInnerHTML :: EffectFn2 String String Unit

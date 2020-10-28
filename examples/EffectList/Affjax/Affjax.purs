@@ -9,8 +9,8 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (QuerySelector(..), Html, (:>), ListUpdate)
 import Flame as F
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 
 type Model = {
         url :: String,

@@ -13,8 +13,8 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame (QuerySelector(..), Html, Key, (:>))
 import Flame as F
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Web.HTML as WH
 import Web.HTML.Window as WHW
 import Web.Storage.Storage as WSS

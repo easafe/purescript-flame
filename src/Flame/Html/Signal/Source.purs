@@ -1,11 +1,11 @@
-module Flame.External.Source (createEventSource, createRawEventSource, createSpecialEventSource, send) where
+module Flame.Html.Signal.Source (createEventSource, createRawEventSource, createSpecialEventSource, send) where
 
 import Prelude
 
 import Data.Foldable as DF
 import Effect (Effect)
 import Effect.Uncurried as EU
-import Flame.External.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
+import Flame.Html.Signal.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
 import Signal.Channel (Channel)
 
 createEventSource :: forall message. ToEventSource_ message -> ToEventSource message
@@ -22,4 +22,4 @@ applyHandler parameter handler = handler <*> pure parameter
 
 send :: forall message. Array (Channel message -> Effect Unit) -> Channel message -> Effect Unit
 send events channel = DF.traverse_ apply events
-        where apply handler = handler channel
+      where apply handler = handler channel

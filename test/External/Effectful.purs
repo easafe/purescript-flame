@@ -8,9 +8,9 @@ import Effect (Effect)
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
-import Flame.HTML.Element as HE
-import Flame.HTML.Attribute as HA
-import Flame.External as FE
+import Flame.Html.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Signal as FE
 import Web.Event.Internal.Types (Event)
 
 -- | The model represents the state of the app

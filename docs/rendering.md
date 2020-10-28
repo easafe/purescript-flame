@@ -18,7 +18,7 @@ let's talk about actually rendering the application.
 
 ### DOM rendering
 
-The `mount` function we previously saw in [Handling events](events) sets up a Flame application in the client side
+The `mount` function we previously saw in [Handling events](events) sets up a Flame application on the client side
 ```haskell
 mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Array message))
 ```

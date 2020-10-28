@@ -35,8 +35,8 @@ import Effect (Effect)
 import Flame (Html, QuerySelector(..))
 -- Update strategy for side effects free functions; see docs for other strategies
 import Flame.Application.NoEffects as FAN
-import Flame.HTML.Element as HE
-import Flame.HTML.Attribute as HA
+import Flame.Html.Element as HE
+import Flame.Html.Attribute as HA
 
 -- | The model represents the state of the app
 type Model = Int

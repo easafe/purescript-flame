@@ -1,17 +1,25 @@
 -- | Definition of HTML attributes
-module Flame.HTML.Attribute.Internal (class ToClassList, ToBooleanAttribute, ToIntAttribute, ToNumberAttribute, ToStringAttribute, accentHeight, accept, acceptCharset, accessKey, accumulate, action, additive, align, alignmentBaseline, alt, ascent, autocomplete, autofocus, autoplay, azimuth, baseFrequency, baseProfile, baselineShift, begin, bias, calcMode, charset, checked, class', clipPathAttr, clipPathUnits, clipRule, color, colorInterpolation, colorInterpolationFilters, colorProfileAttr, colorRendering, cols, colspan, content, contentEditable, contentScriptType, contentStyleType, contextmenu, controls, coords, createAttribute, createAttributeName, createAttributeType, createProperty, cursorAttr, cx, cy, d, datetime, default, diffuseConstant, dir, direction, disabled, display, divisor, dominantBaseline, download, downloadAs, draggable, dropzone, dur, dx, dy, edgeMode, elevation, enctype, end, externalResourcesRequired, fill, fillOpacity, fillRule, filterAttr, filterUnits, floodColor, floodOpacity, fontFamily, fontSize, fontSizeAdjust, fontStretch, fontStyle, fontVariant, fontWeight, for, fr, from, fx, fy, gradientTransform, gradientUnits, headers, height, hidden, href, hreflang, id, imageRendering, in', in2, isMap, itemprop, k1, k2, k3, k4, kernelMatrix, kernelUnitLength, kerning, key, keySplines, keyTimes, kind, lang, lengthAdjust, letterSpacing, lightingColor, limitingConeAngle, list, local, loop, manifest, markerEnd, markerHeight, markerMid, markerStart, markerUnits, markerWidth, maskAttr, maskContentUnits, maskUnits, max, maxlength, media, method, min, minlength, mode, multiple, name, noValidate, numOctaves, opacity, operator, order, overflow, overlinePosition, overlineThickness, paintOrder, pathLength, pattern, patternContentUnits, patternTransform, patternUnits, ping, placeholder, pointerEvents, points, pointsAtX, pointsAtY, pointsAtZ, poster, preload, preserveAlpha, preserveAspectRatio, primitiveUnits, pubdate, r, radius, readOnly, refX, refY, rel, repeatCount, repeatDur, required, requiredFeatures, restart, result, reversed, rows, rowspan, rx, ry, sandbox, scale, scope, seed, selected, shape, shapeRendering, size, specularConstant, specularExponent, spellcheck, src, srcdoc, srclang, start, stdDeviation, step, stitchTiles, stopColor, stopOpacity, strikethroughPosition, strikethroughThickness, stroke, strokeDasharray, strokeDashoffset, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeOpacity, strokeWidth, style, styleAttr, surfaceScale, tabindex, target, targetX, targetY, textAnchor, textDecoration, textLength, textRendering, title, to, transform, type', underlinePosition, underlineThickness, useMap, value, values, vectorEffect, version, viewBox, visibility, width, wordSpacing, wrap, writingMode, x, x1, x2, xChannelSelector, y, y1, y2, yChannelSelector, innerHTML) where
+module Flame.Html.Attribute.Internal (class ToClassList, ToBooleanAttribute, ToIntAttribute, ToNumberAttribute, ToStringAttribute, accentHeight, accept, acceptCharset, accessKey, accumulate, action, additive, align, alignmentBaseline, alt, ascent, autocomplete, autofocus, autoplay, azimuth, baseFrequency, baseProfile, baselineShift, begin, bias, calcMode, charset, checked, class', clipPathAttr, clipPathUnits, clipRule, color, colorInterpolation, colorInterpolationFilters, colorProfileAttr, colorRendering, cols, colspan, content, contentEditable, contentScriptType, contentStyleType, contextmenu, controls, coords, createAttribute, createAttributeName, createAttributeType, createProperty, cursorAttr, cx, cy, d, datetime, default, diffuseConstant, dir, direction, disabled, display, divisor, dominantBaseline, download, downloadAs, draggable, dropzone, dur, dx, dy, edgeMode, elevation, enctype, end, externalResourcesRequired, fill, fillOpacity, fillRule, filterAttr, filterUnits, floodColor, floodOpacity, fontFamily, fontSize, fontSizeAdjust, fontStretch, fontStyle, fontVariant, fontWeight, for, fr, from, fx, fy, gradientTransform, gradientUnits, headers, height, hidden, href, hreflang, id, imageRendering, in', in2, isMap, itemprop, k1, k2, k3, k4, kernelMatrix, kernelUnitLength, kerning, keySplines, keyTimes, kind, lang, lengthAdjust, letterSpacing, lightingColor, limitingConeAngle, list, local, loop, manifest, markerEnd, markerHeight, markerMid, markerStart, markerUnits, markerWidth, maskAttr, maskContentUnits, maskUnits, max, maxlength, media, method, min, minlength, mode, multiple, name, noValidate, numOctaves, opacity, operator, order, overflow, overlinePosition, overlineThickness, paintOrder, pathLength, pattern, patternContentUnits, patternTransform, patternUnits, ping, placeholder, pointerEvents, points, pointsAtX, pointsAtY, pointsAtZ, poster, preload, preserveAlpha, preserveAspectRatio, primitiveUnits, pubdate, r, radius, readOnly, refX, refY, rel, repeatCount, repeatDur, required, requiredFeatures, restart, result, reversed, rows, rowspan, rx, ry, sandbox, scale, scope, seed, selected, shape, shapeRendering, size, specularConstant, specularExponent, spellcheck, src, srcdoc, srclang, start, stdDeviation, step, stitchTiles, stopColor, stopOpacity, strikethroughPosition, strikethroughThickness, stroke, strokeDasharray, strokeDashoffset, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeOpacity, strokeWidth, style, styleAttr, surfaceScale, tabindex, target, targetX, targetY, textAnchor, textDecoration, textLength, textRendering, title, to, transform, type', underlinePosition, underlineThickness, useMap, value, values, vectorEffect, version, viewBox, visibility, width, wordSpacing, wrap, writingMode, x, x1, x2, xChannelSelector, y, y1, y2, yChannelSelector, innerHTML) where
 
 import Data.Array as DA
 import Data.Either as DE
+import Data.Function.Uncurried (Fn2)
+import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
+import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (global)
-import Flame.Types (NodeData(..), ToNodeData)
+import Data.Tuple (Tuple(..))
+import Flame.Types (NodeData, ToNodeData)
+import Foreign.Object (Object)
 import Foreign.Object as FO
 import Partial.Unsafe (unsafePartial)
-import Prelude (const, flip, identity, otherwise, show, ($), (<<<), (<>), (==))
+import Prelude (const, flip, map, not, otherwise, show, ($), (<<<), (<>), (==))
 import Type.Row.Homogeneous (class Homogeneous)
+
+type Name = String
+type Value = String
 
 type ToStringAttribute = ToNodeData String
 
@@ -23,47 +31,61 @@ type ToNumberAttribute = ToNodeData Number
 
 -- | Enables either strings or records be used as an argument to `class'`
 class ToClassList a where
-         to :: a -> String
+      to :: a -> Array String
 
 instance stringClassList :: ToClassList String where
-        to = identity
+      to = DA.filter (not <<< DS.null) <<< DS.split (Pattern " ")
 
 instance recordClassList :: Homogeneous r Boolean => ToClassList { | r } where
-        to = DS.joinWith " " <<< FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
+      to = FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
 
--- the distinction between property, attribute and boolean attributes is a mess imposed by snabbdom
+--these functions cheat by only creating the necessary key on NodeData
+foreign import createProperty_ :: forall message. Fn2 Name Value (NodeData message)
+foreign import createAttribute_ :: forall message. Fn2 Name Value (NodeData message)
+foreign import createClass :: forall message. Array String -> NodeData message
+foreign import createStyle :: forall message. Object String -> NodeData message
 
 -- | Sets a DOM property
 createProperty :: forall message. String -> String -> NodeData message
-createProperty = Property
+createProperty = DFU.runFn2 createProperty_
 
 -- | Creates a HTML attribute
 createAttribute :: forall message. String -> String -> NodeData message
-createAttribute = Attribute
+createAttribute = DFU.runFn2 createAttribute_
 
 booleanToFalsyString :: Boolean -> String
 booleanToFalsyString =
-        case _ of
-                true -> "true"
-                false -> ""
+      case _ of
+            true -> "true"
+            false -> ""
 
 class' :: forall a b. ToClassList b => b -> NodeData a
-class' = createAttribute "class" <<< caseify <<< to
+class' = createClass <<< map caseify <<< to
 
+-- | Sets the node style
+-- |
+-- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
 style :: forall a r. Homogeneous r String => { | r } -> NodeData a
+<<<<<<< HEAD:src/Flame/HTML/Attribute/Internal.purs
 style record = StyleList $ FO.fromHomogeneous record
+=======
+style = createStyle <<< FO.fromFoldable <<< map go <<< toArray
+      where go (Tuple name value) = Tuple (caseify name) value
+            toArray :: _ -> Array (Tuple String String)
+            toArray = FO.toUnfoldable <<< FO.fromHomogeneous
+>>>>>>> 2291c71... New virtual node and renderer architecture:src/Flame/Html/Attribute/Internal.purs
 
 -- | Transforms its input into a proper html attribute/tag name, i.e. lower case and hyphenated
 caseify :: String -> String
 caseify name'
-        | name' == DS.toUpper name' = DS.toLower name'
-        | otherwise = DS.toLower (DS.singleton head) <> hyphenated
-        where   {head, tail} = unsafePartial (DM.fromJust $ DS.uncons name')
+      | name' == DS.toUpper name' = DS.toLower name'
+      | otherwise = DS.toLower (DS.singleton head) <> hyphenated
+      where {head, tail} = unsafePartial (DM.fromJust $ DS.uncons name')
 
-                regex = unsafePartial (DE.fromRight $ DSR.regex "[A-Z]" global)
-                replacer = const <<< ("-" <> _) <<< DS.toLower
+            regex = unsafePartial (DE.fromRight $ DSR.regex "[A-Z]" global)
+            replacer = const <<< ("-" <> _) <<< DS.toLower
 
-                hyphenated = DSR.replace' regex replacer tail
+            hyphenated = DSR.replace' regex replacer tail
 
 --script generated
 
@@ -469,10 +491,6 @@ kernelUnitLength = createAttribute "kernelUnitLength"
 kerning :: ToStringAttribute
 kerning = createAttribute "kerning"
 
--- | Set the key attribute for "keyed" rendering
-key :: ToStringAttribute
-key = Key
-
 keySplines :: ToStringAttribute
 keySplines = createAttribute "keySplines"
 
@@ -603,7 +621,7 @@ strokeLinejoin :: ToStringAttribute
 strokeLinejoin = createAttribute "stroke-linejoin"
 
 styleAttr :: ToStringAttribute
-styleAttr = createProperty "style"
+styleAttr = createAttribute "style"
 
 textAnchor :: ToStringAttribute
 textAnchor = createAttribute "text-anchor"

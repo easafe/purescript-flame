@@ -1,25 +1,26 @@
 -- | Snabbdom VNode hooks
 module Flame.Renderer.Hook where
 
-import Prelude ((<<<), Unit)
 import Effect (Effect)
+import Effect.Exception.Unsafe (unsafeThrow)
 import Effect.Uncurried (EffectFn1, EffectFn2)
+import Flame.Types (Html(..), NodeData(..))
 import Foreign (Foreign)
 import Foreign as F
-import Flame.Types (NodeData(Hook), VNode)
+import Prelude ((<<<), Unit)
 
--- | Foreign VNode hook function with single parameter
-type HookFn1 = EffectFn1 VNode Unit
+-- | Foreign hook function with single parameter
+type HookFn1 = forall message. EffectFn1 (Html message) Unit
 
--- | Foreign VNode hook function with two parameters
-type HookFn2 = EffectFn2 VNode VNode Unit
+-- | Foreign hook function with two parameters
+type HookFn2 = forall message. EffectFn2 (Html message) (Html message) Unit
 
--- | Foreign VNode hook function with VNode and remove callback parameters
-type HookFnRemove = EffectFn2 VNode (Effect Unit) Unit
+-- | Foreign hook function with node and remove callback parameters
+type HookFnRemove = forall message. EffectFn2 (Html message) (Effect Unit) Unit
 
 -- | Creates a hook for given `name` and provided foreign function
 createHook :: ∀ msg. String -> Foreign -> NodeData msg
-createHook name = Hook name
+createHook name = unsafeThrow "not implemented"
 
 -- | Attaches a hook for a vnode been added
 atInit :: ∀ msg. HookFn1 -> NodeData msg

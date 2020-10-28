@@ -1,5 +1,5 @@
 
-var querySelector = typeof document == 'undefined' ? null : document.querySelector.bind(document);
+let querySelector = typeof document == 'undefined' ? null : document.querySelector.bind(document);
 
 exports.querySelector_ = querySelector;
 

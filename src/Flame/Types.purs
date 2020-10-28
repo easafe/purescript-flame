@@ -4,85 +4,47 @@ module Flame.Types where
 import Prelude
 
 import Data.Array as DA
-import Data.Foldable as DF
-import Data.Maybe (Maybe)
+import Data.Maybe as DM
 import Data.Nullable (Nullable)
+import Data.Nullable as DN
+import Data.String as DS
 import Data.Tuple (Tuple(..))
-import Effect (Effect)
+import Flame.Internal.Equality as FIE
 import Foreign (Foreign)
 import Foreign.Object (Object)
-import Web.DOM.Element as WDE
-import Web.Event.Event (Event)
-
--- | Represents a list of events listeners
-foreign import data VNodeEvents :: Type
-
--- | Data (properties, attributes, events) attached to a VNode
--- something missing here is the support for thunks
-type VNodeData = {
-        -- we need attrs mainly for svg
-        attrs :: Object String,
-        props :: Object String,
-        style :: Object String,
-        key :: Nullable String,
-        on :: VNodeEvents,
-        hook :: Object Foreign
-}
-
--- | Virtual DOM representation
-newtype VNode = VNode {
-        sel :: String,
-        data :: VNodeData,
-        children :: Array VNode,
-        elm :: DOMElement
-}
-
--- App abstracts over common fields of an `Application`
-type App model message extension = {
-        view :: model -> Html message |
-        extension
-}
+import Foreign.Object as FO
 
 -- | `PreApplication` contains
 -- | * `init` – the initial model
 -- | * `view` – a function to update your markup
 type PreApplication model message = App model message (
-        init :: model
+      init :: model
 )
 
--- | A native HTML element
-type DOMElement = WDE.Element
+-- App abstracts over common fields of an `Application`
+type App model message extension = {
+      view :: model -> Html message |
+      extension
+}
+
+-- | Infix tuple constructor
+infixr 6 Tuple as :>
 
 type ToNodeData value = forall message. value -> NodeData message
 
 type Tag = String
-
 type Key = String
 
---add support for react like fragment nodes?
--- | Convenience wrapper around `VNode`
-data Html message =
-        Node Tag (Array (NodeData message)) (Array (Html message)) |
-        Text String
+-- | FFI class that keeps track of DOM rendering
+foreign import data DomRenderingState :: Type
 
-derive instance elementFunctor :: Functor Html
+-- | A make believe type for DOM nodes
+foreign import data DomNode :: Type
 
-instance showHtml :: Show (Html message) where
-        show (Node tag nodeData children) = "(Node " <> tag <> " " <> show (isNonEventData nodeData) <> " " <> show children <> ")"
-        show (Text t) = "(Text " <> t <> ")"
+-- | Attributes and properties of virtual nodes
+foreign import data NodeData :: Type -> Type
 
-instance eqHtml :: Eq (Html message) where
-        eq (Node tag nodeData children) (Node tag2 nodeData2 children2) = tag == tag2 && eqArrayNodeData nodeData nodeData2 && children == children2
-                where eqArrayNodeData arr1 arr2 = DF.all (flip DF.elem (isNonEventData arr2)) (isNonEventData arr1)
-        eq (Text t) (Text t2) = t == t2
-        eq _ _ = false
-
-isNonEventData :: forall t. Array (NodeData t) -> Array (NodeData t)
-isNonEventData = DA.filter case _ of
-                        Attribute _ _ -> true
-                        Property _ _ -> true
-                        _ -> false
-
+<<<<<<< HEAD
 -- | Convenience wrapper around `VNodeData`
 --snabbom has support for style and class node data but I dont think it is worth it
 data NodeData message =
@@ -108,3 +70,8 @@ instance eqNodeData :: Eq (NodeData message) where
 
 -- | Infix tuple constructor
 infixr 6 Tuple as :>
+=======
+--Html can actually be typed, but since it is only used in FFI code, I don't think it'd be very useful
+-- | The type of virtual nodes
+foreign import data Html :: Type -> Type
+>>>>>>> 2291c71... New virtual node and renderer architecture

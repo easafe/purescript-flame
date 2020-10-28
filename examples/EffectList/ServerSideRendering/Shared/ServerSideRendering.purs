@@ -8,8 +8,8 @@ import Prelude
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Flame (QuerySelector(..), Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 
 newtype Model = Model (Maybe Int)
 

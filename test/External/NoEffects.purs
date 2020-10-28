@@ -6,9 +6,9 @@ import Prelude
 import Effect (Effect)
 import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
-import Flame.HTML.Element as HE
+import Flame.Html.Element as HE
 import Web.Event.Internal.Types (Event)
-import Flame.External as FE
+import Flame.Html.Signal as FE
 
 -- | The model represents the state of the app
 type Model = Int

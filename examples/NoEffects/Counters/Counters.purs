@@ -10,8 +10,8 @@ import Effect (Effect)
 import Examples.NoEffects.Counter.Main as ECM
 import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 
 type Model = Array ECM.Model
 

@@ -1,34 +1,40 @@
 -- | Definition of HTML elements
-module Flame.HTML.Element where
+module Flame.Html.Element where
 
-import Prelude
+import Prelude hiding (map)
 
 import Data.Array as DA
-import Flame.Types (NodeData, Html(..), Tag)
-import Flame.HTML.Attribute.Internal as FHAI
+import Data.Function.Uncurried (Fn2, Fn3, Fn4)
+import Data.Function.Uncurried as DFU
+import Data.Nullable (null)
+import Data.String as DS
+import Flame.Html.Attribute.Internal as FHAI
+import Flame.Types (Html(..), NodeData(..), Tag)
+import Foreign.Object as FO
+import Prelude as P
+import Web.DOM (NodeType)
 
 -- | `ToNode` simplifies element creation by automating common tag operations
 -- | * `tag "my-tag" []` becomes short for `tag [id "my-tag"] []`
 -- | * `tag [] "content"` becomes short for `tag [] [text "content"]`
 -- | * elements with a single attribute or children need not as well to use lists: `tag (enabled True) (tag attrs children)`
--- blaze like syntax would be nicer but the only ps port available (smolder) seems to be slow and not mantained
 class ToNode a b c | a -> b where
-        to :: a -> Array (c b)
+      toNode :: a -> Array (c b)
 
 instance stringToHtml :: ToNode String b Html where
-        to = DA.singleton <<< text
+      toNode = DA.singleton <<< text
 
-instance arrayToHtml :: (ToNode a b c) => ToNode (Array a) b c where
-        to = DA.concatMap to
+instance arrayToNodeData :: (ToNode a b c) => ToNode (Array a) b c where
+      toNode = DA.concatMap toNode
 
 instance htmlToHtml :: ToNode (Html a) a Html where
-        to = DA.singleton
+      toNode = DA.singleton
 
-instance stringToElementData :: ToNode String b NodeData where
-        to = DA.singleton <<< FHAI.id
+instance stringToNodeData :: ToNode String b NodeData where
+      toNode = DA.singleton <<< FHAI.id
 
-instance attributeEventToElementData :: ToNode (NodeData a) a NodeData where
-        to = DA.singleton
+instance nodeDataToNodedata :: ToNode (NodeData a) a NodeData where
+      toNode = DA.singleton
 
 type ToHtml a b h = ToNode a h NodeData => ToNode b h Html => a -> b -> Html h
 
@@ -36,25 +42,48 @@ type ToHtml_ b h = ToNode b h Html => b -> Html h
 
 type ToHtml' a h = ToNode a h NodeData => a -> Html h
 
+foreign import createElementNode :: forall message. Tag -> Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createDatalessElementNode :: forall message. Tag -> Array (Html message) -> Html message
+foreign import createSingleElementNode :: forall message. Tag -> Array (NodeData message) -> Html message
+foreign import createFragmentNode ::  forall message. Array (Html message) -> Html message
+
+--separete functions as svg are special babies
+foreign import createSvgNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createDatalessSvgNode :: forall message. Array (Html message) -> Html message
+foreign import createSingleSvgNode :: forall message. Array (NodeData message) -> Html message
+
+-- | Creates a text node
+foreign import text :: forall message. String -> Html message
+
+-- | Creates a HTML element with no attributes and no children nodes
+foreign import createEmptyElement :: forall message. Tag -> Html message
+
 -- | Creates a HTML element with attributes and children nodes
 createElement :: forall a b h. Tag -> ToHtml a b h
-createElement tag attributeEvent = Node tag (to attributeEvent) <<< to
+createElement tag nodeData children = createElementNode tag (toNode nodeData) $ toNode children
 
 -- | Creates a HTML element with no attributes but children nodes
 createElement_ :: forall b h. Tag -> ToHtml_ b h
-createElement_ tag = Node tag [] <<< to
+createElement_ tag children = createDatalessElementNode tag $ toNode children
 
 -- | Creates a HTML element with attributes but no children nodes
 createElement' :: forall a h. Tag -> ToHtml' a h
-createElement' tag attributeEvent = Node tag (to attributeEvent) []
+createElement' tag nodeData = createSingleElementNode tag $ toNode nodeData
 
--- | Creates a HTML element with no attributes and no children nodes
-createEmptyElement :: forall h. Tag -> Html h
-createEmptyElement tag = Node tag [] []
+-- | Creates a fragment
+-- |
+-- | Fragments act as wrappers: only children nodes are rendered
+fragment :: forall b h. ToHtml_ b h
+fragment children = createFragmentNode $ toNode children
 
--- | Creates a text node
-text :: forall h. String -> Html h
-text = Text
+svg :: forall a b h. ToHtml a b h
+svg nodeData children = createSvgNode (toNode nodeData) $ toNode children
+
+svg_ :: forall b h. ToHtml_ b h
+svg_ children = createDatalessSvgNode $ toNode children
+
+svg' :: forall a h. ToHtml' a h
+svg' nodeData = createSingleSvgNode $ toNode nodeData
 
 hr :: forall h. Html h
 hr = createEmptyElement "hr"
@@ -1662,15 +1691,6 @@ stop_ = createElement_ "stop"
 
 stop' :: forall a h. ToHtml' a h
 stop' = createElement' "stop"
-
-svg :: forall a b h. ToHtml a b h
-svg = createElement "svg"
-
-svg_ :: forall b h. ToHtml_ b h
-svg_ = createElement_ "svg"
-
-svg' :: forall a h. ToHtml' a h
-svg' = createElement' "svg"
 
 switch :: forall a b h. ToHtml a b h
 switch = createElement "switch"

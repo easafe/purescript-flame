@@ -1,8 +1,8 @@
 -- | Defines events for the native `document` object
-module Flame.External.Document (onBlur, onBlur', onClick, onClick', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onFocus, onFocus', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onScroll, onScroll', onWheel, onWheel') where
+module Flame.Html.Signal.Document (onBlur, onBlur', onClick, onClick', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onFocus, onFocus', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onScroll, onScroll', onWheel, onWheel') where
 
-import Flame.External.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
-import Flame.External.Source (createEventSource, createRawEventSource, createSpecialEventSource)
+import Flame.Html.Signal.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
+import Flame.Html.Signal.Source (createEventSource, createRawEventSource, createSpecialEventSource)
 import Flame.Types (Key)
 
 foreign import onClick_ :: forall message. ToEventSource_ message

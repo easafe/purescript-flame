@@ -14,8 +14,8 @@ import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as FU
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.EffectList as FAE
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 

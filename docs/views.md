@@ -19,13 +19,13 @@ the `view` field maps the current state to markup. Whenever the model is updated
 A custom DSL, defined by the type `Html`, is used to write markup. You will need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes, properties and events
 
 ```haskell
-import Flame.HTML.Element as HE
-import Flame.HTML.Attribute as HA
+import Flame.Html.Element as HE
+import Flame.Html.Attribute as HA
 ```
 
 ### Attributes, properties and events
 
-The module `Flame.HTML.Attribute` exports
+The module `Flame.Html.Attribute` exports
 
 * Properties, which are functions from string values such as `id` or `type'`, or helpers such as `class'` or `style`
 
@@ -46,7 +46,7 @@ HA.createRawEvent
 
 ### Elements
 
-The module `Flame.HTML.Element` exports HTML elements, such as `div`, `body`, etc, following the convention
+The module `Flame.Html.Element` exports HTML elements, such as `div`, `body`, etc, following the convention
 
 * Functions named `element` expects attributes and children elements
 

@@ -9,8 +9,8 @@ import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Flame (QuerySelector(..), Html, (:>))
 import Flame as F
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Data.Tuple(Tuple)
 
 type Model = Maybe Int

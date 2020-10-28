@@ -1,4 +1,4 @@
-module Flame.External.Types where
+module Flame.Html.Signal.Types where
 
 import Prelude
 

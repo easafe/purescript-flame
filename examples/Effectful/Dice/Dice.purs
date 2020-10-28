@@ -9,8 +9,8 @@ import Effect.Random as ER
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 
 type Model = Maybe Int
 

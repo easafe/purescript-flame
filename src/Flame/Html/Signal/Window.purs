@@ -1,8 +1,8 @@
 -- | Defines events for the native `window` object
-module Flame.External.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload') where
+module Flame.Html.Signal.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload') where
 
-import Flame.External.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_)
-import Flame.External.Source (createEventSource, createRawEventSource)
+import Flame.Html.Signal.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_)
+import Flame.Html.Signal.Source (createEventSource, createRawEventSource)
 
 foreign import onError_ :: forall message. ToEventSource_ message
 foreign import onError__ :: forall message. ToRawEventSource_ message

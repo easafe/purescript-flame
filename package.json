@@ -28,10 +28,6 @@
                 "build-examples": "npm run example-affjax-list && npm run example-webchat && npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
                 "test": "spago test && npm run build-examples"
         },
-        "dependencies": {
-                "snabbdom": "^0.7.4",
-                "snabbdom-to-html": "^5.1.1"
-        },
         "devDependencies": {
                 "jsdom": "^14.1.0",
                 "parcel-bundler": "^1.12.4",

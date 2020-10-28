@@ -10,8 +10,8 @@ import Examples.EffectList.ServerSideRendering.Shared (Model(..), Message)
 import Examples.EffectList.ServerSideRendering.Shared as EESS
 import Flame (QuerySelector(..), Html)
 import Flame as F
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import HTTPure (ResponseM, ServerM, Request)
 import HTTPure as H
 import Node.FS.Aff as FSA

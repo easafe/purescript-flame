@@ -16,9 +16,9 @@ import Effect.Var (($=))
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (Environment)
 import Flame.Application.Effectful as FAE
-import Flame.External as FE
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Signal as FE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Partial.Unsafe (unsafePartial)
 import Record as R
 import Signal.Channel as SC
