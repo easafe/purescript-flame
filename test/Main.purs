@@ -110,7 +110,7 @@ main =
                               html2' <- liftEffect $ FRS.render html2
                               TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
 
-                        test "style merging" do
+                        test "styles merge" do
                               let html = HE.a [ HA.style { mystyle: "test", mylife: "good" }, HA.style { mystyle: "check" } ] [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a style="mystyle: check; mylife: good">TEST</a>""" html'
@@ -118,6 +118,11 @@ main =
                               let html2 = HE.a [HA.style { width: "23px", display: "none" }, HA.style { height: "10px" } ] [HE.text "TEST"]
                               html2' <- liftEffect $ FRS.render html2
                               TUA.equal """<a style="width: 23px; display: none; height: 10px">TEST</a>""" html2'
+
+                        test "classes merge" do
+                              let html = HE.a [ HA.class' "a b", HA.class' { c: true } ] [HE.text "TEST"]
+                              html' <- liftEffect $ FRS.render html
+                              TUA.equal """<a class="a b c">TEST</a>""" html'
 
                         test "style/class name case" do
                               html <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "superClass"
@@ -155,6 +160,8 @@ main =
                               let html = FRL.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<p id="p" min="23">TEST</p>""" html'
+
+                        --test "fragment nodes"
 
                         test "nested elements" do
                               let html = HE.html_ [
