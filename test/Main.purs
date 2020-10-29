@@ -19,6 +19,8 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.Internal.Dom as FRID
 import Flame.Renderer.Key as FRK
+import Flame.Renderer.Lazy as FRL
+import Flame.Renderer.String as FRS
 import Flame.Types (DomNode)
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -44,7 +46,6 @@ import Web.DOM.HTMLCollection as WDH
 import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
-import Flame.Renderer.String as FRS
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WDD
@@ -96,9 +97,9 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a class="test">TEST</a>""" html'
 
-                              let html2 = HE.a [HA.class' { "test": false, "test2": true, "test3": true }] [HE.text "TEST"]
+                              let html2 = HE.svg [HA.class' { "test": false, "test2": true, "test3": true }] [HE.text "TEST"]
                               html2' <- liftEffect $ FRS.render html2
-                              TUA.equal """<a class="test2 test3">TEST</a>""" html2'
+                              TUA.equal """<svg class="test2 test3">TEST</svg>""" html2'
 
                         test "inline style" do
                               let html = HE.a (HA.style { mystyle: "test" }) [HE.text "TEST"]
@@ -150,21 +151,24 @@ main =
                               html3' <- liftEffect $ FRS.render html3
                               TUA.equal """<custom-element>test</custom-element>""" html3'
 
-                        -- --test "thunks"
+                        test "lazy nodes" do
+                              let html = FRL.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
+                              html' <- liftEffect $ FRS.render html
+                              TUA.equal """<p id="p" min="23">TEST</p>""" html'
 
                         test "nested elements" do
                               let html = HE.html_ [
                                     HE.head_ [HE.title "title"],
                                     HE.body_ [
                                           HE.main_ [
-                                                      HE.button_ "-",
-                                                      HE.br,
-                                                      HE.text "Test",
-                                                      HE.button_ "+",
-                                                      HE.hr,
-                                                      HE.div_ $ HE.div_ [
-                                                            HE.span_ [ HE.a_ "here" ]
-                                                      ]
+                                                HE.button_ "-",
+                                                HE.br,
+                                                HE.text "Test",
+                                                HE.button_ "+",
+                                                HE.hr,
+                                                HE.div_ $ HE.div_ [
+                                                      HE.span_ [ HE.a_ "here" ]
+                                                ]
                                           ]
                                     ]
                               ]
@@ -176,14 +180,14 @@ main =
                                     HE.head_ [HE.title "title"],
                                     HE.body "content" [
                                           HE.main_ [
-                                                      HE.button (HA.style { display: "block", width: "20px"}) "-",
-                                                      HE.br,
-                                                      HE.text "Test",
-                                                      HE.button (HA.createAttribute "my-attribute" "myValue") "+",
-                                                      HE.hr' [HA.style { border: "200px solid blue"}] ,
-                                                      HE.div_ $ HE.div_ [
-                                                            HE.span_ [ HE.a_ "here" ]
-                                                      ]
+                                                HE.button (HA.style { display: "block", width: "20px"}) "-",
+                                                HE.br,
+                                                HE.text "Test",
+                                                HE.button (HA.createAttribute "my-attribute" "myValue") "+",
+                                                HE.hr' [HA.style { border: "200px solid blue"}] ,
+                                                HE.div_ $ HE.div_ [
+                                                      HE.span_ [ HE.a_ "here" ]
+                                                ]
                                           ]
                                     ]
                               ]
@@ -194,22 +198,20 @@ main =
                               let html = HE.html [HA.lang "en"] [
                                     HE.head [HA.disabled true] [HE.title "title"],
                                     HE.body "content" [
-                                          HE.main_ [
-                                                      HE.button (HA.style { display: "block", width: "20px"}) "-",
-                                                      HE.br,
-                                                      HE.text "Test",
-                                                      HE.button (HA.createAttribute "my-attribute" "myValue") "+",
-                                                      HE.hr' [HA.autocomplete "off", HA.style { border: "200px solid blue"}] ,
-                                                      HE.div_ $ HE.div_ [
-                                                            HE.span_ [ HE.a [HA.autofocus true] "here" ]
-                                                      ]
-                                          ]
+                                          FRL.lazy Nothing (const (HE.main_ [
+                                                HE.button (HA.style { display: "block", width: "20px"}) "-",
+                                                HE.br,
+                                                HE.text "Test",
+                                                HE.button (HA.createAttribute "my-attribute" "myValue") "+",
+                                                HE.hr' [HA.autocomplete "off", HA.style { border: "200px solid blue"}] ,
+                                                HE.div_ $ HE.div_ [
+                                                      HE.span_ [ HE.a [HA.autofocus true] "here" ]
+                                                ]
+                                          ])) unit
                                     ]
                               ]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
-
-                        --test "nested thunks"
 
             --we also have to test the translation of virtual nodes to actual dom nodes
             suite "DOM node creation" do
@@ -224,7 +226,17 @@ main =
                         updatedNodeStyle <- getStyle "#link"
                         TUA.equal "border: 2px; padding: 23px;" updatedNodeStyle
 
-                  test "classes" do
+                        let emptyUpdatedHtml = HE.a [HA.id "link", HA.style {}] "TEST"
+                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        emptyUpdatedNodeStyle <- getStyle "#link"
+                        TUA.equal "" emptyUpdatedNodeStyle
+
+                        let fullUpdatedHtml = HE.a [HA.id "link", HA.style {"z-index": "3"}] "TEST"
+                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        fullNodeStyle <- getStyle "#link"
+                        TUA.equal "z-index: 3;" fullNodeStyle
+
+                  test "element classes" do
                         let html = HE.p (HA.class' "firstClass secondClass thirdClass") "TEST"
                         state <- mountHtml html
                         nodeClass <- getClass "p"
@@ -234,6 +246,37 @@ main =
                         void <<< liftEffect $ FRID.resume state updatedHtml
                         updatedNodeClass <- getClass "p"
                         TUA.equal "" updatedNodeClass
+
+                        let emptyUpdatedHtml = HE.p (HA.class' "") "TEST"
+                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        emptyUpdatedNodeClass <- getClass "p"
+                        TUA.equal "" emptyUpdatedNodeClass
+
+                        let fullUpdatedHtml = HE.p (HA.class' {some: true, some2: true }) "TEST"
+                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        fullNodeClass <- getClass "p"
+                        TUA.equal "some some2" fullNodeClass
+
+                  test "svg classes" do
+                        let html = HE.svg (HA.class' "firstClass secondClass thirdClass") "TEST"
+                        state <- mountHtml html
+                        nodeClass <- getSvgClass "svg"
+                        TUA.equal (Just "first-class second-class third-class") nodeClass
+
+                        let updatedHtml = HE.svg (HA.class' {firstClass: false}) "TEST"
+                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        updatedNodeClass <- getSvgClass "svg"
+                        TUA.equal (Just "") updatedNodeClass
+
+                        let emptyUpdatedHtml = HE.svg (HA.class' "") "TEST"
+                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        emptyUpdatedNodeClass <- getSvgClass "svg"
+                        TUA.equal (Just "") emptyUpdatedNodeClass
+
+                        let fullUpdatedHtml = HE.svg (HA.class' {some: true, some2: true }) "TEST"
+                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        fullNodeClass <- getSvgClass "svg"
+                        TUA.equal (Just "some some2") fullNodeClass
 
                   test "attributes" do
                         let html = HE.input [HA.id "t", HA.href "e.com", HA.max "oi"]
@@ -245,6 +288,17 @@ main =
                         void <<< liftEffect $ FRID.resume state updatedHtml
                         updatedNodeAttributes <- getAttributes "#t"
                         TUA.equal "id:t href:e.com min:ola ping:pong" updatedNodeAttributes
+
+                        let emptyUpdatedHtml = HE.input [HA.id "t"]
+                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        emptyUpdatedNodeAttributes <- getAttributes "#t"
+                        -- id is a property
+                        TUA.equal "id:t" emptyUpdatedNodeAttributes
+
+                        let fullUpdatedHtml = HE.input [HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong"]
+                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        fullNodeAttributes <- getAttributes "#t"
+                        TUA.equal "id:t href:e.com min:ola ping:pong" fullNodeAttributes
 
                   test "presential attributes" do
                         let html = HE.input [HA.id "t", HA.type' "checkbox", HA.disabled true, HA.autofocus true]
@@ -540,6 +594,10 @@ main =
             getClass selector = liftEffect do
                   element <- unsafeQuerySelector selector
                   WDE.className element
+
+            getSvgClass selector = liftEffect do
+                  element <- unsafeQuerySelector selector
+                  WDE.getAttribute "class" element
 
             getAttributes selector = liftEffect do
                   element <- unsafeQuerySelector selector

@@ -268,7 +268,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                 break;
             //the usual case, element/svg to be patched
             default:
-                this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData);
+                this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
                 this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children);
         }
     }
@@ -603,10 +603,8 @@ function updateStyles(node, currentStyles, updatedStyles) {
 function updateClasses(node, currentClasses, updatedClasses, isSvg) {
     let classUpdated = updatedClasses !== undefined && updatedClasses.length > 0;
 
-    if (currentClasses !== undefined && currentClasses.length > 0) {
-        if (!classUpdated)
-            createClasses(node, [], isSvg);
-    }
+    if (currentClasses !== undefined && currentClasses.length > 0 && !classUpdated)
+        createClasses(node, [], isSvg);
     else if (classUpdated)
         createClasses(node, updatedClasses, isSvg);
 }
