@@ -161,7 +161,18 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<p id="p" min="23">TEST</p>""" html'
 
-                        --test "fragment nodes"
+                        test "fragment nodes" do
+                              let html = HE.fragment [
+                                    HE.a [HA.class' "test"] [HE.text "TEST"],
+                                    HE.a [HA.class' "test-2"] [HE.text "TEST-2"]
+                              ]
+                              html' <- liftEffect $ FRS.render html
+                              TUA.equal """<a class="test">TEST</a><a class="test-2">TEST-2</a>""" html'
+
+                        test "svg nodes" do
+                              let html = HE.svg [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] <<< HE.path' $ HA.d "234"
+                              html' <- liftEffect $ FRS.render html
+                              TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
 
                         test "nested elements" do
                               let html = HE.html_ [
@@ -172,7 +183,7 @@ main =
                                                 HE.br,
                                                 HE.text "Test",
                                                 HE.button_ "+",
-                                                HE.hr,
+                                                HE.svg (HA.viewBox "0 0 23 0") <<< HE.path' $ HA.d "234",
                                                 HE.div_ $ HE.div_ [
                                                       HE.span_ [ HE.a_ "here" ]
                                                 ]
@@ -180,9 +191,9 @@ main =
                                     ]
                               ]
                               html' <- liftEffect $ FRS.render html
-                              TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><hr><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
+                              TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><svg viewBox="0 0 23 0"><path d="234" /></svg><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                        test "nested elements with attributes" do
+                        test "nested nodes with attributes" do
                               let html = HE.html [HA.lang "en"] [
                                     HE.head_ [HE.title "title"],
                                     HE.body "content" [
@@ -201,7 +212,7 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                        test "nested elements with properties and attributes" do
+                        test "nested nodes with properties and attributes" do
                               let html = HE.html [HA.lang "en"] [
                                     HE.head [HA.disabled true] [HE.title "title"],
                                     HE.body "content" [
@@ -378,9 +389,31 @@ main =
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 0 childrenCount
 
-                  --test "fragments"
-                  --test "conditional elements"
-                  --test "setting inner html"
+                  test "fragments" do
+                        let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
+                        state <- mountHtml html
+                        let updatedHtml = HE.fragment $ FRL.lazy Nothing (const (HE.svg' (HA.viewBox "0 0 0 0"))) unit
+                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        oldElement <- liftEffect $ FAD.querySelector "#test-div"
+                        TUA.assert "removed node" $ DM.isNothing oldElement
+                        nodeAttributes <- getAttributes "svg"
+                        TUA.equal "viewBox:0 0 0 0" nodeAttributes
+
+                  test "setting inner html" do
+                        let html = HE.div_ $ HE.div' [HA.id "test-div", HA.innerHtml "<span>Test</span>"]
+                        state <- mountHtml html
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 1 childrenCount
+
+                        let updatedHtml = HE.main_ $ HE.div' [HA.id "test-div", HA.innerHtml "<span>Test</span><hr>"]
+                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 2 childrenCount
+
+                        let updatedHtml = HE.main_ "oi"
+                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        oldElement <- liftEffect $ FAD.querySelector "#test-div"
+                        TUA.assert "removed node" $ DM.isNothing oldElement
 
             suite "diff" do
                   test "updates record fields" do

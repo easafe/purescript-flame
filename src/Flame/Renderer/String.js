@@ -109,7 +109,6 @@ let booleanAttributes = new Set([
     'typemustmatch'
 ]);
 
-
 /** String rendering adapted from https://github.com/snabbdom/snabbdom-to-html */
 exports.render_ = stringify;
 
