@@ -1,3 +1,5 @@
+'use strict';
+
 let lazyNode = 5;
 
 exports.createLazyNode = function (nodeData) {

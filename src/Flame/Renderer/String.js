@@ -172,16 +172,15 @@ function stringifyNodeData(nodeData) {
     if (nodeData.attributes !== undefined)
         setAttributes(mapped, nodeData.attributes);
 
-    mapped.forEach(function (value, key) {
-        if (value && value !== '')
-            result.push(key + '="' + value + '"');
-    });
+    for (let keyValue of mapped)
+        if (keyValue[1].length > 0)
+            result.push(keyValue[0] + '="' + keyValue[1] + '"');
 
     return result.join(' ');
 }
 
 function setStyles(mapped, styles) {
-    var values = [];
+    let values = [];
 
     for (let key in styles)
         values.push(key + ': ' + escape(styles[key]));

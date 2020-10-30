@@ -2,6 +2,7 @@ module Test.Main where
 
 import Prelude
 
+import Data.Array as DA
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
 import Data.Maybe (Maybe(..))
@@ -13,6 +14,8 @@ import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
 import Effect.Class (liftEffect)
 import Effect.Exception.Unsafe as EEU
+import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried as EU
 import Flame.Application.Effectful as FAE
 import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
@@ -65,6 +68,7 @@ foreign import offlineEvent :: Effect Event
 foreign import getCssText :: Element -> String
 foreign import getAllAttributes :: Element -> String
 foreign import getAllProperties :: Element -> Array String -> Array String
+foreign import innerHtml_ :: EffectFn2 Element String Unit
 
 main :: Effect Unit
 main =
@@ -223,13 +227,33 @@ main =
                                                 HE.button (HA.createAttribute "my-attribute" "myValue") "+",
                                                 HE.hr' [HA.autocomplete "off", HA.style { border: "200px solid blue"}] ,
                                                 HE.div_ $ HE.div_ [
-                                                      HE.span_ [ HE.a [HA.autofocus true] "here" ]
+                                                      --empty data should not be rendered
+                                                      HE.span (HA.class' "") [ HE.a [HA.autofocus true] "here" ]
                                                 ]
                                           ])) unit
                                     ]
                               ]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
+
+            suite "root node" do
+                  test "root node is unchanged" do
+                        liftEffect unsafeCreateEnviroment
+                        let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
+                        state <- mountHtml' html
+                        rootNode <- liftEffect $ FAD.querySelector "#mount-point"
+                        TUA.assert "root node is present" $ DM.isJust rootNode
+
+                  test "root node external children are unchanged" do
+                        liftEffect unsafeCreateEnviroment
+                        rootNode <- liftEffect $ unsafeQuerySelector "#mount-point"
+                        liftEffect $ innerHtml rootNode """<div id="oi"></div>"""
+                        let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
+                        state <- mountHtml' html
+                        childrenCount <- childrenNodeLengthOf "#mount-point"
+                        TUA.equal 2 childrenCount
+                        divNode <- liftEffect $ FAD.querySelector "#oi"
+                        TUA.assert "children was not removed" $ DM.isJust divNode
 
             --we also have to test the translation of virtual nodes to actual dom nodes
             suite "DOM node creation" do
@@ -240,17 +264,17 @@ main =
                         TUA.equal "border: solid; margin: 0px;" nodeStyle
 
                         let updatedHtml = HE.a [HA.id "link", HA.style {border: "2px", padding: "23px"}] "TEST"
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         updatedNodeStyle <- getStyle "#link"
                         TUA.equal "border: 2px; padding: 23px;" updatedNodeStyle
 
                         let emptyUpdatedHtml = HE.a [HA.id "link", HA.style {}] "TEST"
-                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        liftEffect $ FRID.resume state emptyUpdatedHtml
                         emptyUpdatedNodeStyle <- getStyle "#link"
                         TUA.equal "" emptyUpdatedNodeStyle
 
                         let fullUpdatedHtml = HE.a [HA.id "link", HA.style {"z-index": "3"}] "TEST"
-                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        liftEffect $ FRID.resume state fullUpdatedHtml
                         fullNodeStyle <- getStyle "#link"
                         TUA.equal "z-index: 3;" fullNodeStyle
 
@@ -261,17 +285,17 @@ main =
                         TUA.equal "first-class second-class third-class" nodeClass
 
                         let updatedHtml = HE.p (HA.class' {firstClass: false}) "TEST"
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         updatedNodeClass <- getClass "p"
                         TUA.equal "" updatedNodeClass
 
                         let emptyUpdatedHtml = HE.p (HA.class' "") "TEST"
-                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        liftEffect $ FRID.resume state emptyUpdatedHtml
                         emptyUpdatedNodeClass <- getClass "p"
                         TUA.equal "" emptyUpdatedNodeClass
 
                         let fullUpdatedHtml = HE.p (HA.class' {some: true, some2: true }) "TEST"
-                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        liftEffect $ FRID.resume state fullUpdatedHtml
                         fullNodeClass <- getClass "p"
                         TUA.equal "some some2" fullNodeClass
 
@@ -282,17 +306,17 @@ main =
                         TUA.equal (Just "first-class second-class third-class") nodeClass
 
                         let updatedHtml = HE.svg (HA.class' {firstClass: false}) "TEST"
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         updatedNodeClass <- getSvgClass "svg"
                         TUA.equal (Just "") updatedNodeClass
 
                         let emptyUpdatedHtml = HE.svg (HA.class' "") "TEST"
-                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        liftEffect $ FRID.resume state emptyUpdatedHtml
                         emptyUpdatedNodeClass <- getSvgClass "svg"
                         TUA.equal (Just "") emptyUpdatedNodeClass
 
                         let fullUpdatedHtml = HE.svg (HA.class' {some: true, some2: true }) "TEST"
-                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        liftEffect $ FRID.resume state fullUpdatedHtml
                         fullNodeClass <- getSvgClass "svg"
                         TUA.equal (Just "some some2") fullNodeClass
 
@@ -303,18 +327,18 @@ main =
                         TUA.equal "id:t href:e.com max:oi" nodeAttributes
 
                         let updatedHtml = HE.input [HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong"]
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         updatedNodeAttributes <- getAttributes "#t"
                         TUA.equal "id:t href:e.com min:ola ping:pong" updatedNodeAttributes
 
                         let emptyUpdatedHtml = HE.input [HA.id "t"]
-                        void <<< liftEffect $ FRID.resume state emptyUpdatedHtml
+                        liftEffect $ FRID.resume state emptyUpdatedHtml
                         emptyUpdatedNodeAttributes <- getAttributes "#t"
                         -- id is a property
                         TUA.equal "id:t" emptyUpdatedNodeAttributes
 
                         let fullUpdatedHtml = HE.input [HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong"]
-                        void <<< liftEffect $ FRID.resume state fullUpdatedHtml
+                        liftEffect $ FRID.resume state fullUpdatedHtml
                         fullNodeAttributes <- getAttributes "#t"
                         TUA.equal "id:t href:e.com min:ola ping:pong" fullNodeAttributes
 
@@ -325,7 +349,7 @@ main =
                         TUA.equal "id:t type:checkbox disabled: autofocus:" nodeAttributes
 
                         let updatedHtml = HE.input [HA.id "t", HA.type' "checkbox", HA.disabled false, HA.autofocus true]
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         updatedNodeAttributes <- getAttributes "input"
                         TUA.equal "id:t type:checkbox autofocus:" updatedNodeAttributes
 
@@ -336,7 +360,7 @@ main =
                         TUA.equal ["t", "a"] nodeProperties
 
                         let updatedHtml = HE.input [HA.id "q", HA.pattern "aaa"]
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         --should not remove properties
                         updatedNodeProperties <- getProperties "input" ["id", "pattern"]
                         TUA.equal ["q", "aaa"] updatedNodeProperties
@@ -349,7 +373,7 @@ main =
                         text <- textContent "#mount-point"
                         TUA.equal "oi" text
 
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         updatedText <- textContent "#mount-point"
                         TUA.equal "ola" updatedText
 
@@ -357,7 +381,7 @@ main =
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         let updatedHtml = HE.span (HA.class' "test-class") $ HE.input [HA.id "t", HA.value "a"]
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
                         nodeClass <- getClass "span.test-class"
@@ -367,7 +391,7 @@ main =
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         let updatedHtml = HE.svg' (HA.viewBox "0 0 0 0")
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
                         nodeAttributes <- getAttributes "svg"
@@ -377,7 +401,7 @@ main =
                         let html = HE.div' "test-div"
                         state <- mountHtml html
                         let updatedHtml = HE.div "test-div" [HE.br, HE.hr]
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 2 childrenCount
 
@@ -385,7 +409,7 @@ main =
                         let html = HE.div "test-div" [HE.br, HE.hr]
                         state <- mountHtml html
                         let updatedHtml = HE.div' "test-div"
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 0 childrenCount
 
@@ -393,7 +417,7 @@ main =
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         let updatedHtml = HE.fragment $ FRL.lazy Nothing (const (HE.svg' (HA.viewBox "0 0 0 0"))) unit
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
                         nodeAttributes <- getAttributes "svg"
@@ -406,14 +430,24 @@ main =
                         TUA.equal 1 childrenCount
 
                         let updatedHtml = HE.main_ $ HE.div' [HA.id "test-div", HA.innerHtml "<span>Test</span><hr>"]
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 2 childrenCount
 
                         let updatedHtml = HE.main_ "oi"
-                        void <<< liftEffect $ FRID.resume state updatedHtml
+                        liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
+
+            suite "events" do
+                  test "event sets dom property" do
+                        let html = HE.input [HA.onClick unit]
+                        state <- mountHtml html
+                        nodeProperties <- getProperties "input" [eventPrefix <> "click"]
+                        TUA.assert "event was registered" $ DA.length nodeProperties == 1
+
+                  --test "event is registered on document"
+                  --test "event is removed from document"
 
             suite "diff" do
                   test "updates record fields" do
@@ -434,27 +468,26 @@ main =
                         TUA.equal { a: 1, b: 3 } $ FAE.diff' { b: 3 } model
                         TUA.equal { a: 12, b: 2 } $ FAE.diff' { a: 12 } model
 
---       -- --       suite "Basic test applications" do
---                         --test "events"
---       -- --             test "noeffects" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TBN.mount
---       -- --                   childrenLength <- childrenNodeLength
---       -- --                   --button, span, button
---       -- --                   TUA.equal 3 childrenLength
+            --suite "Basic test applications" do
+                  -- test "noeffects" do
+                  --       liftEffect do
+                  --             unsafeCreateEnviroment
+                  --             TBN.mount
+                  --       childrenLength <- childrenNodeLength
+                  -- --       button, span, button
+                  --       TUA.equal 3 childrenLength
 
---       -- --                   initial <- textContent "#text-output"
---       -- --                   TUA.equal "0" initial
+                  --       initial <- textContent "#text-output"
+                  --       TUA.equal "0" initial
 
---       -- --                   dispatchEvent clickEvent "#decrement-button"
---       -- --                   current <- textContent "#text-output"
---       -- --                   TUA.equal "-1" current
+                  --       dispatchEvent clickEvent "#decrement-button"
+                  --       current <- textContent "#text-output"
+                  --       TUA.equal "-1" current
 
---       -- --                   dispatchEvent clickEvent "#increment-button"
---       -- --                   dispatchEvent clickEvent "#increment-button"
---       -- --                   current2 <- textContent "#text-output"
---       -- --                   TUA.equal "1" current2
+                  --       dispatchEvent clickEvent "#increment-button"
+                  --       dispatchEvent clickEvent "#increment-button"
+                  --       current2 <- textContent "#text-output"
+                  --       TUA.equal "1" current2
 
 --       -- --             test "effectlist" do
 --       -- --                   liftEffect do
@@ -627,6 +660,10 @@ main =
                   mountDiv <- unsafePartial (DM.fromJust <$> FAD.querySelector "#mount-point")
                   FRID.start mountDiv (const (pure unit)) html
 
+            mountHtml' html = liftEffect do
+                  mountDiv <- unsafePartial (DM.fromJust <$> FAD.querySelector "#mount-point")
+                  FRID.start mountDiv (const (pure unit)) html
+
             getStyle selector = liftEffect do
                   element <- unsafeQuerySelector selector
                   pure $ getCssText element
@@ -658,6 +695,9 @@ main =
                   element <- unsafeQuerySelector selector
                   WDN.textContent $ WDE.toNode element
 
+            eventPrefix = "__flame_"
+
+            innerHtml = EU.runEffectFn2 innerHtml_
 --       -- --       isChecked selector = liftEffect do
 --       -- --             element <- unsafeQuerySelector selector
 --       -- --             WHH.checked $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
@@ -666,10 +706,10 @@ main =
 --       -- --             element <- unsafeQuerySelector selector
 --       -- --             WHH.disabled $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
 
---       -- --       dispatchEvent eventFunction selector = liftEffect $ void do
---       -- --             element <- unsafeQuerySelector selector
---       -- --             event <- eventFunction
---       -- --             WEE.dispatchEvent event $ WDE.toEventTarget element
+            -- dispatchEvent eventFunction selector = liftEffect $ void do
+            --       element <- unsafeQuerySelector selector
+            --       event <- eventFunction
+            --       WEE.dispatchEvent event $ WDE.toEventTarget element
 
 --       -- --       dispatchDocumentEvent eventFunction = liftEffect $ void do
 --       -- --             window <- WH.window
