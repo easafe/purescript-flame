@@ -39,7 +39,7 @@ import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
 import Test.External.NoEffects as TEN
 import Test.ServerSideRendering.Effectful as TSE
-import Test.Unit (suite, test)
+import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
 import Unsafe.Coerce as UC
@@ -74,8 +74,8 @@ main :: Effect Unit
 main =
       runTest do
             -- string rendering operates directing on virtual nodes
-            suite "VNode creation" do
-                        test "ToHtml instances" do
+            TU.suite "VNode creation" do
+                        TU.test "ToHtml instances" do
                               let html = HE.a [HA.id "test"] [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a id="test">TEST</a>""" html'
@@ -96,7 +96,7 @@ main =
                               html5' <- liftEffect $ FRS.render html5
                               TUA.equal """<a id="test">TEST</a>""" html5'
 
-                        test "ToClassList instances" do
+                        TU.test "ToClassList instances" do
                               let html = HE.a [HA.class' "test"] [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a class="test">TEST</a>""" html'
@@ -105,7 +105,7 @@ main =
                               html2' <- liftEffect $ FRS.render html2
                               TUA.equal """<svg class="test2 test3">TEST</svg>""" html2'
 
-                        test "inline style" do
+                        TU.test "inline style" do
                               let html = HE.a (HA.style { mystyle: "test" }) [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a style="mystyle: test">TEST</a>""" html'
@@ -114,7 +114,7 @@ main =
                               html2' <- liftEffect $ FRS.render html2
                               TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
 
-                        test "styles merge" do
+                        TU.test "styles merge" do
                               let html = HE.a [ HA.style { mystyle: "test", mylife: "good" }, HA.style { mystyle: "check" } ] [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a style="mystyle: check; mylife: good">TEST</a>""" html'
@@ -123,12 +123,12 @@ main =
                               html2' <- liftEffect $ FRS.render html2
                               TUA.equal """<a style="width: 23px; display: none; height: 10px">TEST</a>""" html2'
 
-                        test "classes merge" do
+                        TU.test "classes merge" do
                               let html = HE.a [ HA.class' "a b", HA.class' { c: true } ] [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a class="a b c">TEST</a>""" html'
 
-                        test "style/class name case" do
+                        TU.test "style/class name case" do
                               html <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "superClass"
                               TUA.equal """<element class="super-class"></element>""" html
 
@@ -147,7 +147,7 @@ main =
                               html6 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' { borderBox : true, s : false, borderLeftTopRadius : true}
                               TUA.equal """<element class="border-box border-left-top-radius"></element>""" html6
 
-                        test "custom elements" do
+                        TU.test "custom elements" do
                               let html = HE.createElement' "custom-element" "test"
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<custom-element id="test"></custom-element>""" html'
@@ -160,12 +160,12 @@ main =
                               html3' <- liftEffect $ FRS.render html3
                               TUA.equal """<custom-element>test</custom-element>""" html3'
 
-                        test "lazy nodes" do
+                        TU.test "lazy nodes" do
                               let html = FRL.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<p id="p" min="23">TEST</p>""" html'
 
-                        test "fragment nodes" do
+                        TU.test "fragment nodes" do
                               let html = HE.fragment [
                                     HE.a [HA.class' "test"] [HE.text "TEST"],
                                     HE.a [HA.class' "test-2"] [HE.text "TEST-2"]
@@ -173,12 +173,12 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<a class="test">TEST</a><a class="test-2">TEST-2</a>""" html'
 
-                        test "svg nodes" do
+                        TU.test "svg nodes" do
                               let html = HE.svg [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] <<< HE.path' $ HA.d "234"
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
 
-                        test "nested elements" do
+                        TU.test "nested elements" do
                               let html = HE.html_ [
                                     HE.head_ [HE.title "title"],
                                     HE.body_ [
@@ -197,7 +197,7 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><svg viewBox="0 0 23 0"><path d="234" /></svg><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                        test "nested nodes with attributes" do
+                        TU.test "nested nodes with attributes" do
                               let html = HE.html [HA.lang "en"] [
                                     HE.head_ [HE.title "title"],
                                     HE.body "content" [
@@ -216,7 +216,7 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                        test "nested nodes with properties and attributes" do
+                        TU.test "nested nodes with properties and attributes" do
                               let html = HE.html [HA.lang "en"] [
                                     HE.head [HA.disabled true] [HE.title "title"],
                                     HE.body "content" [
@@ -236,15 +236,15 @@ main =
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
 
-            suite "root node" do
-                  test "root node is unchanged" do
+            TU.suite "root node" do
+                  TU.test "root node is unchanged" do
                         liftEffect unsafeCreateEnviroment
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml' html
                         rootNode <- liftEffect $ FAD.querySelector "#mount-point"
                         TUA.assert "root node is present" $ DM.isJust rootNode
 
-                  test "root node external children are unchanged" do
+                  TU.test "root node external children are unchanged" do
                         liftEffect unsafeCreateEnviroment
                         rootNode <- liftEffect $ unsafeQuerySelector "#mount-point"
                         liftEffect $ innerHtml rootNode """<div id="oi"></div>"""
@@ -256,8 +256,8 @@ main =
                         TUA.assert "children was not removed" $ DM.isJust divNode
 
             --we also have to test the translation of virtual nodes to actual dom nodes
-            suite "DOM node creation" do
-                  test "styles" do
+            TU.suite "DOM node creation" do
+                  TU.test "styles" do
                         let html = HE.a [HA.id "link", HA.style {border: "solid", margin: "0px"}] "TEST"
                         state <- mountHtml html
                         nodeStyle <- getStyle "#link"
@@ -278,7 +278,7 @@ main =
                         fullNodeStyle <- getStyle "#link"
                         TUA.equal "z-index: 3;" fullNodeStyle
 
-                  test "element classes" do
+                  TU.test "element classes" do
                         let html = HE.p (HA.class' "firstClass secondClass thirdClass") "TEST"
                         state <- mountHtml html
                         nodeClass <- getClass "p"
@@ -299,7 +299,7 @@ main =
                         fullNodeClass <- getClass "p"
                         TUA.equal "some some2" fullNodeClass
 
-                  test "svg classes" do
+                  TU.test "svg classes" do
                         let html = HE.svg (HA.class' "firstClass secondClass thirdClass") "TEST"
                         state <- mountHtml html
                         nodeClass <- getSvgClass "svg"
@@ -320,7 +320,7 @@ main =
                         fullNodeClass <- getSvgClass "svg"
                         TUA.equal (Just "some some2") fullNodeClass
 
-                  test "attributes" do
+                  TU.test "attributes" do
                         let html = HE.input [HA.id "t", HA.href "e.com", HA.max "oi"]
                         state <- mountHtml html
                         nodeAttributes <- getAttributes "#t"
@@ -342,7 +342,7 @@ main =
                         fullNodeAttributes <- getAttributes "#t"
                         TUA.equal "id:t href:e.com min:ola ping:pong" fullNodeAttributes
 
-                  test "presential attributes" do
+                  TU.test "presential attributes" do
                         let html = HE.input [HA.id "t", HA.type' "checkbox", HA.disabled true, HA.autofocus true]
                         state <- mountHtml html
                         nodeAttributes <- getAttributes "input"
@@ -353,7 +353,7 @@ main =
                         updatedNodeAttributes <- getAttributes "input"
                         TUA.equal "id:t type:checkbox autofocus:" updatedNodeAttributes
 
-                  test "properties" do
+                  TU.test "properties" do
                         let html = HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         nodeProperties <- getProperties "input" ["id", "value"]
@@ -365,8 +365,8 @@ main =
                         updatedNodeProperties <- getProperties "input" ["id", "pattern"]
                         TUA.equal ["q", "aaa"] updatedNodeProperties
 
-            suite "dom node update" do
-                  test "update text nodes" do
+            TU.suite "dom node update" do
+                  TU.test "update text nodes" do
                         let html = HE.text "oi"
                         state <- mountHtml html
                         let updatedHtml = HE.text "ola"
@@ -377,7 +377,7 @@ main =
                         updatedText <- textContent "#mount-point"
                         TUA.equal "ola" updatedText
 
-                  test "update node tag" do
+                  TU.test "update node tag" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         let updatedHtml = HE.span (HA.class' "test-class") $ HE.input [HA.id "t", HA.value "a"]
@@ -387,7 +387,7 @@ main =
                         nodeClass <- getClass "span.test-class"
                         TUA.equal "test-class" nodeClass
 
-                  test "update node type" do
+                  TU.test "update node type" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         let updatedHtml = HE.svg' (HA.viewBox "0 0 0 0")
@@ -397,7 +397,7 @@ main =
                         nodeAttributes <- getAttributes "svg"
                         TUA.equal "viewBox:0 0 0 0" nodeAttributes
 
-                  test "inserting children" do
+                  TU.test "inserting children" do
                         let html = HE.div' "test-div"
                         state <- mountHtml html
                         let updatedHtml = HE.div "test-div" [HE.br, HE.hr]
@@ -405,7 +405,7 @@ main =
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 2 childrenCount
 
-                  test "removing children" do
+                  TU.test "removing children" do
                         let html = HE.div "test-div" [HE.br, HE.hr]
                         state <- mountHtml html
                         let updatedHtml = HE.div' "test-div"
@@ -413,7 +413,7 @@ main =
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 0 childrenCount
 
-                  test "fragments" do
+                  TU.test "fragments" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
                         let updatedHtml = HE.fragment $ FRL.lazy Nothing (const (HE.svg' (HA.viewBox "0 0 0 0"))) unit
@@ -423,7 +423,7 @@ main =
                         nodeAttributes <- getAttributes "svg"
                         TUA.equal "viewBox:0 0 0 0" nodeAttributes
 
-                  test "setting inner html" do
+                  TU.test "setting inner html" do
                         let html = HE.div_ $ HE.div' [HA.id "test-div", HA.innerHtml "<span>Test</span>"]
                         state <- mountHtml html
                         childrenCount <- childrenNodeLengthOf "#test-div"
@@ -439,214 +439,214 @@ main =
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
 
-            suite "events" do
-                  test "event sets dom property" do
+            TU.suite "events" do
+                  TU.test "event sets dom property" do
                         let html = HE.input [HA.onClick unit]
                         state <- mountHtml html
                         nodeProperties <- getProperties "input" [eventPrefix <> "click"]
                         TUA.assert "event was registered" $ DA.length nodeProperties == 1
 
-                  --test "event is registered on document"
-                  --test "event is removed from document"
+                  --TU.test "event is registered on document"
+                  --TU.test "event is removed from document"
 
-            suite "diff" do
-                  test "updates record fields" do
+            TU.suite "diff" do
+                  TU.test "updates record fields" do
                         TUA.equal { a: 23, b: "hello", c: true } $ FAE.diff' {c: true} { a : 23, b: "hello", c: false }
                         TUA.equal { a: 23, b: "hello", c: false } $ FAE.diff' {} { a : 23, b: "hello", c: false }
 
-                  test "updates record fields with newtype" do
+                  TU.test "updates record fields with newtype" do
                         TUA.equal (TestNewtype { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ TestNewtype { a : 23, b: "hello", c: false }
                         TUA.equal (TestNewtype { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ TestNewtype { a : 23, b: "hello", c: false }
 
-                  test "updates record fields with functor" do
+                  TU.test "updates record fields with functor" do
                         TUA.equal (Just { a: 23, b: "hello", c: true }) <<< FAE.diff' {c: true} $ Just { a : 23, b: "hello", c: false }
                         TUA.equal (Just { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ Just { a : 23, b: "hello", c: false }
 
-                  test "new copy is returned" do
+                  TU.test "new copy is returned" do
                         --since diff uses unsafe javascript, make sure the reference is not being written to
                         let model = { a: 1, b: 2}
                         TUA.equal { a: 1, b: 3 } $ FAE.diff' { b: 3 } model
                         TUA.equal { a: 12, b: 2 } $ FAE.diff' { a: 12 } model
 
-            --suite "Basic test applications" do
-                  -- test "noeffects" do
-                  --       liftEffect do
-                  --             unsafeCreateEnviroment
-                  --             TBN.mount
-                  --       childrenLength <- childrenNodeLength
-                  -- --       button, span, button
-                  --       TUA.equal 3 childrenLength
+            TU.suite "Basic applications" do
+                  TU.test "noeffects" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TBN.mount
+                        childrenLength <- childrenNodeLength
+                        --button, span, button
+                        TUA.equal 3 childrenLength
 
-                  --       initial <- textContent "#text-output"
-                  --       TUA.equal "0" initial
+                        initial <- textContent "#text-output"
+                        TUA.equal "0" initial
 
-                  --       dispatchEvent clickEvent "#decrement-button"
-                  --       current <- textContent "#text-output"
-                  --       TUA.equal "-1" current
+                        dispatchEvent clickEvent "#decrement-button"
+                        current <- textContent "#text-output"
+                        TUA.equal "-1" current
 
-                  --       dispatchEvent clickEvent "#increment-button"
-                  --       dispatchEvent clickEvent "#increment-button"
-                  --       current2 <- textContent "#text-output"
-                  --       TUA.equal "1" current2
+                        dispatchEvent clickEvent "#increment-button"
+                        dispatchEvent clickEvent "#increment-button"
+                        current2 <- textContent "#text-output"
+                        TUA.equal "1" current2
 
---       -- --             test "effectlist" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TBEL.mount
---       -- --                   childrenLength <- childrenNodeLength
---       -- --                   --span, input, input
---       -- --                   TUA.equal 3 childrenLength
+                  TU.test "effectlist" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TBEL.mount
+                        childrenLength <- childrenNodeLength
+                        --span, input, input
+                        TUA.equal 3 childrenLength
 
---       -- --                   let     setInput text = liftEffect do
---       -- --                               element <- unsafeQuerySelector "#text-input"
---       -- --                               WHH.setValue text $ unsafePartial (DM.fromJust $ WHH.fromElement element)
---       -- --                   initial <- textContent "#text-output"
---       -- --                   TUA.equal "" initial
+                        let   setInput text = liftEffect do
+                                    element <- unsafeQuerySelector "#text-input"
+                                    WHH.setValue text $ unsafePartial (DM.fromJust $ WHH.fromElement element)
+                        initial <- textContent "#text-output"
+                        TUA.equal "" initial
 
---       -- --                   dispatchEvent clickEvent "#cut-button"
---       -- --                   current <- textContent "#text-output"
---       -- --                   TUA.equal "" current
+                        dispatchEvent clickEvent "#cut-button"
+                        current <- textContent "#text-output"
+                        TUA.equal "" current
 
---       -- --                   setInput "test"
---       -- --                   dispatchEvent inputEvent "#text-input"
---       -- --                   dispatchEvent clickEvent "#cut-button"
---       -- --                   cut <- textContent "#text-output"
---       -- --                   --always remove at least one character
---       -- --                   TUA.assert "cut text" $ DSC.length cut < 4
+                        setInput "test"
+                        dispatchEvent inputEvent "#text-input"
+                        dispatchEvent clickEvent "#cut-button"
+                        cut <- textContent "#text-output"
+                        --always remove at least one character
+                        TUA.assert "cut text" $ DSC.length cut < 4
 
---       -- --                   dispatchEvent inputEvent "#text-input"
---       -- --                   dispatchEvent enterPressedEvent "#text-input"
---       -- --                   submitted <- textContent "#text-output"
---       -- --                   TUA.equal "thanks" submitted
+                        dispatchEvent inputEvent "#text-input"
+                        dispatchEvent enterPressedEvent "#text-input"
+                        submitted <- textContent "#text-output"
+                        TUA.equal "thanks" submitted
 
---       -- --             test "effectful" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TBE.mount
---       -- --                   childrenLength <- childrenNodeLength
---       -- --                   --span, span, span, br, button, button
---       -- --                   TUA.equal 6 childrenLength
+                  TU.test "effectful" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TBE.mount
+                        childrenLength <- childrenNodeLength
+                        --span, span, span, br, button, button
+                        TUA.equal 6 childrenLength
 
---       -- --                   currentIncrement <- textContent "#text-output-increment"
---       -- --                   currentDecrement <- textContent "#text-output-decrement"
---       -- --                   currentLuckyNumber <- textContent "#text-output-lucky-number"
---       -- --                   TUA.equal "-1" currentDecrement
---       -- --                   TUA.equal "0" currentIncrement
---       -- --                   TUA.equal "2" currentLuckyNumber
+                        currentIncrement <- textContent "#text-output-increment"
+                        currentDecrement <- textContent "#text-output-decrement"
+                        currentLuckyNumber <- textContent "#text-output-lucky-number"
+                        TUA.equal "-1" currentDecrement
+                        TUA.equal "0" currentIncrement
+                        TUA.equal "2" currentLuckyNumber
 
---       -- --                   dispatchEvent clickEvent "#decrement-button"
---       -- --                   currentIncrement2 <- textContent "#text-output-increment"
---       -- --                   currentDecrement2 <- textContent "#text-output-decrement"
---       -- --                   currentLuckyNumber2 <- textContent "#text-output-lucky-number"
---       -- --                   TUA.equal "-2" currentDecrement2
---       -- --                   TUA.equal "0" currentIncrement2
---       -- --                   TUA.equal "2" currentLuckyNumber2
+                        dispatchEvent clickEvent "#decrement-button"
+                        currentIncrement2 <- textContent "#text-output-increment"
+                        currentDecrement2 <- textContent "#text-output-decrement"
+                        currentLuckyNumber2 <- textContent "#text-output-lucky-number"
+                        TUA.equal "-2" currentDecrement2
+                        TUA.equal "0" currentIncrement2
+                        TUA.equal "2" currentLuckyNumber2
 
---       -- --                   dispatchEvent clickEvent "#increment-button"
---       -- --                   dispatchEvent clickEvent "#increment-button"
---       -- --                   currentIncrement3 <- textContent "#text-output-increment"
---       -- --                   currentDecrement3 <- textContent "#text-output-decrement"
---       -- --                   currentLuckyNumber3 <- textContent "#text-output-lucky-number"
---       -- --                   TUA.equal "2" currentIncrement3
---       -- --                   TUA.equal "-2" currentDecrement3
---       -- --                   TUA.equal "2" currentLuckyNumber3
+                        dispatchEvent clickEvent "#increment-button"
+                        dispatchEvent clickEvent "#increment-button"
+                        currentIncrement3 <- textContent "#text-output-increment"
+                        currentDecrement3 <- textContent "#text-output-decrement"
+                        currentLuckyNumber3 <- textContent "#text-output-lucky-number"
+                        TUA.equal "2" currentIncrement3
+                        TUA.equal "-2" currentDecrement3
+                        TUA.equal "2" currentLuckyNumber3
 
---       -- --       suite "Effectful specific" do
---       -- --             test "slower effects" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TES.mount
---       -- --                   outputCurrent <- textContent "#text-output-current"
---       -- --                   outputNumbers <- textContent "#text-output-numbers"
---       -- --                   TUA.equal "0" outputCurrent
---       -- --                   TUA.equal "[]" outputNumbers
+            TU.suite "Effectful specific" do
+                  TU.test "slower effects" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TES.mount
+                        outputCurrent <- textContent "#text-output-current"
+                        outputNumbers <- textContent "#text-output-numbers"
+                        TUA.equal "0" outputCurrent
+                        TUA.equal "[]" outputNumbers
 
---       -- --                   --the event for snoc has a delay, make sure it doesnt overwrite unrelated fields when updating
---       -- --                   dispatchEvent clickEvent "#snoc-button"
---       -- --                   dispatchEvent clickEvent "#bump-button"
---       -- --                   outputCurrent2 <- textContent "#text-output-current"
---       -- --                   outputNumbers2 <- textContent "#text-output-numbers"
---       -- --                   TUA.equal "1" outputCurrent2
---       -- --                   TUA.equal "[]" outputNumbers2
+                        --the event for snoc has a delay, make sure it doesnt overwrite unrelated fields when updating
+                        dispatchEvent clickEvent "#snoc-button"
+                        dispatchEvent clickEvent "#bump-button"
+                        outputCurrent2 <- textContent "#text-output-current"
+                        outputNumbers2 <- textContent "#text-output-numbers"
+                        TUA.equal "1" outputCurrent2
+                        TUA.equal "[]" outputNumbers2
 
---       -- --                   AF.delay $ Milliseconds 4000.0
---       -- --                   outputCurrent3 <- textContent "#text-output-current"
---       -- --                   outputNumbers3 <- textContent "#text-output-numbers"
---       -- --                   TUA.equal "2" outputCurrent3
---       -- --                   TUA.equal "[0]" outputNumbers3
+                        AF.delay $ Milliseconds 4000.0
+                        outputCurrent3 <- textContent "#text-output-current"
+                        outputNumbers3 <- textContent "#text-output-numbers"
+                        TUA.equal "2" outputCurrent3
+                        TUA.equal "[0]" outputNumbers3
 
---       -- --       suite "Custom events test applications" do
---       -- --             test "noeffects" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TEN.mount
---       -- --                   output <- textContent "#text-output"
---       -- --                   TUA.equal "0" output
+            TU.suite "Signal applications" do
+                  TU.test "noeffects" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TEN.mount
+                        output <- textContent "#text-output"
+                        TUA.equal "0" output
 
---       -- --                   dispatchDocumentEvent clickEvent
---       -- --                   output2 <- textContent "#text-output"
---       -- --                   TUA.equal "-1" output2
+                        dispatchDocumentEvent clickEvent
+                        output2 <- textContent "#text-output"
+                        TUA.equal "-1" output2
 
---       -- --                   dispatchDocumentEvent keydownEvent
---       -- --                   dispatchDocumentEvent keydownEvent
---       -- --                   dispatchDocumentEvent keydownEvent
---       -- --                   output3 <- textContent "#text-output"
---       -- --                   TUA.equal "2" output3
+                        dispatchDocumentEvent keydownEvent
+                        dispatchDocumentEvent keydownEvent
+                        dispatchDocumentEvent keydownEvent
+                        output3 <- textContent "#text-output"
+                        TUA.equal "2" output3
 
---       -- --             test "effectlist" do
---       -- --                   channel <- liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TEEL.mount
---       -- --                   output <- textContent "#text-output"
---       -- --                   TUA.equal "0" output
+                  TU.test "effectlist" do
+                        channel <- liftEffect do
+                              unsafeCreateEnviroment
+                              TEEL.mount
+                        output <- textContent "#text-output"
+                        TUA.equal "0" output
 
---       -- --                   liftEffect $ SC.send channel [TEELDecrement]
---       -- --                   output2 <- textContent "#text-output"
---       -- --                   TUA.equal "-1" output2
+                        liftEffect $ SC.send channel [TEELDecrement]
+                        output2 <- textContent "#text-output"
+                        TUA.equal "-1" output2
 
---       -- --                   liftEffect $ SC.send channel [TEELIncrement]
---       -- --                   output3 <- textContent "#text-output"
---       -- --                   TUA.equal "0" output3
+                        liftEffect $ SC.send channel [TEELIncrement]
+                        output3 <- textContent "#text-output"
+                        TUA.equal "0" output3
 
---       -- --             test "effectful" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TEE.mount
---       -- --                   output <- textContent "#text-output"
---       -- --                   TUA.equal "5" output
+                  TU.test "effectful" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TEE.mount
+                        output <- textContent "#text-output"
+                        TUA.equal "5" output
 
---       -- --                   dispatchWindowEvent errorEvent
---       -- --                   dispatchWindowEvent errorEvent
---       -- --                   dispatchWindowEvent errorEvent
---       -- --                   output2 <- textContent "#text-output"
---       -- --                   TUA.equal "2" output2
+                        dispatchWindowEvent errorEvent
+                        dispatchWindowEvent errorEvent
+                        dispatchWindowEvent errorEvent
+                        output2 <- textContent "#text-output"
+                        TUA.equal "2" output2
 
---       -- --                   dispatchWindowEvent offlineEvent
---       -- --                   output3 <- textContent "#text-output"
---       -- --                   TUA.equal "3" output3
+                        dispatchWindowEvent offlineEvent
+                        output3 <- textContent "#text-output"
+                        TUA.equal "3" output3
 
---       -- --       suite "Server side rendering" do
---       -- --             test "effectful" do
---       -- --                   liftEffect do
---       -- --                         unsafeCreateEnviroment
---       -- --                         TSE.preMount
---       -- --                   childrenLength <- childrenNodeLengthOf "#mount-point"
---       -- --                   TUA.equal 1 childrenLength
+            TU.suite "Server side rendering" do
+                  TU.test "effectful" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TSE.preMount
+                        childrenLength <- childrenNodeLengthOf "#mount-point"
+                        TUA.equal 1 childrenLength
 
---       -- --                   childrenLength2 <- childrenNodeLength
---       -- --                   initial <- textContent "#text-output"
---       -- --                   TUA.equal 4 childrenLength2
---       -- --                   TUA.equal "2" initial
+                        childrenLength2 <- childrenNodeLength
+                        TUA.equal 4 childrenLength2
+                        initial <- textContent "#text-output"
+                        TUA.equal "2" initial
 
---       -- --                   liftEffect TSE.mount
---       -- --                   childrenLength3 <- childrenNodeLength
---       -- --                   initial2 <- textContent "#text-output"
---       -- --                   TUA.equal 4 childrenLength3
---       -- --                   TUA.equal "2" initial2
+                        liftEffect TSE.mount
+                        childrenLength3 <- childrenNodeLength
+                        TUA.equal 4 childrenLength3
+                        initial2 <- textContent "#text-output"
+                        TUA.equal "2" initial2
 
---       -- --                   dispatchEvent clickEvent "#increment-button"
---       -- --                   current <- textContent "#text-output"
---       -- --                   TUA.equal "3" current
+                        dispatchEvent clickEvent "#increment-button"
+                        current <- textContent "#text-output"
+                        TUA.equal "3" current
 
       where unsafeQuerySelector :: String -> Effect Element
             unsafeQuerySelector selector = do
@@ -698,29 +698,22 @@ main =
             eventPrefix = "__flame_"
 
             innerHtml = EU.runEffectFn2 innerHtml_
---       -- --       isChecked selector = liftEffect do
---       -- --             element <- unsafeQuerySelector selector
---       -- --             WHH.checked $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
 
---       -- --       isDisabled selector = liftEffect do
---       -- --             element <- unsafeQuerySelector selector
---       -- --             WHH.disabled $ PU.unsafePartial $ DM.fromJust $ WHH.fromElement element
+            dispatchEvent eventFunction selector = liftEffect $ void do
+                  element <- unsafeQuerySelector selector
+                  event <- eventFunction
+                  WEE.dispatchEvent event $ WDE.toEventTarget element
 
-            -- dispatchEvent eventFunction selector = liftEffect $ void do
-            --       element <- unsafeQuerySelector selector
-            --       event <- eventFunction
-            --       WEE.dispatchEvent event $ WDE.toEventTarget element
+            dispatchDocumentEvent eventFunction = liftEffect $ void do
+                  window <- WH.window
+                  document <- WHW.document window
+                  event <- eventFunction
+                  WEE.dispatchEvent event $ WDD.toEventTarget document
 
---       -- --       dispatchDocumentEvent eventFunction = liftEffect $ void do
---       -- --             window <- WH.window
---       -- --             document <- WHW.document window
---       -- --             event <- eventFunction
---       -- --             WEE.dispatchEvent event $ WDD.toEventTarget document
-
---       -- --       dispatchWindowEvent eventFunction = liftEffect $ void do
---       -- --             window <- WH.window
---       -- --             event <- eventFunction
---       -- --             WEE.dispatchEvent event $ WHW.toEventTarget window
+            dispatchWindowEvent eventFunction = liftEffect $ void do
+                  window <- WH.window
+                  event <- eventFunction
+                  WEE.dispatchEvent event $ WHW.toEventTarget window
 
 newtype TestNewtype = TestNewtype { a :: Int, b :: String, c :: Boolean }
 

@@ -17,19 +17,19 @@ init = 0
 
 update :: Model -> Message -> Model
 update model = case _ of
-        Increment -> model + 1
-        Decrement -> model - 1
+      Increment -> model + 1
+      Decrement -> model - 1
 
 view :: Model -> Html Message
 view model = HE.main_ [
-        HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
-        HE.span "text-output" $ show model,
-        HE.button [HA.id "increment-button", HA.onClick Increment] "+"
+      HE.button [HA.id "decrement-button", HA.onClick Decrement] "-",
+      HE.span "text-output" $ show model,
+      HE.button [HA.id "increment-button", HA.onClick Increment] "+"
 ]
 
 mount :: Effect Unit
 mount = FAN.mount_ (QuerySelector "#mount-point") {
-                init,
-                update,
-                view
-        }
+      init,
+      update,
+      view
+}

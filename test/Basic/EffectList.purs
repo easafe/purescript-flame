@@ -3,12 +3,14 @@ module Test.Basic.EffectList (mount) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Tuple (Tuple)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Effect.Random as ER
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as FU
@@ -16,8 +18,10 @@ import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.EffectList as FAE
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Partial.Unsafe as UP
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
+import Web.UIEvent.KeyboardEvent as WUK
 
 type Model = String
 
@@ -42,7 +46,7 @@ view model = HE.main_ [
         HE.input [HA.id "cut-button", HA.type' "button", HA.onClick Cut, HA.onFocus (Current "")]
 ]
           where onEnterPressed message = HA.createRawEvent "keypress" $ \event -> do
-                        pressed <- key event
+                        let pressed = WUK.key $ UP.unsafePartial (DM.fromJust $ WUK.fromEvent event)
                         case pressed of
                                 "Enter" -> do
                                         WEE.preventDefault event
@@ -56,9 +60,3 @@ mount = FAE.mount_ (QuerySelector "#mount-point") {
                 update,
                 view
         }
-
---helper functions for onEnterPressed
-foreign import key_ :: EffectFn1 Event String
-
-key :: Event -> Effect String
-key = FU.runEffectFn1 key_

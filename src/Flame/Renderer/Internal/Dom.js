@@ -54,14 +54,7 @@ F.prototype.hydrate = function (parent, html) {
             this.hydrate(parent, html.rendered);
             break;
         case textNode:
-            if (parent.nodeType === Node.TEXT_NODE)
-                html.node = parent;
-            else {
-                //this node has a textContent of "" but no child nodes
-                // fix it to avoid updating issues
-                html.node = document.createTextNode("");
-                parent.appendChild(html.node);
-            }
+            html.node = parent;
             break;
         case fragmentNode:
             html.node = document.createDocumentFragment();
@@ -80,8 +73,14 @@ F.prototype.hydrate = function (parent, html) {
             if (html.children !== undefined && html.children.length > 0) {
                 let childNodes = parent.childNodes;
 
-                for (let i = 0; i < html.children.length; ++i)
-                    this.hydrate(childNodes[i] === undefined ? parent : childNodes[i], html.children[i]);
+                for (let i = 0; i < html.children.length; ++i) {
+                    //will happen when either the view doesn't match the dom
+                    // or the parent node has an empty text node
+                    if (childNodes[i] === undefined)
+                        this.createAllNodes(parent, html.children[i]);
+                    else
+                        this.hydrate(childNodes[i], html.children[i]);
+                }
             }
     }
 };
@@ -221,7 +220,7 @@ F.prototype.runEvent = function (event) {
             let handler = node[eventKey];
 
             if (handler !== undefined) {
-                this.updater(typeof handler === "function" ? handler(event) : this.eventWrapper(handler))();
+                this.updater(typeof handler === "function" ? handler(event)() : this.eventWrapper(handler))();
 
                 return;
             }

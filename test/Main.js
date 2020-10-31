@@ -14,27 +14,27 @@ exports.unsafeCreateEnviroment = function () {
 }
 
 exports.clickEvent = function () {
-    return new window.Event('click');
+    return new window.Event('click', {bubbles: true});
 }
 
 exports.inputEvent = function () {
-    return new window.Event('input');
+    return new window.Event('input', {bubbles: true});
 }
 
 exports.keydownEvent = function () {
-    return new window.KeyboardEvent('keydown', { key: 'q' });
+    return new window.KeyboardEvent('keydown', { key: 'q', bubbles: true });
 }
 
 exports.enterPressedEvent = function () {
-    return new window.KeyboardEvent('keypress', { key: 'Enter' });
+    return new window.KeyboardEvent('keypress', { key: 'Enter', bubbles:true });
 }
 
 exports.errorEvent = function () {
-    return new window.Event('error');
+    return new window.Event('error',{bubbles: true});
 }
 
 exports.offlineEvent = function () {
-    return new window.Event('offline');
+    return new window.Event('offline', {bubbles: true});
 }
 
 exports.getCssText = function (node) {

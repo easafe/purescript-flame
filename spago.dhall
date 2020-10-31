@@ -23,6 +23,7 @@ You can edit this file as you like.
   , "test-unit"
   , "web-events"
   , "web-html"
+  , "web-uievents"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
