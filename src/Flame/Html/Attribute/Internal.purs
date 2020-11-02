@@ -44,6 +44,7 @@ foreign import createProperty_ :: forall message. Fn2 Name Value (NodeData messa
 foreign import createAttribute_ :: forall message. Fn2 Name Value (NodeData message)
 foreign import createClass :: forall message. Array String -> NodeData message
 foreign import createStyle :: forall message. Object String -> NodeData message
+foreign import createKey :: forall message. String -> NodeData message
 
 -- | Sets a DOM property
 createProperty :: forall message. String -> String -> NodeData message
@@ -86,6 +87,10 @@ caseify name'
             replacer = const <<< ("-" <> _) <<< DS.toLower
 
             hyphenated = DSR.replace' regex replacer tail
+
+-- | Set the key attribute for "keyed" rendering
+key :: ToStringAttribute
+key = createKey
 
 --script generated
 

@@ -4,15 +4,12 @@ module Flame.Html.Element where
 import Prelude hiding (map)
 
 import Data.Array as DA
-import Data.Function.Uncurried (Fn2, Fn3, Fn4)
-import Data.Function.Uncurried as DFU
-import Data.Nullable (null)
-import Data.String as DS
+import Data.Maybe (Maybe)
+import Data.Maybe as DM
+import Effect (Effect)
 import Flame.Html.Attribute.Internal as FHAI
-import Flame.Types (Html(..), NodeData(..), Tag)
-import Foreign.Object as FO
-import Prelude as P
-import Web.DOM (NodeType)
+import Flame.Types (Html, NodeData, Tag, Key)
+import Web.DOM (Element, Node)
 
 -- | `ToNode` simplifies element creation by automating common tag operations
 -- | * `tag "my-tag" []` becomes short for `tag [id "my-tag"] []`
@@ -42,39 +39,64 @@ type ToHtml_ b h = ToNode b h Html => b -> Html h
 
 type ToHtml' a h = ToNode a h NodeData => a -> Html h
 
+-- | `ElementRenderer` contains
+-- | * `createElement` – function to create a DOM element node from the given data
+-- | * `updateElement` – function to update a DOM element node from previous and current data
+type ElementRenderer arg = {
+      createElement :: arg -> Effect Element,
+      updateElement :: Element -> arg -> arg -> Effect Element
+}
+
 foreign import createElementNode :: forall message. Tag -> Array (NodeData message) -> Array (Html message) -> Html message
 foreign import createDatalessElementNode :: forall message. Tag -> Array (Html message) -> Html message
 foreign import createSingleElementNode :: forall message. Tag -> Array (NodeData message) -> Html message
 foreign import createFragmentNode ::  forall message. Array (Html message) -> Html message
 
---separete functions as svg are special babies
+--separate functions as svg are special babies
 foreign import createSvgNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
 foreign import createDatalessSvgNode :: forall message. Array (Html message) -> Html message
 foreign import createSingleSvgNode :: forall message. Array (NodeData message) -> Html message
+foreign import createLazyNode :: forall message arg. Array String -> (arg -> Html message) -> arg -> Html message
+foreign import createManagedElement :: forall arg message. ElementRenderer arg -> Array (NodeData message) -> arg -> Html message
+foreign import createDatalessManagedElement :: forall arg message. ElementRenderer arg -> arg -> Html message
 
 -- | Creates a text node
 foreign import text :: forall message. String -> Html message
 
--- | Creates a HTML element with no attributes and no children nodes
+-- | Creates an element node with no attributes and no children nodes
 foreign import createEmptyElement :: forall message. Tag -> Html message
 
--- | Creates a HTML element with attributes and children nodes
+-- | Creates an element node with attributes and children nodes
 createElement :: forall a b h. Tag -> ToHtml a b h
 createElement tag nodeData children = createElementNode tag (toNode nodeData) $ toNode children
 
--- | Creates a HTML element with no attributes but children nodes
+-- | Creates an element node with no attributes but children nodes
 createElement_ :: forall b h. Tag -> ToHtml_ b h
 createElement_ tag children = createDatalessElementNode tag $ toNode children
 
--- | Creates a HTML element with attributes but no children nodes
+-- | Creates an element node with attributes but no children nodes
 createElement' :: forall a h. Tag -> ToHtml' a h
 createElement' tag nodeData = createSingleElementNode tag $ toNode nodeData
 
--- | Creates a fragment
+-- | Creates a fragment node
 -- |
 -- | Fragments act as wrappers: only children nodes are rendered
 fragment :: forall b h. ToHtml_ b h
 fragment children = createFragmentNode $ toNode children
+
+-- | Creates a lazy node
+-- |
+-- | Lazy nodes are only updated if the `arg` parameter changes (compared by reference)
+lazy :: forall arg message. Maybe Key -> (arg -> Html message) -> arg -> Html message
+lazy maybeKey render arg = createLazyNode (DM.maybe [] DA.singleton maybeKey) render arg
+
+-- | Creates a node which the corresponding DOM node is created and updated from the given `arg`
+createHtml :: forall arg nd message. ToNode nd message NodeData => ElementRenderer arg -> nd -> arg -> Html message
+createHtml render nodeData arg = createManagedElement render (toNode nodeData) arg
+
+-- | Creates a node (with no attributes) which the corresponding DOM node is created and updated from the given `arg`
+createHtml_ :: forall arg message. ElementRenderer arg -> arg -> Html message
+createHtml_ render arg = createDatalessManagedElement render arg
 
 svg :: forall a b h. ToHtml a b h
 svg nodeData children = createSvgNode (toNode nodeData) $ toNode children

@@ -1,10 +1,10 @@
 'use strict';
 
 let textNode = 1,
-    //elementNode = 2,
     svgNode = 3,
     fragmentNode = 4,
-    lazyNode = 5;
+    lazyNode = 5,
+    managedNode = 6;
 let reUnescapedHtml = /[&<>"']/g,
     reHasUnescapedHtml = RegExp(reUnescapedHtml.source),
     htmlEscapes = new Map([
@@ -75,7 +75,7 @@ let omitProperties = new Set([
     'scrollTopMax',
     'scrollWidth',
     'tabStop',
-    'tagName'
+    'tag'
 ]);
 let booleanAttributes = new Set([
     'disabled',
@@ -127,32 +127,34 @@ function stringify(html) {
                 childrenTag.push(stringify(html.children[i]));
 
             return childrenTag.join('');
-
+        //skip for now, as element creation needs polyfills on server side
+        case managedNode:
+            return '';
         default:
-            let tagName = html.tag,
+            let isSvg = html.nodeType === svgNode,
                 stringfiedNodeData = stringifyNodeData(html.nodeData),
-                isSvg = html.nodeType === svgNode,
-                tag = ['<' + tagName];
+                tag = html.tag,
+                markup = ['<' + tag];
 
             if (stringfiedNodeData.length > 0)
-                tag.push(' ' + stringfiedNodeData);
+                markup.push(' ' + stringfiedNodeData);
 
-            if (isSvg && !containerElements.has(tagName))
-                tag.push(' /');
+            if (isSvg && !containerElements.has(tag))
+                markup.push(' /');
 
-            tag.push('>');
+            markup.push('>');
 
-            if (!voidElements.has(tagName) && !isSvg || isSvg && containerElements.has(tagName)) {
-                if (html.nodeData.properties !== undefined && html.nodeData.properties.innerHTML !== undefined)
-                    tag.push(html.nodeData.properties.innerHTML);
+            if (!voidElements.has(tag) && !isSvg || isSvg && containerElements.has(tag)) {
+                if (html.nodeData.properties !== undefined && html.nodeData.properties.innerHtml !== undefined)
+                    markup.push(html.nodeData.properties.innerHtml);
                 else if (html.children !== undefined && html.children.length > 0)
                     for (let i = 0; i < html.children.length; ++i)
-                        tag.push(stringify(html.children[i]));
+                        markup.push(stringify(html.children[i]));
 
-                tag.push('</' + tagName + '>');
+                markup.push('</' + tag + '>');
             }
 
-            return tag.join('');
+            return markup.join('');
     }
 };
 

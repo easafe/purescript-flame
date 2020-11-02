@@ -21,14 +21,8 @@ import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.Internal.Dom as FRID
-import Flame.Renderer.Key as FRK
-import Flame.Renderer.Lazy as FRL
 import Flame.Renderer.String as FRS
-import Flame.Types (DomNode)
-import Foreign.Object (Object)
-import Foreign.Object as FO
 import Partial.Unsafe (unsafePartial)
-import Partial.Unsafe as PU
 import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
@@ -43,7 +37,7 @@ import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
 import Unsafe.Coerce as UC
-import Web.DOM.Element (Element, getAttribute)
+import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
 import Web.DOM.Node as WDN
@@ -69,12 +63,13 @@ foreign import getCssText :: Element -> String
 foreign import getAllAttributes :: Element -> String
 foreign import getAllProperties :: Element -> Array String -> Array String
 foreign import innerHtml_ :: EffectFn2 Element String Unit
+foreign import createSvg :: Effect Element
+foreign import createDiv :: Effect Element
 
 main :: Effect Unit
 main =
       runTest do
-            -- string rendering operates directing on virtual nodes
-            TU.suite "VNode creation" do
+            TU.suite "Server side virtual node creation" do
                         TU.test "ToHtml instances" do
                               let html = HE.a [HA.id "test"] [HE.text "TEST"]
                               html' <- liftEffect $ FRS.render html
@@ -161,7 +156,7 @@ main =
                               TUA.equal """<custom-element>test</custom-element>""" html3'
 
                         TU.test "lazy nodes" do
-                              let html = FRL.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
+                              let html = HE.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<p id="p" min="23">TEST</p>""" html'
 
@@ -177,6 +172,11 @@ main =
                               let html = HE.svg [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] <<< HE.path' $ HA.d "234"
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
+
+                        TU.test "managed nodes are ignored" do
+                              let html = HE.div [ HA.class' "a b" ] $ HE.createHtml_ {createElement: const createDiv, updateElement: \e _ _ -> pure e} unit
+                              html' <- liftEffect $ FRS.render html
+                              TUA.equal """<div class="a b"></div>""" html'
 
                         TU.test "nested elements" do
                               let html = HE.html_ [
@@ -220,7 +220,7 @@ main =
                               let html = HE.html [HA.lang "en"] [
                                     HE.head [HA.disabled true] [HE.title "title"],
                                     HE.body "content" [
-                                          FRL.lazy Nothing (const (HE.main_ [
+                                          HE.lazy Nothing (const (HE.main_ [
                                                 HE.button (HA.style { display: "block", width: "20px"}) "-",
                                                 HE.br,
                                                 HE.text "Test",
@@ -416,12 +416,36 @@ main =
                   TU.test "fragments" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html
-                        let updatedHtml = HE.fragment $ FRL.lazy Nothing (const (HE.svg' (HA.viewBox "0 0 0 0"))) unit
+                        let updatedHtml = HE.fragment $ HE.lazy Nothing (const (HE.svg' (HA.viewBox "0 0 0 0"))) unit
                         liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
                         nodeAttributes <- getAttributes "svg"
                         TUA.equal "viewBox:0 0 0 0" nodeAttributes
+
+                  TU.test "managed nodes" do
+                        let html = HE.createHtml { createElement: const createSvg, updateElement: \_ _ _ -> createSvg } [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] unit
+                        state <- mountHtml html
+                        svgElement <- liftEffect $ FAD.querySelector "svg"
+                        TUA.assert "svg node created" $ DM.isJust svgElement
+                        nodeAttributes <- getAttributes "svg"
+                        TUA.equal "class:ola id:oi viewbox:0 0 23 0" nodeAttributes
+
+                        divElement <- liftEffect createDiv
+                        liftEffect $ innerHtml divElement """<span class="oi"></span>"""
+                        let updatedHtml = HE.createHtml_ { createElement: const (pure divElement), updateElement: \e _ _ -> pure divElement } unit
+                        liftEffect $ FRID.resume state updatedHtml
+                        oldElement <- liftEffect $ FAD.querySelector "svg"
+                        TUA.assert "svg node removed" $ DM.isNothing oldElement
+                        divElementCreated <- liftEffect $ FAD.querySelector "#mount-point div"
+                        TUA.assert "div node created" $ DM.isJust divElementCreated
+
+                        let updatedHtml2 = HE.createHtml { createElement: const (pure divElement), updateElement: \e _ _ -> pure e } [HA.class' "test"] unit
+                        liftEffect $ FRID.resume state updatedHtml2
+                        spanElement <- liftEffect $ FAD.querySelector "span"
+                        TUA.assert "span node unchanged" $ DM.isJust spanElement
+                        nodeClass <- getClass "#mount-point div"
+                        TUA.equal "test" nodeClass
 
                   TU.test "setting inner html" do
                         let html = HE.div_ $ HE.div' [HA.id "test-div", HA.innerHtml "<span>Test</span>"]
@@ -431,11 +455,11 @@ main =
 
                         let updatedHtml = HE.main_ $ HE.div' [HA.id "test-div", HA.innerHtml "<span>Test</span><hr>"]
                         liftEffect $ FRID.resume state updatedHtml
-                        childrenCount <- childrenNodeLengthOf "#test-div"
-                        TUA.equal 2 childrenCount
+                        childrenCount2 <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 2 childrenCount2
 
-                        let updatedHtml = HE.main_ "oi"
-                        liftEffect $ FRID.resume state updatedHtml
+                        let updatedHtml2 = HE.main_ "oi"
+                        liftEffect $ FRID.resume state updatedHtml2
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
 
@@ -448,6 +472,7 @@ main =
 
                   --TU.test "event is registered on document"
                   --TU.test "event is removed from document"
+
 
             TU.suite "diff" do
                   TU.test "updates record fields" do

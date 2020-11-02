@@ -7,7 +7,8 @@ let textNode = 1,
     elementNode = 2,
     svgNode = 3,
     fragmentNode = 4,
-    lazyNode = 5;
+    lazyNode = 5,
+    managedNode = 6;
 
 exports.start_ = function (eventWrapper, root, updater, html) {
     return new F(eventWrapper, root, updater, html, false);
@@ -62,7 +63,10 @@ F.prototype.hydrate = function (parent, html) {
             let childNodes = parent.childNodes;
 
             for (let i = 0; i < html.children.length; ++i)
-                this.hydrate(childNodes[i] === undefined ? parent : childNodes[i], html.children[i]);
+                if (childNodes[i] === undefined)
+                    this.createAllNodes(parent, html.children[i], html.children[i + 1]);
+                else
+                    this.hydrate(childNodes[i], html.children[i]);
             break;
         default:
             html.node = parent;
@@ -73,14 +77,15 @@ F.prototype.hydrate = function (parent, html) {
             if (html.children !== undefined && html.children.length > 0) {
                 let childNodes = parent.childNodes;
 
-                for (let i = 0; i < html.children.length; ++i) {
-                    //will happen when either the view doesn't match the dom
-                    // or the parent node has an empty text node
+                for (let i = 0; i < html.children.length; ++i)
+                    //will happen when:
+                    // managed nodes
+                    // client side view is different from server side view
+                    // the parent node has an empty text node
                     if (childNodes[i] === undefined)
-                        this.createAllNodes(parent, html.children[i]);
+                        this.createAllNodes(parent, html.children[i], html.children[i + 1]);
                     else
                         this.hydrate(childNodes[i], html.children[i]);
-                }
             }
     }
 };
@@ -112,7 +117,7 @@ F.prototype.createChildrenNodes = function (parent, children) {
     }
 };
 
-/** Creates a single node, setting its node data */
+/** Creates a single node and sets its node data */
 F.prototype.createNode = function (html) {
     switch (html.nodeType) {
         case lazyNode:
@@ -128,6 +133,8 @@ F.prototype.createNode = function (html) {
             return html.node = this.createSvg(html);
         case fragmentNode:
             return html.node = document.createDocumentFragment();
+        case managedNode:
+            return html.node = this.createManagedNode(html);
     }
 };
 
@@ -147,6 +154,16 @@ F.prototype.createSvg = function (html) {
     this.createNodeData(svg, html.nodeData, true);
 
     return svg;
+};
+
+/** Creates a node from a user supplied function */
+F.prototype.createManagedNode = function (html) {
+    let node = html.createElement(html.arg)();
+    html.createElement = undefined;
+    //the svg element is an instance of HTMLElement
+    this.createNodeData(node, html.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
+
+    return node;
 };
 
 /** Sets node updatedChildren: attributes, properties, events, etc */
@@ -244,7 +261,6 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
     else {
         updatedHtml.node = currentHtml.node;
 
-        //TODO: check contentEditable
         switch (updatedHtml.nodeType) {
             case lazyNode:
                 if (updatedHtml.arg !== currentHtml.arg) {
@@ -256,6 +272,19 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                     updatedHtml.rendered = currentHtml.rendered;
 
                 updatedHtml.render = undefined;
+                break;
+            case managedNode:
+                let node = updatedHtml.updateElement(currentHtml.node)(currentHtml.arg)(updatedHtml.arg)();
+
+                if (node !== currentHtml.node || node.nodeType !== currentHtml.node.nodeType || node.nodeName !== currentHtml.node.nodeName) {
+                    this.createNodeData(node, updatedHtml.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
+                    parent.insertBefore(node, currentHtml.node);
+                    parent.removeChild(currentHtml.node);
+                }
+                else
+                    this.updateNodeData(node, currentHtml.nodeData, updatedHtml.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
+
+                updatedHtml.node = node;
                 break;
             //text nodes can have only their textContent changed
             case textNode:

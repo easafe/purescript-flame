@@ -1,13 +1,13 @@
 let textNode = 1,
     elementNode = 2,
     svgNode = 3,
-    fragmentNode = 4;
+    fragmentNode = 4,
+    lazyNode = 5,
+    managedNode = 6;
 let styleData = 1,
     classData = 2,
     propertyData = 3,
     attributeData = 4,
-    // messageEventData = 5,
-    // rawEventData = 6,
     keyData = 7;
 
 exports.createElementNode = function (tag) {
@@ -51,8 +51,8 @@ exports.createEmptyElement = function (tag) {
     return {
         nodeType: tag.trim().toLowerCase() === 'svg' ? svgNode : elementNode,
         node: undefined,
-        nodeData: {},
-        tag: tag
+        tag: tag,
+        nodeData: {}
     };
 };
 
@@ -69,6 +69,49 @@ exports.text = function (value) {
         nodeType: textNode,
         node: undefined,
         text: value
+    };
+};
+
+exports.createLazyNode = function (nodeData) {
+    return function (render) {
+        return function (arg) {
+            let key = nodeData[0];
+
+            return {
+                nodeType: lazyNode,
+                nodeData: key === undefined ? undefined : { key: key },
+                render: render,
+                arg: arg
+            };
+        };
+    };
+};
+
+exports.createManagedElement = function (render) {
+    return function (nodeData) {
+        return function (arg) {
+            return {
+                nodeType: managedNode,
+                node: undefined,
+                nodeData: fromNodeData(nodeData),
+                createElement: render.createElement,
+                updateElement: render.updateElement,
+                arg: arg
+            };
+        };
+    };
+};
+
+exports.createDatalessManagedElement = function (render) {
+    return function (arg) {
+        return {
+            nodeType: managedNode,
+            node: undefined,
+            nodeData: {},
+            createElement: render.createElement,
+            updateElement: render.updateElement,
+            arg: arg
+        };
     };
 };
 
