@@ -180,6 +180,7 @@ function fromNodeData(allData) {
                         nodeData.properties = {};
 
                     nodeData.properties[dataOne] = data[2];
+                    break;
                 case attributeData:
                     if (nodeData.attributes === undefined)
                         nodeData.attributes = {};

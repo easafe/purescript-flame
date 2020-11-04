@@ -87,6 +87,7 @@ F.prototype.hydrate = function (parent, html) {
                     else
                         this.hydrate(childNodes[i], html.children[i]);
             }
+            break;
     }
 };
 
@@ -298,6 +299,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
                 this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children);
+                break;
         }
     }
 };
@@ -645,7 +647,7 @@ function updateAttributes(node, currentAttributes, updatedAttributes) {
     }
     else if (updatedAttributes === undefined) {
         if (currentAttributes !== undefined)
-            for (let key of currentAttributes)
+            for (let key in currentAttributes)
                 node.removeAttribute(key);
     }
     else {

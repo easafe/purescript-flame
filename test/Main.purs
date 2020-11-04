@@ -234,7 +234,7 @@ main =
                                     ]
                               ]
                               html' <- liftEffect $ FRS.render html
-                              TUA.equal """<html lang="en"><head disabled="true"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="true">here</a></span></div></div></main></body></html>""" html'
+                              TUA.equal """<html lang="en"><head disabled="disabled"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="autofocus">here</a></span></div></div></main></body></html>""" html'
 
             TU.suite "root node" do
                   TU.test "root node is unchanged" do
@@ -324,17 +324,17 @@ main =
                         let html = HE.input [HA.id "t", HA.href "e.com", HA.max "oi"]
                         state <- mountHtml html
                         nodeAttributes <- getAttributes "#t"
-                        TUA.equal "id:t href:e.com max:oi" nodeAttributes
+                        TUA.equal "href:e.com max:oi id:t" nodeAttributes
 
                         let updatedHtml = HE.input [HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong"]
                         liftEffect $ FRID.resume state updatedHtml
                         updatedNodeAttributes <- getAttributes "#t"
-                        TUA.equal "id:t href:e.com min:ola ping:pong" updatedNodeAttributes
+                        TUA.equal "href:e.com id:t min:ola ping:pong" updatedNodeAttributes
 
                         let emptyUpdatedHtml = HE.input [HA.id "t"]
                         liftEffect $ FRID.resume state emptyUpdatedHtml
                         emptyUpdatedNodeAttributes <- getAttributes "#t"
-                        -- id is a property
+                        --id is a property that also has an attribute
                         TUA.equal "id:t" emptyUpdatedNodeAttributes
 
                         let fullUpdatedHtml = HE.input [HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong"]
@@ -429,7 +429,7 @@ main =
                         svgElement <- liftEffect $ FAD.querySelector "svg"
                         TUA.assert "svg node created" $ DM.isJust svgElement
                         nodeAttributes <- getAttributes "svg"
-                        TUA.equal "class:ola id:oi viewbox:0 0 23 0" nodeAttributes
+                        TUA.equal "class:ola viewbox:0 0 23 0 id:oi" nodeAttributes
 
                         divElement <- liftEffect createDiv
                         liftEffect $ innerHtml divElement """<span class="oi"></span>"""
