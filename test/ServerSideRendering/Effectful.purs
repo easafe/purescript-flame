@@ -20,7 +20,7 @@ foreign import setInnerHTML :: EffectFn2 String String Unit
 -- | The model represents the state of the app
 newtype Model = Model Int
 
-derive instance genericModle :: Generic Model _
+derive instance genericModel :: Generic Model _
 
 -- | This datatype is used to signal events to `update`
 data Message = Increment | Decrement Event
