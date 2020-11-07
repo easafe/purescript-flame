@@ -64,7 +64,7 @@ F.prototype.hydrate = function (parent, html) {
 
             for (let i = 0; i < html.children.length; ++i)
                 if (childNodes[i] === undefined)
-                    this.createAllNodes(parent, html.children[i], html.children[i + 1]);
+                    this.createAllNodes(parent, html.children[i]);
                 else
                     this.hydrate(childNodes[i], html.children[i]);
             break;
@@ -83,11 +83,10 @@ F.prototype.hydrate = function (parent, html) {
                     // client side view is different from server side view
                     // the parent node has an empty text node
                     if (childNodes[i] === undefined)
-                        this.createAllNodes(parent, html.children[i], html.children[i + 1]);
+                        this.createAllNodes(parent, html.children[i]);
                     else
                         this.hydrate(childNodes[i], html.children[i]);
             }
-            break;
     }
 };
 
@@ -210,7 +209,7 @@ function createAttributes(node, attributes) {
 
 /** Creates synthethic events
  *
- * A single listener for each event type is added to the document, and fired at the nearest node from the target that contains a handler */
+ * A single listener for each event type is added to the root, and fired at the nearest node from the target that contains a handler */
 F.prototype.createEvents = function (node, events) {
     for (let key in events) {
         let eventKey = eventPrefix + key;
@@ -218,7 +217,7 @@ F.prototype.createEvents = function (node, events) {
         node[eventKey] = events[key];
 
         if (this.applicationEvents[key] === undefined) {
-            document.addEventListener(key, this.runEvent.bind(this), false);
+            this.root.addEventListener(key, this.runEvent.bind(this), false);
             this.applicationEvents[key] = 1;
         }
         else
@@ -231,19 +230,18 @@ F.prototype.createEvents = function (node, events) {
 F.prototype.runEvent = function (event) {
     let node = event.target,
         eventKey = eventPrefix + event.type;
-    //don't handle events outside of the root
-    if (this.root.contains(event.target))
-        while (node !== this.root) {
-            //handler can be just a message or a function that takes an event
-            let handler = node[eventKey];
 
-            if (handler !== undefined) {
-                this.updater(typeof handler === "function" ? handler(event)() : this.eventWrapper(handler))();
+    while (node !== this.root) {
+        //handler can be just a message or a function that takes an event
+        let handler = node[eventKey];
 
-                return;
-            }
-            node = node.parentNode;
+        if (handler !== undefined) {
+            this.updater(typeof handler === "function" ? handler(event)() : this.eventWrapper(handler))();
+            event.stopPropagation();
+            return;
         }
+        node = node.parentNode;
+    }
 };
 
 F.prototype.resume = function (updatedHtml) {
@@ -253,11 +251,11 @@ F.prototype.resume = function (updatedHtml) {
 
 /**Patches over the parent element*/
 F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
-    //clear out the node if the views have changed completely
+    //recreate node if it has changed tag or node type
     if (currentHtml.tag !== updatedHtml.tag || currentHtml.nodeType !== updatedHtml.nodeType) {
-        //edge case, but this will clear out other elements inside of the root that don't come from the view
-        clearNode(parent);
-        this.createAllNodes(parent, updatedHtml);
+        //moving the node instead of using clearNode allows us to reuse nodes
+        this.createAllNodes(parent, updatedHtml, currentHtml.node);
+        parent.removeChild(currentHtml.node);
     }
     else {
         updatedHtml.node = currentHtml.node;
@@ -299,7 +297,6 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
                 this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children);
-                break;
         }
     }
 };
@@ -564,9 +561,8 @@ F.prototype.updateNonKeyedChildrenNodes = function (parent, currentChildren, upd
         this.updateAllNodes(parent, currentChildren[i], updatedChildren[i]);
     //new nodes
     if (currentChildrenLength < updatedChildrenLength)
-        for (let i = commonLength; i < updatedChildrenLength; ++i) {
+        for (let i = commonLength; i < updatedChildrenLength; ++i)
             this.createAllNodes(parent, updatedChildren[i]);
-        }
     //nodes to be removed
     else if (currentChildrenLength > updatedChildrenLength)
         for (let i = commonLength; i < currentChildrenLength; ++i)
@@ -686,14 +682,52 @@ function updateAttributes(node, currentAttributes, updatedAttributes) {
 
 /** Updates the properties of a node */
 function updateProperties(node, currentProperties, updatedProperties) {
-    if (updatedProperties !== undefined)
-        for (let key in updatedProperties) {
-            let current = currentProperties === undefined ? undefined : currentProperties[key],
-                updated = updatedProperties[key];
+    //since we might reuse nodes, we need to unset properties that also have an equivalent attribute
+    let addAll = currentProperties === undefined,
+        removeAll = updatedProperties === undefined;
+
+    if (addAll) {
+        if (!removeAll)
+            for (let key in updatedProperties)
+                node[key] = updatedProperties[key];
+    }
+    else if (removeAll) {
+        if (!addAll)
+            for (let key in currentProperties)
+                node.removeAttribute(key);
+    }
+    else {
+        let matchCount = 0;
+        //this takes advantage of the sort order of for in
+        for (let key in currentProperties) {
+            let current = currentProperties[key],
+                updated = updatedProperties[key],
+                hasUpdated = updated !== undefined;
+
+            if (hasUpdated)
+                matchCount++;
 
             if (current !== updated)
-                node[key] = updated;
+                if (hasUpdated)
+                    node[key] = updated;
+                else
+                    node.removeAttribute(key);
         }
+
+        let newKeys = Object.keys(updatedProperties);
+
+        for (let i = 0; matchCount < newKeys.length && i < newKeys.length; ++i) {
+            let key = newKeys[i];
+
+            if (currentProperties[key] === undefined) {
+                let updated = updatedProperties[key];
+                ++matchCount;
+
+                if (updated !== undefined)
+                    node[key] = updated;
+            }
+        }
+    }
 }
 
 /** Updates the synthetic events of a node */
@@ -737,7 +771,7 @@ F.prototype.removeEvents = function (node, eventNames) {
         this.applicationEvents[name] = this.applicationEvents[name] - 1;
         if (this.applicationEvents[name] === 0) {
             this.applicationEvents[name] = undefined;
-            document.removeEventListener(name, this.runEvent.bind(this), false);
+            this.root.removeEventListener(name, this.runEvent.bind(this), false);
         }
     }
 };

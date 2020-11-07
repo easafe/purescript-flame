@@ -9,6 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String.CodeUnits as DSC
+import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
@@ -361,7 +362,6 @@ main =
 
                         let updatedHtml = HE.input [HA.id "q", HA.pattern "aaa"]
                         liftEffect $ FRID.resume state updatedHtml
-                        --should not remove properties
                         updatedNodeProperties <- getProperties "input" ["id", "pattern"]
                         TUA.equal ["q", "aaa"] updatedNodeProperties
 
@@ -463,16 +463,47 @@ main =
                         oldElement <- liftEffect $ FAD.querySelector "#test-div"
                         TUA.assert "removed node" $ DM.isNothing oldElement
 
+                  TU.test "replacing child nodes (type)" do
+                        let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
+                        state <- mountHtml html
+
+                        let updatedHtml = HE.div "test-div" $ HE.svg' (HA.viewBox "0 0 0 0")
+                        liftEffect $ FRID.resume state updatedHtml
+                        oldElement <- liftEffect $ FAD.querySelector "input"
+                        TUA.assert "removed node" $ DM.isNothing oldElement
+                        nodeAttributes <- getAttributes "svg"
+                        TUA.equal "viewBox:0 0 0 0" nodeAttributes
+
+                  TU.test "replacing child nodes (tag)" do
+                        let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
+                        state <- mountHtml html
+
+                        let updatedHtml = HE.div "test-div" $ HE.div_ "test"
+                        liftEffect $ FRID.resume state updatedHtml
+                        oldElement <- liftEffect $ FAD.querySelector "input"
+                        TUA.assert "removed node" $ DM.isNothing oldElement
+                        nodeAttributes <- getAttributes "#test-div div"
+                        TUA.equal "" nodeAttributes
+
+                  TU.test "replacing child nodes (number of children)" do
+                        let html = HE.div "test-div" [HE.input [HA.id "t", HA.value "a"], HE.div (HA.class' "inside-div") "test", HE.span "test-span" $ HE.br]
+                        state <- mountHtml html
+
+                        let updatedHtml = HE.div "test-div" [HE.main_ "oi", HE.section_ $ HE.hr]
+                        liftEffect $ FRID.resume state updatedHtml
+                        oldElements <- liftEffect $ DT.traverse FAD.querySelector ["input", "#test-div div", "#test-div span"]
+                        TUA.assert "removed nodes" $ DA.all DM.isNothing oldElements
+                        nodeAttributes <- getAttributes "#test-div main"
+                        TUA.equal "" nodeAttributes
+                        nodeAttributes2 <- getAttributes "#test-div section"
+                        TUA.equal "" nodeAttributes
+
             TU.suite "events" do
                   TU.test "event sets dom property" do
                         let html = HE.input [HA.onClick unit]
                         state <- mountHtml html
                         nodeProperties <- getProperties "input" [eventPrefix <> "click"]
                         TUA.assert "event was registered" $ DA.length nodeProperties == 1
-
-                  --TU.test "event is registered on document"
-                  --TU.test "event is removed from document"
-
 
             TU.suite "diff" do
                   TU.test "updates record fields" do

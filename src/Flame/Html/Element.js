@@ -195,7 +195,6 @@ function fromNodeData(allData) {
                         nodeData.events = {};
 
                     nodeData.events[dataOne] = data[2];
-                    break;
             }
         }
 
