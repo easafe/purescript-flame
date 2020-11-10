@@ -158,8 +158,8 @@ F.prototype.createSvg = function (html) {
 
 /** Creates a node from a user supplied function */
 F.prototype.createManagedNode = function (html) {
-    let node = html.createElement(html.arg)();
-    html.createElement = undefined;
+    let node = html.createNode(html.arg)();
+    html.createNode = undefined;
     //the svg element is an instance of HTMLElement
     this.createNodeData(node, html.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
 
@@ -273,7 +273,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                 updatedHtml.render = undefined;
                 break;
             case managedNode:
-                let node = updatedHtml.updateElement(currentHtml.node)(currentHtml.arg)(updatedHtml.arg)();
+                let node = updatedHtml.updateNode(currentHtml.node)(currentHtml.arg)(updatedHtml.arg)();
 
                 if (node !== currentHtml.node || node.nodeType !== currentHtml.node.nodeType || node.nodeName !== currentHtml.node.nodeName) {
                     this.createNodeData(node, updatedHtml.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
@@ -738,7 +738,7 @@ F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
     }
     else if (updatedEvents === undefined) {
         if (currentEvents !== undefined)
-            this.removeEvents(Object.keys(currentEvents));
+            this.removeEvents(node, Object.keys(currentEvents));
     }
     else {
         let matchCount = 0;

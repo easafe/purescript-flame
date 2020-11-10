@@ -87,29 +87,29 @@ exports.createLazyNode = function (nodeData) {
     };
 };
 
-exports.createManagedElement = function (render) {
+exports.createManagedNode = function (render) {
     return function (nodeData) {
         return function (arg) {
             return {
                 nodeType: managedNode,
                 node: undefined,
                 nodeData: fromNodeData(nodeData),
-                createElement: render.createElement,
-                updateElement: render.updateElement,
+                createNode: render.createNode,
+                updateNode: render.updateNode,
                 arg: arg
             };
         };
     };
 };
 
-exports.createDatalessManagedElement = function (render) {
+exports.createDatalessManagedNode = function (render) {
     return function (arg) {
         return {
             nodeType: managedNode,
             node: undefined,
             nodeData: {},
-            createElement: render.createElement,
-            updateElement: render.updateElement,
+            createNode: render.createNode,
+            updateNode: render.updateNode,
             arg: arg
         };
     };

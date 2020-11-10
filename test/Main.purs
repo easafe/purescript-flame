@@ -41,6 +41,7 @@ import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
+import Web.DOM.Node (Node)
 import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
 import Web.Event.EventTarget as WEE
@@ -64,8 +65,8 @@ foreign import getCssText :: Element -> String
 foreign import getAllAttributes :: Element -> String
 foreign import getAllProperties :: Element -> Array String -> Array String
 foreign import innerHtml_ :: EffectFn2 Element String Unit
-foreign import createSvg :: Effect Element
-foreign import createDiv :: Effect Element
+foreign import createSvg :: Effect Node
+foreign import createDiv :: Effect Node
 
 main :: Effect Unit
 main =
@@ -175,7 +176,7 @@ main =
                               TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
 
                         TU.test "managed nodes are ignored" do
-                              let html = HE.div [ HA.class' "a b" ] $ HE.createHtml_ {createElement: const createDiv, updateElement: \e _ _ -> pure e} unit
+                              let html = HE.div [ HA.class' "a b" ] $ HE.createHtml_ {createNode: const createDiv, updateNode: \e _ _ -> pure e} unit
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<div class="a b"></div>""" html'
 
@@ -424,7 +425,7 @@ main =
                         TUA.equal "viewBox:0 0 0 0" nodeAttributes
 
                   TU.test "managed nodes" do
-                        let html = HE.createHtml { createElement: const createSvg, updateElement: \_ _ _ -> createSvg } [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] unit
+                        let html = HE.createHtml { createNode: const createSvg, updateNode: \_ _ _ -> createSvg } [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] unit
                         state <- mountHtml html
                         svgElement <- liftEffect $ FAD.querySelector "svg"
                         TUA.assert "svg node created" $ DM.isJust svgElement
@@ -432,15 +433,15 @@ main =
                         TUA.equal "class:ola viewbox:0 0 23 0 id:oi" nodeAttributes
 
                         divElement <- liftEffect createDiv
-                        liftEffect $ innerHtml divElement """<span class="oi"></span>"""
-                        let updatedHtml = HE.createHtml_ { createElement: const (pure divElement), updateElement: \e _ _ -> pure divElement } unit
+                        liftEffect $ innerHtml ( UC.unsafeCoerce divElement) """<span class="oi"></span>"""
+                        let updatedHtml = HE.createHtml_ { createNode: const (pure divElement), updateNode: \e _ _ -> pure divElement } unit
                         liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "svg"
                         TUA.assert "svg node removed" $ DM.isNothing oldElement
                         divElementCreated <- liftEffect $ FAD.querySelector "#mount-point div"
                         TUA.assert "div node created" $ DM.isJust divElementCreated
 
-                        let updatedHtml2 = HE.createHtml { createElement: const (pure divElement), updateElement: \e _ _ -> pure e } [HA.class' "test"] unit
+                        let updatedHtml2 = HE.createHtml { createNode: const (pure divElement), updateNode: \e _ _ -> pure e } [HA.class' "test"] unit
                         liftEffect $ FRID.resume state updatedHtml2
                         spanElement <- liftEffect $ FAD.querySelector "span"
                         TUA.assert "span node unchanged" $ DM.isJust spanElement
@@ -504,6 +505,8 @@ main =
                         state <- mountHtml html
                         nodeProperties <- getProperties "input" [eventPrefix <> "click"]
                         TUA.assert "event was registered" $ DA.length nodeProperties == 1
+
+                  --TU.test "remove all events"
 
             TU.suite "diff" do
                   TU.test "updates record fields" do
