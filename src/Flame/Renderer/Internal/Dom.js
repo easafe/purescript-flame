@@ -24,7 +24,7 @@ exports.resume_ = function (f, html) {
 
 /** Class to scope application data since a document can have many mount points*/
 function F(eventWrapper, root, updater, html, isDry) {
-    /** Hack so all kinds events have the same result type */
+    /** Hack so all kinds of events have the same result type */
     this.eventWrapper = eventWrapper;
     /** Keep count of synthetic events currently registered */
     this.applicationEvents = {};
@@ -34,6 +34,8 @@ function F(eventWrapper, root, updater, html, isDry) {
     this.updater = updater;
     /** The current virtual nodes to be diff'd when the view updates */
     this.cachedHtml = html;
+
+    //here in hydrate and createAllNodes, defined html.node means reused node
 
     //a "dry" application means that it was server side rendered
     if (isDry)
@@ -258,8 +260,6 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
         parent.removeChild(currentHtml.node);
     }
     else {
-        updatedHtml.node = currentHtml.node;
-
         switch (updatedHtml.nodeType) {
             case lazyNode:
                 if (updatedHtml.arg !== currentHtml.arg) {
@@ -271,6 +271,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                     updatedHtml.rendered = currentHtml.rendered;
 
                 updatedHtml.render = undefined;
+                updatedHtml.node = currentHtml.node;
                 break;
             case managedNode:
                 let node = updatedHtml.updateNode(currentHtml.node)(currentHtml.arg)(updatedHtml.arg)();
@@ -287,16 +288,19 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                 break;
             //text nodes can have only their textContent changed
             case textNode:
+                updatedHtml.node = currentHtml.node;
                 updatedHtml.node.textContent = updatedHtml.text;
                 break;
             //parent instead of currentHtml.node, as fragments nodes only count for their children
             case fragmentNode:
                 this.updateChildrenNodes(parent, currentHtml.children, updatedHtml.children);
+                updatedHtml.node = currentHtml.node;
                 break;
             //the usual case, element/svg to be patched
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
                 this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children);
+                updatedHtml.node = currentHtml.node;
         }
     }
 };
@@ -447,7 +451,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
         }
 
         let reusingNodes = updatedStart + updatedChildren.length - 1 - updatedEnd,
-            toRemove = new Int32Array();
+            toRemove = [];
 
         for (let i = currentStart; i <= currentEnd; i++)
             if (I.has(currentChildren[i].nodeData.key)) {
@@ -499,8 +503,8 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
 
 //returns an array of the indices that comprise the longest increasing subsequence
 function longestSubsequence(ns, updatedStart) {
-    let seq = new Int32Array(),
-        is = new Int32Array(),
+    let seq = [],
+        is = [],
         l = -1,
         pre = new Int32Array(ns.length);
 
@@ -559,6 +563,7 @@ F.prototype.updateNonKeyedChildrenNodes = function (parent, currentChildren, upd
     //same nodes
     for (let i = 0; i < commonLength; ++i)
         this.updateAllNodes(parent, currentChildren[i], updatedChildren[i]);
+
     //new nodes
     if (currentChildrenLength < updatedChildrenLength)
         for (let i = commonLength; i < updatedChildrenLength; ++i)
@@ -567,6 +572,7 @@ F.prototype.updateNonKeyedChildrenNodes = function (parent, currentChildren, upd
     else if (currentChildrenLength > updatedChildrenLength)
         for (let i = commonLength; i < currentChildrenLength; ++i)
             parent.removeChild(currentChildren[i].node);
+
 };
 
 /** Updates the node data of a node */

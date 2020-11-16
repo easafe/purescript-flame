@@ -79,9 +79,11 @@ exports.createLazyNode = function (nodeData) {
 
             return {
                 nodeType: lazyNode,
+                node: undefined,
                 nodeData: key === undefined ? undefined : { key: key },
                 render: render,
-                arg: arg
+                arg: arg,
+                rendered: undefined
             };
         };
     };
