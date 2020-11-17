@@ -33,9 +33,7 @@ function F(eventWrapper, root, updater, html, isDry) {
     /** User supplied function to process messages*/
     this.updater = updater;
     /** The current virtual nodes to be diff'd when the view updates */
-    this.cachedHtml = html;
-
-    //here in hydrate and createAllNodes, defined html.node means reused node
+    this.cachedHtml = html.node === undefined ? html : shallowCopy(html); //if node is already defined, then this object has been reused in views
 
     //a "dry" application means that it was server side rendered
     if (isDry)
@@ -59,38 +57,79 @@ F.prototype.hydrate = function (parent, html) {
         case textNode:
             html.node = parent;
             break;
-        case fragmentNode:
-            html.node = document.createDocumentFragment();
-
-            let childNodes = parent.childNodes;
-
-            for (let i = 0; i < html.children.length; ++i)
-                if (childNodes[i] === undefined)
-                    this.createAllNodes(parent, html.children[i]);
-                else
-                    this.hydrate(childNodes[i], html.children[i]);
+        case managedNode:
+            this.createAllNodes(parent, html);
             break;
         default:
-            html.node = parent;
-
-            if (html.nodeData.events !== undefined)
-                this.createEvents(parent, html.nodeData.events);
+            if (html.nodeType === fragmentNode)
+                html.node = document.createDocumentFragment();
+            else {
+                html.node = parent;
+                if (html.nodeData.events !== undefined)
+                    this.createEvents(parent, html.nodeData.events);
+            }
 
             if (html.children !== undefined && html.children.length > 0) {
                 let childNodes = parent.childNodes;
 
-                for (let i = 0; i < html.children.length; ++i)
+                for (let i = 0; i < html.children.length; ++i) {
+                    let c = html.children[i] = (html.children[i].node === undefined ? html.children[i] : shallowCopy(html.children[i]));
                     //will happen when:
                     // managed nodes
                     // client side view is different from server side view
                     // the parent node has an empty text node
                     if (childNodes[i] === undefined)
-                        this.createAllNodes(parent, html.children[i]);
+                        this.createAllNodes(parent, c);
                     else
-                        this.hydrate(childNodes[i], html.children[i]);
+                        this.hydrate(childNodes[i], c);
+                }
             }
     }
 };
+
+/** Copy html properties so a single node doesn't point to more than one objects */
+function shallowCopy(origin) {
+    switch (origin.nodeType) {
+        case textNode:
+            return {
+                nodeType: textNode,
+                node: undefined,
+                text: origin.text
+            };
+        case fragmentNode:
+            return {
+                nodeType: fragmentNode,
+                node: undefined,
+                children: origin.children
+            };
+        case lazyNode:
+            return {
+                nodeType: lazyNode,
+                node: undefined,
+                nodeData: origin.key,
+                render: origin.render,
+                arg: origin.arg,
+                rendered: undefined
+            };
+        case managedNode:
+            return {
+                nodeType: managedNode,
+                node: undefined,
+                nodeData: origin.nodeData,
+                createNode: origin.createNode,
+                updateNode: origin.updateNode,
+                arg: origin.arg
+            };
+        default:
+            return {
+                nodeType: origin.nodeType,
+                node: undefined,
+                tag: origin.tag,
+                nodeData: origin.nodeData,
+                children: origin.children
+            };
+    }
+}
 
 /**Creates all nodes from a given html into a parent*/
 F.prototype.createAllNodes = function (parent, html, referenceNode) {
@@ -105,10 +144,19 @@ F.prototype.createAllNodes = function (parent, html, referenceNode) {
     parent.insertBefore(nodeParent, referenceNode);
 };
 
+F.prototype.createAllNodes2 = function (parent, html, referenceNode) {
+    if (html.node !== undefined)
+        html = shallowCopy(html);
+    this.createAllNodes(parent, html, referenceNode);
+
+    return html;
+};
+
 /** Children nodes must be recursively created */
 F.prototype.createChildrenNodes = function (parent, children) {
-    for (let c of children) {
-        let node = this.createNode(c);
+    for (let i = 0; i < children.length; ++i) {
+        let c = children[i] = (children[i].node === undefined ? children[i] : shallowCopy(children[i])),
+            node = this.createNode(c);
 
         if (c.children !== undefined)
             this.createChildrenNodes(node, c.children);
@@ -211,7 +259,7 @@ function createAttributes(node, attributes) {
 
 /** Creates synthethic events
  *
- * A single listener for each event type is added to the root, and fired at the nearest node from the target that contains a handler */
+ *  A single listener for each event type is added to the root, and fired at the nearest node from the target that contains a handler */
 F.prototype.createEvents = function (node, events) {
     for (let key in events) {
         let eventKey = eventPrefix + key;
@@ -247,12 +295,14 @@ F.prototype.runEvent = function (event) {
 };
 
 F.prototype.resume = function (updatedHtml) {
-    this.updateAllNodes(this.root, this.cachedHtml, updatedHtml);
-    this.cachedHtml = updatedHtml;
+    this.cachedHtml = this.updateAllNodes(this.root, this.cachedHtml, updatedHtml);;
 };
 
-/**Patches over the parent element*/
+/** Patches over the parent element*/
 F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
+    //if node is already defined, then this object has been reused in views
+    if (updatedHtml.node !== undefined)
+        updatedHtml = shallowCopy(updatedHtml);
     //recreate node if it has changed tag or node type
     if (currentHtml.tag !== updatedHtml.tag || currentHtml.nodeType !== updatedHtml.nodeType) {
         //moving the node instead of using clearNode allows us to reuse nodes
@@ -260,6 +310,8 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
         parent.removeChild(currentHtml.node);
     }
     else {
+        updatedHtml.node = currentHtml.node;
+
         switch (updatedHtml.nodeType) {
             case lazyNode:
                 if (updatedHtml.arg !== currentHtml.arg) {
@@ -271,38 +323,37 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                     updatedHtml.rendered = currentHtml.rendered;
 
                 updatedHtml.render = undefined;
-                updatedHtml.node = currentHtml.node;
                 break;
             case managedNode:
-                let node = updatedHtml.updateNode(currentHtml.node)(currentHtml.arg)(updatedHtml.arg)();
+                let node = updatedHtml.updateNode(currentHtml.node)(currentHtml.arg)(updatedHtml.arg)(),
+                    isSvg = node instanceof SVGElement || node.nodeName.toLowerCase() === "svg";
 
                 if (node !== currentHtml.node || node.nodeType !== currentHtml.node.nodeType || node.nodeName !== currentHtml.node.nodeName) {
-                    this.createNodeData(node, updatedHtml.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
+                    this.createNodeData(node, updatedHtml.nodeData, isSvg);
                     parent.insertBefore(node, currentHtml.node);
                     parent.removeChild(currentHtml.node);
                 }
                 else
-                    this.updateNodeData(node, currentHtml.nodeData, updatedHtml.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
+                    this.updateNodeData(node, currentHtml.nodeData, updatedHtml.nodeData, isSvg);
 
                 updatedHtml.node = node;
                 break;
             //text nodes can have only their textContent changed
             case textNode:
-                updatedHtml.node = currentHtml.node;
                 updatedHtml.node.textContent = updatedHtml.text;
                 break;
             //parent instead of currentHtml.node, as fragments nodes only count for their children
             case fragmentNode:
                 this.updateChildrenNodes(parent, currentHtml.children, updatedHtml.children);
-                updatedHtml.node = currentHtml.node;
                 break;
             //the usual case, element/svg to be patched
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
                 this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children);
-                updatedHtml.node = currentHtml.node;
         }
     }
+
+    return updatedHtml;
 };
 
 function clearNode(node) {
@@ -314,8 +365,8 @@ F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChil
     //create all nodes regardless
     if (currentChildren === undefined || currentChildren.length === 0) {
         if (updatedChildren !== undefined && updatedChildren.length > 0)
-            for (let c of updatedChildren)
-                this.createAllNodes(parent, c);
+            for (let i = 0; i < updatedChildren.length; ++i)
+                updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i]);
     }
     //remove all nodes regardless
     else if (updatedChildren === undefined || updatedChildren.length === 0) {
@@ -356,7 +407,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
 
         //common prefix of current and updated children
         while (currentHtml.nodeData.key === updatedHtml.nodeData.key) {
-            this.updateAllNodes(parent, currentHtml, updatedHtml);
+            updatedHtml = this.updateAllNodes(parent, currentHtml, updatedHtml);
             updatedStartNode = currentStartNode = currentHtml.node.nextSibling;
 
             currentStart++;
@@ -373,7 +424,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
 
         //common suffix of current and updated children
         while (currentHtml.nodeData.key === updatedHtml.nodeData.key) {
-            this.updateAllNodes(parent, currentHtml, updatedHtml);
+            updatedHtml = this.updateAllNodes(parent, currentHtml, updatedHtml);
             afterNode = currentEndNode;
             currentEndNode = currentEndNode.previousSibling;
 
@@ -393,7 +444,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
         while (currentHtml.nodeData.key === updatedHtml.nodeData.key) {
             loop = true;
 
-            this.updateAllNodes(parent, currentHtml, updatedHtml);
+            updatedHtml = this.updateAllNodes(parent, currentHtml, updatedHtml);
             currentEndNode = currentHtml.node.previousSibling;
             parent.insertBefore(currentHtml.node, updatedStartNode);
 
@@ -413,7 +464,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
         while (currentHtml.nodeData.key === updatedHtml.nodeData.key) {
             loop = true;
 
-            this.updateAllNodes(parent, currentHtml, updatedHtml);
+            updatedHtml = this.updateAllNodes(parent, currentHtml, updatedHtml);
             parent.insertBefore(currentHtml.node, afterNode);
             afterNode = currentHtml.node;
 
@@ -436,7 +487,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
     else if (currentEnd < currentStart)
         //add nodes
         while (updatedStart <= updatedEnd) {
-            this.createAllNodes(parent, updatedChildren[updatedStart], afterNode);
+            updatedChildren[updatedStart] = this.createAllNodes2(parent, updatedChildren[updatedStart], afterNode);
             updatedStart++;
         }
     else {
@@ -466,7 +517,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
             parent.textContent = "";
 
             for (let i = updatedStart; i <= updatedEnd; i++)
-                this.createAllNodes(parent, updatedChildren[i]);
+                updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i]);
         }
         else {
             //remove nodes
@@ -480,18 +531,18 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
             for (let i = updatedEnd; i >= updatedStart; i--) {
                 if (longestSeq[seqIndex] === i) {
                     currentHtml = currentChildren[P[longestSeq[seqIndex]]];
-                    this.updateAllNodes(parent, currentHtml, updatedChildren[i]);
+                    updatedChildren[i] = this.updateAllNodes(parent, currentHtml, updatedChildren[i]);
                     afterNode = currentHtml.node;
                     seqIndex--;
                 }
                 else {
                     if (P[i] === -1) {
-                        this.createAllNodes(parent, updatedChildren[i], afterNode);
+                        updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i], afterNode);
                         afterNode = updatedChildren[i].node;
                     }
                     else {
                         currentHtml = currentChildren[P[i]];
-                        this.updateAllNodes(parent, currentHtml, updatedChildren[i]);
+                        updatedChildren[i] = this.updateAllNodes(parent, currentHtml, updatedChildren[i]);
                         parent.insertBefore(currentHtml.node, afterNode);
                         afterNode = currentHtml.node;
                     }
@@ -562,12 +613,12 @@ F.prototype.updateNonKeyedChildrenNodes = function (parent, currentChildren, upd
 
     //same nodes
     for (let i = 0; i < commonLength; ++i)
-        this.updateAllNodes(parent, currentChildren[i], updatedChildren[i]);
+        updatedChildren[i] = this.updateAllNodes(parent, currentChildren[i], updatedChildren[i]);
 
     //new nodes
     if (currentChildrenLength < updatedChildrenLength)
         for (let i = commonLength; i < updatedChildrenLength; ++i)
-            this.createAllNodes(parent, updatedChildren[i]);
+            updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i]);
     //nodes to be removed
     else if (currentChildrenLength > updatedChildrenLength)
         for (let i = commonLength; i < currentChildrenLength; ++i)
