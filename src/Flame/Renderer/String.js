@@ -116,10 +116,8 @@ function stringify(html) {
     switch (html.nodeType) {
         case textNode:
             return escape(html.text);
-
         case lazyNode:
             return stringify(html.render(html.arg));
-
         case fragmentNode:
             let childrenTag = new Array(html.children.length);
 

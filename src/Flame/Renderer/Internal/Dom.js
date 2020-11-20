@@ -68,26 +68,39 @@ F.prototype.hydrate = function (parent, html) {
                 if (html.nodeData.events !== undefined)
                     this.createEvents(parent, html.nodeData.events);
             }
+            let htmlChildrenLength;
 
-            if (html.children !== undefined && html.children.length > 0) {
+            if (html.children !== undefined && (htmlChildrenLength = html.children.length) > 0) {
                 let childNodes = parent.childNodes;
 
-                for (let i = 0; i < html.children.length; ++i) {
+                for (let i = 0, cni = 0 ; i < htmlChildrenLength; ++i, ++cni) {
                     let c = html.children[i] = (html.children[i].node === undefined ? html.children[i] : shallowCopy(html.children[i]));
                     //will happen when:
                     // managed nodes
                     // client side view is different from server side view
                     // the parent node has an empty text node
-                    if (childNodes[i] === undefined)
+                    if (childNodes[cni] === undefined)
                         this.createAllNodes(parent, c);
-                    else
-                        this.hydrate(childNodes[i], c);
+                    else {
+                        if (c.nodeType === fragmentNode) {
+                            let fragmentChildrenLength = c.children.length;
+
+                            c.node = document.createDocumentFragment();
+                            for (let j = 0; j < fragmentChildrenLength; ++j) {
+                                let cf = c.children[j] = (c.children[j].node === undefined ? c.children[j] : shallowCopy(c.children[j]));
+
+                                this.hydrate(childNodes[cni++], cf);
+                            }
+                        }
+                        else
+                            this.hydrate(childNodes[i], c);
+                    }
                 }
             }
     }
 };
 
-/** Copy html properties so a single node doesn't point to more than one objects */
+/** Copy a given html so properties are not overwritten by reuse */
 function shallowCopy(origin) {
     switch (origin.nodeType) {
         case textNode:
@@ -144,7 +157,8 @@ F.prototype.createAllNodes = function (parent, html, referenceNode) {
     parent.insertBefore(nodeParent, referenceNode);
 };
 
-F.prototype.createAllNodes2 = function (parent, html, referenceNode) {
+/** Abstract over shallow copying a html object before creating its nodes */
+F.prototype.checkCreateAllNodes = function (parent, html, referenceNode) {
     if (html.node !== undefined)
         html = shallowCopy(html);
     this.createAllNodes(parent, html, referenceNode);
@@ -154,7 +168,9 @@ F.prototype.createAllNodes2 = function (parent, html, referenceNode) {
 
 /** Children nodes must be recursively created */
 F.prototype.createChildrenNodes = function (parent, children) {
-    for (let i = 0; i < children.length; ++i) {
+    let childrenLength = children.length;
+
+    for (let i = 0; i < childrenLength; ++i) {
         let c = children[i] = (children[i].node === undefined ? children[i] : shallowCopy(children[i])),
             node = this.createNode(c);
 
@@ -364,9 +380,11 @@ function clearNode(node) {
 F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChildren) {
     //create all nodes regardless
     if (currentChildren === undefined || currentChildren.length === 0) {
-        if (updatedChildren !== undefined && updatedChildren.length > 0)
-            for (let i = 0; i < updatedChildren.length; ++i)
-                updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i]);
+        let updatedChildrenLength;
+
+        if (updatedChildren !== undefined && (updatedChildrenLength = updatedChildren.length) > 0)
+            for (let i = 0; i < updatedChildrenLength; ++i)
+                updatedChildren[i] = this.checkCreateAllNodes(parent, updatedChildren[i]);
     }
     //remove all nodes regardless
     else if (updatedChildren === undefined || updatedChildren.length === 0) {
@@ -487,7 +505,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
     else if (currentEnd < currentStart)
         //add nodes
         while (updatedStart <= updatedEnd) {
-            updatedChildren[updatedStart] = this.createAllNodes2(parent, updatedChildren[updatedStart], afterNode);
+            updatedChildren[updatedStart] = this.checkCreateAllNodes(parent, updatedChildren[updatedStart], afterNode);
             updatedStart++;
         }
     else {
@@ -517,11 +535,13 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
             parent.textContent = "";
 
             for (let i = updatedStart; i <= updatedEnd; i++)
-                updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i]);
+                updatedChildren[i] = this.checkCreateAllNodes(parent, updatedChildren[i]);
         }
         else {
             //remove nodes
-            for (let i = 0; i < toRemove.length; i++)
+            let toRemoveLength = toRemove.length;
+
+            for (let i = 0; i < toRemoveLength; i++)
                 parent.removeChild(currentChildren[toRemove[i]].node);
 
             //move nodes
@@ -537,7 +557,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
                 }
                 else {
                     if (P[i] === -1) {
-                        updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i], afterNode);
+                        updatedChildren[i] = this.checkCreateAllNodes(parent, updatedChildren[i], afterNode);
                         afterNode = updatedChildren[i].node;
                     }
                     else {
@@ -618,7 +638,7 @@ F.prototype.updateNonKeyedChildrenNodes = function (parent, currentChildren, upd
     //new nodes
     if (currentChildrenLength < updatedChildrenLength)
         for (let i = commonLength; i < updatedChildrenLength; ++i)
-            updatedChildren[i] = this.createAllNodes2(parent, updatedChildren[i]);
+            updatedChildren[i] = this.checkCreateAllNodes(parent, updatedChildren[i]);
     //nodes to be removed
     else if (currentChildrenLength > updatedChildrenLength)
         for (let i = commonLength; i < currentChildrenLength; ++i)
@@ -667,9 +687,10 @@ function updateStyles(node, currentStyles, updatedStyles) {
                     node.style.removeProperty(key);
         }
 
-        let newKeys = Object.keys(updatedStyles);
+        let newKeys = Object.keys(updatedStyles),
+            newKeysLength = newKeys.length;
 
-        for (let i = 0; matchCount < newKeys.length && i < newKeys.length; ++i) {
+        for (let i = 0; matchCount < newKeysLength && i < newKeysLength; ++i) {
             let key = newKeys[i];
 
             if (currentStyles[key] === undefined) {
@@ -721,9 +742,10 @@ function updateAttributes(node, currentAttributes, updatedAttributes) {
                     node.removeAttribute(key);
         }
 
-        let newKeys = Object.keys(updatedAttributes);
+        let newKeys = Object.keys(updatedAttributes),
+            newKeysLength = newKeys.length;
 
-        for (let i = 0; matchCount < newKeys.length && i < newKeys.length; ++i) {
+        for (let i = 0; matchCount < newKeysLength && i < newKeysLength; ++i) {
             let key = newKeys[i];
 
             if (currentAttributes[key] === undefined) {
@@ -771,9 +793,10 @@ function updateProperties(node, currentProperties, updatedProperties) {
                     node.removeAttribute(key);
         }
 
-        let newKeys = Object.keys(updatedProperties);
+        let newKeys = Object.keys(updatedProperties),
+            newKeysLength = newKeys.length;
 
-        for (let i = 0; matchCount < newKeys.length && i < newKeys.length; ++i) {
+        for (let i = 0; matchCount < newKeysLength && i < newKeysLength; ++i) {
             let key = newKeys[i];
 
             if (currentProperties[key] === undefined) {
@@ -807,9 +830,10 @@ F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
                 matchCount++;
             }
 
-        let newKeys = Object.keys(updatedEvents);
+        let newKeys = Object.keys(updatedEvents),
+            newKeysLength = newKeys.length;
 
-        for (let i = 0; matchCount < newKeys.length && i < newKeys.length; ++i) {
+        for (let i = 0; matchCount < newKeysLength && i < newKeysLength; ++i) {
             let key = newKeys[i];
 
             if (currentEvents[key] === undefined) {
