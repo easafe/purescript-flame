@@ -10,6 +10,7 @@ import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String.CodeUnits as DSC
 import Data.Traversable as DT
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
@@ -34,6 +35,7 @@ import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
 import Test.External.NoEffects as TEN
 import Test.ServerSideRendering.Effectful as TSE
+import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Test.Unit.Main (runTest)
@@ -41,6 +43,7 @@ import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
 import Web.DOM.HTMLCollection as WDH
+import Web.DOM.HTMLCollection as WDHC
 import Web.DOM.Node (Node)
 import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
@@ -176,7 +179,7 @@ main =
                               TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
 
                         TU.test "managed nodes are ignored" do
-                              let html = HE.div [ HA.class' "a b" ] $ HE.createHtml_ {createNode: const createDiv, updateNode: \e _ _ -> pure e} unit
+                              let html = HE.div [ HA.class' "a b" ] $ HE.managed_ {createNode: const createDiv, updateNode: \e _ _ -> pure e} unit
                               html' <- liftEffect $ FRS.render html
                               TUA.equal """<div class="a b"></div>""" html'
 
@@ -425,7 +428,7 @@ main =
                         TUA.equal "viewBox:0 0 0 0" nodeAttributes
 
                   TU.test "managed nodes" do
-                        let html = HE.createHtml { createNode: const createSvg, updateNode: \_ _ _ -> createSvg } [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] unit
+                        let html = HE.managed { createNode: const createSvg, updateNode: \_ _ _ -> createSvg } [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] unit
                         state <- mountHtml html
                         svgElement <- liftEffect $ FAD.querySelector "svg"
                         TUA.assert "svg node created" $ DM.isJust svgElement
@@ -434,14 +437,14 @@ main =
 
                         divElement <- liftEffect createDiv
                         liftEffect $ innerHtml ( UC.unsafeCoerce divElement) """<span class="oi"></span>"""
-                        let updatedHtml = HE.createHtml_ { createNode: const (pure divElement), updateNode: \e _ _ -> pure divElement } unit
+                        let updatedHtml = HE.managed_ { createNode: const (pure divElement), updateNode: \e _ _ -> pure divElement } unit
                         liftEffect $ FRID.resume state updatedHtml
                         oldElement <- liftEffect $ FAD.querySelector "svg"
                         TUA.assert "svg node removed" $ DM.isNothing oldElement
                         divElementCreated <- liftEffect $ FAD.querySelector "#mount-point div"
                         TUA.assert "div node created" $ DM.isJust divElementCreated
 
-                        let updatedHtml2 = HE.createHtml { createNode: const (pure divElement), updateNode: \e _ _ -> pure e } [HA.class' "test"] unit
+                        let updatedHtml2 = HE.managed { createNode: const (pure divElement), updateNode: \e _ _ -> pure e } [HA.class' "test"] unit
                         liftEffect $ FRID.resume state updatedHtml2
                         spanElement <- liftEffect $ FAD.querySelector "span"
                         TUA.assert "span node unchanged" $ DM.isJust spanElement
@@ -685,6 +688,29 @@ main =
                         TUA.equal "3" output3
 
             TU.suite "Server side rendering" do
+                  TU.test "managed nodes" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TSM.preMount
+                        childrenLength <- childrenNodeLengthOf "#mount-point"
+                        TUA.equal 1 childrenLength
+
+                        childrenLength2 <- childrenNodeLengthOf "#my-id"
+                        TUA.equal 3 childrenLength2
+                        --managed nodes are not rendered server side
+                        span <- liftEffect $ FAD.querySelector "#text-output"
+                        TUA.assert "managed node not created yet" $ DM.isNothing span
+
+                        liftEffect TSM.mount
+                        childrenLength3 <- childrenNodeLengthOf "#my-id"
+                        TUA.equal 3 childrenLength3
+                        initial2 <- textContent "#text-output"
+                        TUA.equal "2" initial2
+
+                        dispatchEvent clickEvent "#increment-button"
+                        current <- textContent "#text-output"
+                        TUA.equal "3" current
+
                   TU.test "effectful" do
                         liftEffect do
                               unsafeCreateEnviroment
@@ -692,13 +718,13 @@ main =
                         childrenLength <- childrenNodeLengthOf "#mount-point"
                         TUA.equal 1 childrenLength
 
-                        childrenLength2 <- childrenNodeLength
+                        childrenLength2 <- childrenNodeLengthOf "#my-id"
                         TUA.equal 4 childrenLength2
                         initial <- textContent "#text-output"
                         TUA.equal "2" initial
 
                         liftEffect TSE.mount
-                        childrenLength3 <- childrenNodeLength
+                        childrenLength3 <-  childrenNodeLengthOf "#my-id"
                         TUA.equal 4 childrenLength3
                         initial2 <- textContent "#text-output"
                         TUA.equal "2" initial2
@@ -748,7 +774,8 @@ main =
             childrenNodeLengthOf selector = liftEffect do
                   mountPoint <- unsafeQuerySelector selector
                   children <- WDP.children $ WDE.toParentNode mountPoint
-                  WDH.length children
+                  c <- WDHC.toArray children
+                  pure $ DA.length c
 
             textContent selector = liftEffect do
                   element <- unsafeQuerySelector selector

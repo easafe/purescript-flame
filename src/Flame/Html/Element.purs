@@ -9,7 +9,7 @@ import Data.Maybe as DM
 import Effect (Effect)
 import Flame.Html.Attribute.Internal as FHAI
 import Flame.Types (Html, NodeData, Tag, Key)
-import Web.DOM (Element, Node)
+import Web.DOM (Node)
 
 -- | `ToNode` simplifies element creation by automating common tag operations
 -- | * `tag "my-tag" []` becomes short for `tag [id "my-tag"] []`
@@ -91,12 +91,12 @@ lazy :: forall arg message. Maybe Key -> (arg -> Html message) -> arg -> Html me
 lazy maybeKey render arg = createLazyNode (DM.maybe [] DA.singleton maybeKey) render arg
 
 -- | Creates a node which the corresponding DOM node is created and updated from the given `arg`
-createHtml :: forall arg nd message. ToNode nd message NodeData => NodeRenderer arg -> nd -> arg -> Html message
-createHtml render nodeData arg = createManagedNode render (toNode nodeData) arg
+managed :: forall arg nd message. ToNode nd message NodeData => NodeRenderer arg -> nd -> arg -> Html message
+managed render nodeData arg = createManagedNode render (toNode nodeData) arg
 
 -- | Creates a node (with no attributes) which the corresponding DOM node is created and updated from the given `arg`
-createHtml_ :: forall arg message. NodeRenderer arg -> arg -> Html message
-createHtml_ render arg = createDatalessManagedNode render arg
+managed_ :: forall arg message. NodeRenderer arg -> arg -> Html message
+managed_ render arg = createDatalessManagedNode render arg
 
 svg :: forall a b h. ToHtml a b h
 svg nodeData children = createSvgNode (toNode nodeData) $ toNode children

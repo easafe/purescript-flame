@@ -43,7 +43,7 @@ function F(eventWrapper, root, updater, html, isDry) {
 }
 
 /** Install events handlers and set nodes on the virtual nodes */
-F.prototype.hydrate = function (parent, html) {
+F.prototype.hydrate = function (parent, html, referenceNode) {
     //here we trust that the nodes on the parent match the virtual node structure
     switch (html.nodeType) {
         case lazyNode:
@@ -58,7 +58,7 @@ F.prototype.hydrate = function (parent, html) {
             html.node = parent;
             break;
         case managedNode:
-            this.createAllNodes(parent, html);
+            this.createAllNodes(parent, html, referenceNode);
             break;
         default:
             if (html.nodeType === fragmentNode)
@@ -73,7 +73,7 @@ F.prototype.hydrate = function (parent, html) {
             if (html.children !== undefined && (htmlChildrenLength = html.children.length) > 0) {
                 let childNodes = parent.childNodes;
 
-                for (let i = 0, cni = 0 ; i < htmlChildrenLength; ++i, ++cni) {
+                for (let i = 0, cni = 0; i < htmlChildrenLength; ++i, ++cni) {
                     let c = html.children[i] = (html.children[i].node === undefined ? html.children[i] : shallowCopy(html.children[i]));
                     //will happen when:
                     // managed nodes
@@ -91,6 +91,10 @@ F.prototype.hydrate = function (parent, html) {
 
                                 this.hydrate(childNodes[cni++], cf);
                             }
+                        }
+                        else if (c.nodeType === managedNode) {
+                            cni--;
+                            this.hydrate(parent, c, childNodes[i]);
                         }
                         else
                             this.hydrate(childNodes[i], c);
