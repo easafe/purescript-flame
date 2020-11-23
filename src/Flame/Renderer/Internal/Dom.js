@@ -91,13 +91,12 @@ F.prototype.hydrate = function (parent, html, referenceNode) {
 
                                 this.hydrate(childNodes[cni++], cf);
                             }
-                        }
-                        else if (c.nodeType === managedNode) {
                             cni--;
-                            this.hydrate(parent, c, childNodes[i]);
                         }
+                        else if (c.nodeType === managedNode)
+                            this.hydrate(parent, c, childNodes[cni]);
                         else
-                            this.hydrate(childNodes[i], c);
+                            this.hydrate(childNodes[cni], c);
                     }
                 }
             }

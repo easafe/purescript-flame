@@ -35,6 +35,7 @@ import Test.External.EffectList as TEEL
 import Test.External.Effectful as TEE
 import Test.External.NoEffects as TEN
 import Test.ServerSideRendering.Effectful as TSE
+import Test.ServerSideRendering.FragmentNode as TSF
 import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -508,8 +509,17 @@ main =
                         state <- mountHtml html
                         nodeProperties <- getProperties "input" [eventPrefix <> "click"]
                         TUA.assert "event was registered" $ DA.length nodeProperties == 1
-
                   --TU.test "remove all events"
+
+           -- TU.suite "keyed" do
+                  -- TU.test "common prefix" do
+                  -- TU.test "common suffix" do
+                  -- TU.test "swap backwards" do
+                  -- TU.test "remove nodes" do
+                  -- TU.test "remove all nodes" do
+                  -- TU.test "move nodes" do
+                  -- TU.test "move and remove nodes" do
+                  -- TU.test "move and add nodes" do
 
             TU.suite "diff" do
                   TU.test "updates record fields" do
@@ -688,6 +698,29 @@ main =
                         TUA.equal "3" output3
 
             TU.suite "Server side rendering" do
+                  TU.test "effectful" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TSE.preMount
+                        childrenLength <- childrenNodeLengthOf "#mount-point"
+                        TUA.equal 1 childrenLength
+
+                        childrenLength2 <- childrenNodeLengthOf "#my-id"
+                        --before resuming mount there is an extra element with the serialized state
+                        TUA.equal 4 childrenLength2
+                        initial <- textContent "#text-output"
+                        TUA.equal "2" initial
+
+                        liftEffect TSE.mount
+                        childrenLength3 <-  childrenNodeLengthOf "#my-id"
+                        TUA.equal 4 childrenLength3
+                        initial2 <- textContent "#text-output"
+                        TUA.equal "2" initial2
+
+                        dispatchEvent clickEvent "#increment-button"
+                        current <- textContent "#text-output"
+                        TUA.equal "3" current
+
                   TU.test "managed nodes" do
                         liftEffect do
                               unsafeCreateEnviroment
@@ -711,10 +744,10 @@ main =
                         current <- textContent "#text-output"
                         TUA.equal "3" current
 
-                  TU.test "effectful" do
+                  TU.test "fragment nodes" do
                         liftEffect do
                               unsafeCreateEnviroment
-                              TSE.preMount
+                              TSF.preMount
                         childrenLength <- childrenNodeLengthOf "#mount-point"
                         TUA.equal 1 childrenLength
 
@@ -723,7 +756,7 @@ main =
                         initial <- textContent "#text-output"
                         TUA.equal "2" initial
 
-                        liftEffect TSE.mount
+                        liftEffect TSF.mount
                         childrenLength3 <-  childrenNodeLengthOf "#my-id"
                         TUA.equal 4 childrenLength3
                         initial2 <- textContent "#text-output"

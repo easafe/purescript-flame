@@ -1,30 +1,21 @@
-module Test.ServerSideRendering.ManagedNode (preMount, mount) where
+module Test.ServerSideRendering.FragmentNode (preMount, mount) where
 
 import Prelude
 
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe(..), fromJust)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
 import Flame (QuerySelector(..), Html)
-import Flame as F
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Flame.Html.Attribute as HA
-import Flame.Html.Element (NodeRenderer)
+import Flame as F
 import Flame.Html.Element as HE
-import Partial.Unsafe as PU
-import Web.DOM.Document as WDD
-import Web.DOM.Element (Element)
-import Web.DOM.Element as WDE
 import Web.Event.Internal.Types (Event)
-import Web.HTML as WH
-import Web.HTML.HTMLDocument as WHH
-import Web.HTML.Window as WHW
 
 foreign import setInnerHTML :: EffectFn2 String String Unit
-foreign import setElementInnerHTML :: EffectFn2 Element String Unit
 
 -- | The model represents the state of the app
 newtype Model = Model Int
@@ -43,28 +34,17 @@ update { model: Model m, message } =
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main "my-id" $ children model
+view model = HE.main "my-id" $ children model <> [HE.span_ "rendered!"]
 
 preView :: Model -> Html Message
 preView model = HE.main "my-id" $ children model
 
-nodeRenderer :: NodeRenderer Int
-nodeRenderer = {
-    createNode: \arg -> do
-        window <- WH.window
-        document <- WHW.document window
-        element <- WDD.createElement "span" $ WHH.toDocument document
-        EU.runEffectFn2 setElementInnerHTML element $ show arg
-        pure $ WDE.toNode element,
-    updateNode: \node _ arg -> do
-        EU.runEffectFn2 setElementInnerHTML (PU.unsafePartial (fromJust $ WDE.fromNode node)) $ show arg
-        pure node
-}
-
 children :: Model -> Array (Html Message)
 children (Model model) = [
-        HE.managed nodeRenderer [HA.id "text-output"] model,
-        HE.br,
+        HE.fragment [
+            HE.span "text-output" $ show model,
+            HE.br
+        ],
         HE.button [HA.id "increment-button", HA.onClick Increment] "+"
 ]
 
