@@ -232,8 +232,8 @@ cols = createProperty "cols" <<< show
 colspan :: ToIntAttribute
 colspan = createProperty "colspan" <<< show
 
-height :: ToIntAttribute
-height = createAttribute "height" <<< show
+height :: ToStringAttribute
+height = createAttribute "height"
 
 maxlength :: ToIntAttribute
 maxlength = createAttribute "maxlength" <<< show
@@ -256,8 +256,8 @@ start = createProperty "start" <<< show
 tabindex :: ToIntAttribute
 tabindex = createProperty "tabindex" <<< show
 
-width :: ToIntAttribute
-width = createAttribute "width" <<< show
+width :: ToStringAttribute
+width = createAttribute "width"
 
 contextmenu :: ToStringAttribute
 contextmenu = createProperty "contextmenu"

@@ -10,7 +10,6 @@ import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String.CodeUnits as DSC
 import Data.Traversable as DT
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
@@ -43,7 +42,6 @@ import Test.Unit.Main (runTest)
 import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
-import Web.DOM.HTMLCollection as WDH
 import Web.DOM.HTMLCollection as WDHC
 import Web.DOM.Node (Node)
 import Web.DOM.Node as WDN
@@ -511,10 +509,43 @@ main =
                         TUA.assert "event was registered" $ DA.length nodeProperties == 1
                   --TU.test "remove all events"
 
-           -- TU.suite "keyed" do
-                  -- TU.test "common prefix" do
-                  -- TU.test "common suffix" do
-                  -- TU.test "swap backwards" do
+            TU.suite "keyed" do
+                  TU.test "common prefix" do
+                        let html = HE.div "test-div" [HE.span' [HA.key "1"], HE.span' [HA.key "2"]]
+                        state <- mountHtml html
+                        let updatedHtml = HE.div "test-div" [HE.span' [HA.key "1"], HE.span' [HA.key "2"], HE.span' [HA.key "3"]]
+                        liftEffect $ FRID.resume state updatedHtml
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 3 childrenCount
+
+                  TU.test "common suffix" do
+                        let html = HE.div "test-div" [HE.span' [HA.key "2"], HE.span' [HA.key "3"]]
+                        state <- mountHtml html
+                        let updatedHtml = HE.div "test-div" [HE.span' [HA.key "1"], HE.span' [HA.key "2"], HE.span' [HA.key "3"]]
+                        liftEffect $ FRID.resume state updatedHtml
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 3 childrenCount
+
+                  TU.test "swap backwards" do
+                        let html = HE.div "test-div" [HE.span' [HA.key "1", HA.id "1"], HE.span' [HA.key "2", HA.id "2"], HE.span' [HA.key "3", HA.id "3"]]
+                        state <- mountHtml html
+                        childrenIds <- childNodeIds "#test-div"
+                        TUA.equal ["1", "2", "3"] childrenIds
+                        let updatedHtml = HE.div "test-div" [HE.span' [HA.key "3", HA.id "3"], HE.span' [HA.key "2", HA.id "2"], HE.span' [HA.key "1", HA.id "1"]]
+                        liftEffect $ FRID.resume state updatedHtml
+                        childrenIdsSwapped <- childNodeIds "#test-div"
+                        TUA.equal ["3", "2", "1"] childrenIdsSwapped
+
+                  TU.test "swap forward" do
+                        let html = HE.div "test-div" [HE.span' [HA.key "3", HA.id "3"], HE.span' [HA.key "2", HA.id "2"], HE.span' [HA.key "1", HA.id "1"]]
+                        state <- mountHtml html
+                        childrenIds <- childNodeIds "#test-div"
+                        TUA.equal ["3", "2", "1"] childrenIds
+                        let updatedHtml = HE.div "test-div" [HE.span' [HA.key "1", HA.id "1"], HE.span' [HA.key "2", HA.id "2"], HE.span' [HA.key "3", HA.id "3"]]
+                        liftEffect $ FRID.resume state updatedHtml
+                        childrenIdsSwapped <- childNodeIds "#test-div"
+                        TUA.equal ["1", "2", "3"] childrenIdsSwapped
+
                   -- TU.test "remove nodes" do
                   -- TU.test "remove all nodes" do
                   -- TU.test "move nodes" do
@@ -805,10 +836,13 @@ main =
             childrenNodeLength = childrenNodeLengthOf "main"
 
             childrenNodeLengthOf selector = liftEffect do
+                  c <- childrenNode selector
+                  pure $ DA.length c
+
+            childrenNode selector = do
                   mountPoint <- unsafeQuerySelector selector
                   children <- WDP.children $ WDE.toParentNode mountPoint
-                  c <- WDHC.toArray children
-                  pure $ DA.length c
+                  WDHC.toArray children
 
             textContent selector = liftEffect do
                   element <- unsafeQuerySelector selector
@@ -833,6 +867,10 @@ main =
                   window <- WH.window
                   event <- eventFunction
                   WEE.dispatchEvent event $ WHW.toEventTarget window
+
+            childNodeIds selector = liftEffect do
+                  children <- childrenNode selector
+                  liftEffect $ DT.traverse WDE.id children
 
 newtype TestNewtype = TestNewtype { a :: Int, b :: String, c :: Boolean }
 

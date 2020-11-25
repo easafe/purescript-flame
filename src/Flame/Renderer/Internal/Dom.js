@@ -498,7 +498,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
             updatedHtml = updatedChildren[updatedEnd];
         }
     }
-
+console.log(currentEnd, currentStart);
     if (updatedEnd < updatedStart)
         //remove nodes
         while (currentStart <= currentEnd) {
@@ -580,9 +580,11 @@ function longestSubsequence(ns, updatedStart) {
     let seq = [],
         is = [],
         l = -1,
+        i,
+        len,
         pre = new Int32Array(ns.length);
 
-    for (let i = updatedStart, len = ns.length; i < len; i++) {
+    for (i = updatedStart, len = ns.length; i < len; i++) {
         let n = ns[i];
 
         if (n < 0)
