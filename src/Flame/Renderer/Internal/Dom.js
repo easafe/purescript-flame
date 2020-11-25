@@ -498,7 +498,7 @@ F.prototype.updateKeyedChildrenNodes = function (parent, currentChildren, update
             updatedHtml = updatedChildren[updatedEnd];
         }
     }
-console.log(currentEnd, currentStart);
+
     if (updatedEnd < updatedStart)
         //remove nodes
         while (currentStart <= currentEnd) {

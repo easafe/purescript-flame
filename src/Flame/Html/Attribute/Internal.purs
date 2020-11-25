@@ -67,14 +67,10 @@ class' = createClass <<< map caseify <<< to
 -- |
 -- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
 style :: forall a r. Homogeneous r String => { | r } -> NodeData a
-<<<<<<< HEAD:src/Flame/HTML/Attribute/Internal.purs
-style record = StyleList $ FO.fromHomogeneous record
-=======
 style = createStyle <<< FO.fromFoldable <<< map go <<< toArray
       where go (Tuple name value) = Tuple (caseify name) value
             toArray :: _ -> Array (Tuple String String)
             toArray = FO.toUnfoldable <<< FO.fromHomogeneous
->>>>>>> 2291c71... New virtual node and renderer architecture:src/Flame/Html/Attribute/Internal.purs
 
 -- | Transforms its input into a proper html attribute/tag name, i.e. lower case and hyphenated
 caseify :: String -> String
