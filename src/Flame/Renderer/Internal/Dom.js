@@ -365,7 +365,8 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                 break;
             //text nodes can have only their textContent changed
             case textNode:
-                updatedHtml.node.textContent = updatedHtml.text;
+                if (updatedHtml.text !== currentHtml.text)
+                    updatedHtml.node.textContent = updatedHtml.text;
                 break;
             //parent instead of currentHtml.node, as fragments nodes only count for their children
             case fragmentNode:
