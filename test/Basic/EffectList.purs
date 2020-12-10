@@ -10,16 +10,12 @@ import Data.Tuple (Tuple)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Console as EC
 import Effect.Random as ER
-import Effect.Uncurried (EffectFn1)
-import Effect.Uncurried as FU
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.EffectList as FAE
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Partial.Unsafe as UP
-import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 import Web.UIEvent.KeyboardEvent as WUK
 

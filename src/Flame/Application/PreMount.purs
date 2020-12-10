@@ -10,26 +10,21 @@ import Data.Argonaut.Encode as DAE
 import Data.Argonaut.Encode.Class (class GEncodeJson)
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
-import Data.Array ((:))
-import Data.Array as DA
 import Data.Bifunctor as DB
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (global)
 import Data.String.Regex.Unsafe as DSRU
 import Effect (Effect)
 import Effect.Exception as EE
-import Effect.Exception.Unsafe (unsafeThrow)
 import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
-import Flame.Types (Html(..), PreApplication)
-import Partial.Unsafe (unsafePartial)
-import Prelude (bind, discard, otherwise, pure, ($), (<<<), (<>), (==))
+import Flame.Types (Html, PreApplication)
+import Prelude (bind, discard, pure, ($), (<<<), (<>))
 import Prim.RowList (class RowToList)
 import Web.DOM.ParentNode (QuerySelector(..))
 

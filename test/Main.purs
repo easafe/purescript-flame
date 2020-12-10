@@ -416,6 +416,16 @@ main =
                         childrenCount <- childrenNodeLengthOf "#test-div"
                         TUA.equal 0 childrenCount
 
+                  TU.test "removing children with innerHtml" do
+                        let html = HE.div "test-div" [HE.br, HE.hr]
+                        state <- mountHtml html
+                        let updatedHtml = HE.div' [HA.id "test-div", HA.innerHtml "<p>oi</p>"]
+                        liftEffect $ FRID.resume state updatedHtml
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 1 childrenCount
+                        p <- liftEffect $ FAD.querySelector "p"
+                        TUA.assert "element present" $ DM.isJust p
+
                   TU.test "fragments" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html

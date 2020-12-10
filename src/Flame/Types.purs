@@ -1,6 +1,8 @@
 -- | Types common to Flame modules
 module Flame.Types where
 
+import Prelude
+
 import Data.Tuple (Tuple(..))
 
 -- | `PreApplication` contains

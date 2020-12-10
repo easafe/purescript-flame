@@ -65,6 +65,7 @@ F.prototype.hydrate = function (parent, html, referenceNode) {
                 html.node = document.createDocumentFragment();
             else {
                 html.node = parent;
+
                 if (html.nodeData.events !== undefined)
                     this.createEvents(parent, html.nodeData.events);
             }
@@ -292,7 +293,6 @@ F.prototype.createEvents = function (node, events) {
         else
             this.applicationEvents[key] = this.applicationEvents[key] + 1;
     }
-
 };
 
 /** Finds and run the handler of a synthetic event */
@@ -302,10 +302,16 @@ F.prototype.runEvent = function (event) {
 
     while (node !== this.root) {
         //handler can be just a message or a function that takes an event
-        let handler = node[eventKey];
+        let allHandlers = node[eventKey];
 
-        if (handler !== undefined) {
-            this.updater(typeof handler === "function" ? handler(event)() : this.eventWrapper(handler))();
+        if (allHandlers !== undefined) {
+            let allHandlersLength = allHandlers.length;
+
+            for (let i = 0; i < allHandlersLength; ++i) {
+                let handler = allHandlers[i];
+
+                this.updater(typeof handler === "function" ? handler(event)() : this.eventWrapper(handler))();
+            }
             event.stopPropagation();
             return;
         }
@@ -368,7 +374,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             //the usual case, element/svg to be patched
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
-                this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children);
+                this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children, updatedHtml.nodeData);
         }
     }
 
@@ -380,7 +386,7 @@ function clearNode(node) {
 }
 
 /** Patch children of a node */
-F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChildren) {
+F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChildren, parentNodeData) {
     //create all nodes regardless
     if (currentChildren === undefined || currentChildren.length === 0) {
         let updatedChildrenLength;
@@ -391,7 +397,8 @@ F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChil
     }
     //remove all nodes regardless
     else if (updatedChildren === undefined || updatedChildren.length === 0) {
-        if (currentChildren !== undefined && currentChildren.length > 0)
+        //html that uses innerHTML usually has no child nodes
+        if (currentChildren !== undefined && currentChildren.length > 0 && (parentNodeData === undefined || parentNodeData.properties === undefined || parentNodeData.properties.innerHTML === undefined))
             clearNode(parent);
     }
     //if both first nodes have keys, assume keyed

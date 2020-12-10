@@ -196,7 +196,10 @@ function fromNodeData(allData) {
                     if (nodeData.events === undefined)
                         nodeData.events = {};
 
-                    nodeData.events[dataOne] = data[2];
+                    if (nodeData.events[dataOne] === undefined)
+                        nodeData.events[dataOne] = [];
+
+                    nodeData.events[dataOne].push(data[2]);
             }
         }
 
