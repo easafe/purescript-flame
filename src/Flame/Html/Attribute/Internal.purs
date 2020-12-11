@@ -139,7 +139,7 @@ enctype :: ToStringAttribute
 enctype = createProperty "enctype"
 
 for :: ToStringAttribute
-for = createProperty "htmlFor"
+for = createProperty "for"
 
 headers :: ToStringAttribute
 headers = createProperty "headers"
