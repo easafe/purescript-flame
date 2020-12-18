@@ -370,12 +370,12 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                 break;
             //parent instead of currentHtml.node, as fragments nodes only count for their children
             case fragmentNode:
-                this.updateChildrenNodes(parent, currentHtml.children, updatedHtml.children);
+                this.updateChildrenNodes(parent, currentHtml, updatedHtml);
                 break;
             //the usual case, element/svg to be patched
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
-                this.updateChildrenNodes(currentHtml.node, currentHtml.children, updatedHtml.children, updatedHtml.nodeData);
+                this.updateChildrenNodes(currentHtml.node, currentHtml, updatedHtml);
         }
     }
 
@@ -387,19 +387,27 @@ function clearNode(node) {
 }
 
 /** Patch children of a node */
-F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChildren, parentNodeData) {
+F.prototype.updateChildrenNodes = function (parent, currentHtml, updatedHtml) {
+    let currentChildren = currentHtml.children,
+        updatedChildren = updatedHtml.children;
     //create all nodes regardless
     if (currentChildren === undefined || currentChildren.length === 0) {
         let updatedChildrenLength;
 
-        if (updatedChildren !== undefined && (updatedChildrenLength = updatedChildren.length) > 0)
+        if (updatedChildren !== undefined && (updatedChildrenLength = updatedChildren.length) > 0) {
+            //nodes are appended to the parent, so we must clear it if innerHTML was set
+            // there are a few situations in which this is unsafe, but innerHTML should be considered always dangerous anyway
+            if (hasInnerHtml(currentHtml.nodeData))
+                clearNode(parent);
+
             for (let i = 0; i < updatedChildrenLength; ++i)
                 updatedChildren[i] = this.checkCreateAllNodes(parent, updatedChildren[i]);
+        }
     }
     //remove all nodes regardless
     else if (updatedChildren === undefined || updatedChildren.length === 0) {
         //html that uses innerHTML usually has no child nodes
-        if (currentChildren !== undefined && currentChildren.length > 0 && (parentNodeData === undefined || parentNodeData.properties === undefined || parentNodeData.properties.innerHTML === undefined))
+        if (currentChildren !== undefined && currentChildren.length > 0 && !hasInnerHtml(updatedHtml.nodeData))
             clearNode(parent);
     }
     //if both first nodes have keys, assume keyed
@@ -409,6 +417,11 @@ F.prototype.updateChildrenNodes = function (parent, currentChildren, updatedChil
     else
         this.updateNonKeyedChildrenNodes(parent, currentChildren, updatedChildren);
 };
+
+//innerHTML property is a pain in the ass
+function hasInnerHtml(parentNodeData) {
+    return parentNodeData !== undefined && parentNodeData.properties !== undefined && parentNodeData.properties.innerHTML !== undefined;
+}
 
 /** Keyed algorithm adapted from stage0
  *
