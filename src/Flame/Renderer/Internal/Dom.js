@@ -1,14 +1,15 @@
 'use strict';
 
 let namespace = 'http://www.w3.org/2000/svg',
-    eventPrefix = '__flame_',
-    styleAttribute = 'style';
+    eventPrefix = '__flame_';
 let textNode = 1,
     elementNode = 2,
     svgNode = 3,
     fragmentNode = 4,
     lazyNode = 5,
     managedNode = 6;
+//these events cannot be synthetic
+let nonBubblingEvents = ["focus", "blur", "scroll"];
 
 exports.start_ = function (eventWrapper, root, updater, html) {
     return new F(eventWrapper, root, updater, html, false);
@@ -26,8 +27,8 @@ exports.resume_ = function (f, html) {
 function F(eventWrapper, root, updater, html, isDry) {
     /** Hack so all kinds of events have the same result type */
     this.eventWrapper = eventWrapper;
-    /** Keep count of synthetic events currently registered */
-    this.applicationEvents = {};
+    /** Keep track of synthetic events currently registered by saving the total number of events and the handler function */
+    this.applicationEvents = new Map();
     /** Mounting point on DOM */
     this.root = root;
     /** User supplied function to process messages*/
@@ -67,7 +68,7 @@ F.prototype.hydrate = function (parent, html, referenceNode) {
                 html.node = parent;
 
                 if (html.nodeData.events !== undefined)
-                    this.createEvents(parent, html.nodeData.events);
+                    this.createAllEvents(parent, html.nodeData.events);
             }
             let htmlChildrenLength;
 
@@ -252,7 +253,7 @@ F.prototype.createNodeData = function (node, nodeData, isSvg) {
             node[key] = nodeData.properties[key];
 
     if (nodeData.events !== undefined)
-        this.createEvents(node, nodeData.events);
+        this.createAllEvents(node, nodeData.events);
 };
 
 /** Sets the style attribute */
@@ -279,20 +280,46 @@ function createAttributes(node, attributes) {
 
 /** Creates synthethic events
  *
- *  A single listener for each event type is added to the root, and fired at the nearest node from the target that contains a handler */
-F.prototype.createEvents = function (node, events) {
-    for (let key in events) {
-        let eventKey = eventPrefix + key;
+ *  If the event bubbles, a single listener for its type is added to the root, and fired at the nearest node from the target that contains a handler. Otherwise the event is added to the node */
+F.prototype.createAllEvents = function (node, events) {
+    for (let key in events)
+        this.createEvent(node, key, events[key]);
+};
 
-        node[eventKey] = events[key];
+F.prototype.createEvent = function (node, name, handlers) {
+    let eventKey = eventPrefix + name;
 
-        if (this.applicationEvents[key] === undefined) {
-            this.root.addEventListener(key, this.runEvent.bind(this), false);
-            this.applicationEvents[key] = 1;
+    if (nonBubblingEvents.includes(name)) {
+        let runNonBubblingEvent = this.runNonBubblingEvent(handlers);
+
+        //same as with applicationEvents, save the listener so we can unregister it later
+        node[eventKey] = runNonBubblingEvent;
+        node.addEventListener(name, runNonBubblingEvent, false);
+    }
+    else {
+        node[eventKey] = handlers;
+
+        let synthethic = this.applicationEvents.get(name);
+
+        if (synthethic === undefined) {
+            let runEvent = this.runEvent.bind(this);
+
+            this.root.addEventListener(name, runEvent, false);
+            this.applicationEvents.set(name, {
+                count: 1,
+                handler: runEvent
+            });
         }
         else
-            this.applicationEvents[key] = this.applicationEvents[key] + 1;
+            synthethic.count++;
     }
+};
+
+/** Runs a non bubbling event */
+F.prototype.runNonBubblingEvent = function (handlers) {
+    return function (event) {
+        this.runHandlers(handlers, event);
+    }.bind(this);
 };
 
 /** Finds and run the handler of a synthetic event */
@@ -301,22 +328,26 @@ F.prototype.runEvent = function (event) {
         eventKey = eventPrefix + event.type;
 
     while (node !== this.root) {
-        //handler can be just a message or a function that takes an event
-        let allHandlers = node[eventKey];
+        let handlers = node[eventKey];
 
-        if (allHandlers !== undefined) {
-            let allHandlersLength = allHandlers.length;
-
-            for (let i = 0; i < allHandlersLength; ++i) {
-                let handler = allHandlers[i];
-
-                this.updater(typeof handler === "function" ? handler(event)() : this.eventWrapper(handler))();
-            }
-            event.stopPropagation();
+        if (handlers !== undefined) {
+            this.runHandlers(handlers, event);
             return;
         }
         node = node.parentNode;
     }
+};
+
+/** Runs all event handlers for a given event */
+F.prototype.runHandlers = function (handlers, event) {
+    let handlersLength = handlers.length;
+
+    for (let i = 0; i < handlersLength; ++i) {
+        let h = handlers[i];
+        //handler can be just a message or a function that takes an event
+        this.updater(typeof h === "function" ? h(event)() : this.eventWrapper(h))();
+    }
+    event.stopPropagation();
 };
 
 F.prototype.resume = function (updatedHtml) {
@@ -693,7 +724,7 @@ function updateStyles(node, currentStyles, updatedStyles) {
     }
     else if (updatedStyles === undefined) {
         if (currentStyles !== undefined)
-            node.removeAttribute(styleAttribute);
+            node.removeAttribute('style');
     }
     else {
         let matchCount = 0;
@@ -723,8 +754,7 @@ function updateStyles(node, currentStyles, updatedStyles) {
                 let updated = updatedStyles[key];
                 ++matchCount;
 
-                if (updated !== undefined)
-                    node.style.setProperty(key, updated);
+                node.style.setProperty(key, updated);
             }
         }
     }
@@ -778,8 +808,7 @@ function updateAttributes(node, currentAttributes, updatedAttributes) {
                 let updated = updatedAttributes[key];
                 ++matchCount;
 
-                if (updated !== undefined)
-                    node.setAttribute(key, updated);
+                node.setAttribute(key, updated);
             }
         }
     }
@@ -829,32 +858,57 @@ function updateProperties(node, currentProperties, updatedProperties) {
                 let updated = updatedProperties[key];
                 ++matchCount;
 
-                if (updated !== undefined)
-                    node[key] = updated;
+                node[key] = updated;
             }
         }
     }
 }
 
-/** Updates the synthetic events of a node */
+/** Updates node events */
 F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
     if (currentEvents === undefined) {
         if (updatedEvents !== undefined)
-            this.createEvents(node, updatedEvents);
+            this.createAllEvents(node, updatedEvents);
     }
     else if (updatedEvents === undefined) {
         if (currentEvents !== undefined)
-            this.removeEvents(node, Object.keys(currentEvents));
+            for (let key in currentEvents)
+                this.removeEvent(node, key);
     }
     else {
         let matchCount = 0;
-        //since we have gone over the pain of not wrapping events whenever possible,
-        // some function references can be compared
-        for (let key in currentEvents)
-            if (updatedEvents[key] !== undefined && currentEvents[key] !== updatedEvents[key]) {
-                node[eventPrefix + key] = updatedEvents[key];
-                matchCount++;
+
+        for (let key in currentEvents) {
+            let current = currentEvents[key],
+                updated = updatedEvents[key],
+                hasUpdated = false;
+
+            //events handlers are arrays of messages/effect handlers
+            if (updated === undefined)
+                this.removeEvent(node, key);
+            else {
+                let currentLength = current.length,
+                    updatedLength = updated.length;
+
+                if (currentLength != updatedLength)
+                    hasUpdated = true;
+                else {
+                    for (let i = 0; i < currentLength; ++i)
+                        //since this is by reference, more often than not we will unlisten and listen on an event again
+                        if (current[i] != updated[i]) {
+                            hasUpdated = true;
+                            break;
+                        }
+                }
             }
+
+            if (hasUpdated) {
+                matchCount++;
+
+                this.removeEvent(node, key);
+                this.createEvent(node, key, updated);
+            }
+        }
 
         let newKeys = Object.keys(updatedEvents),
             newKeysLength = newKeys.length;
@@ -863,22 +917,31 @@ F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
             let key = newKeys[i];
 
             if (currentEvents[key] === undefined) {
-                this.removeEvents(node, [key]);
+                let updated = updatedEvents[key];
                 ++matchCount;
+
+                this.createEvent(node, key, updated);
             }
         }
     }
 };
 
-/** Remove all given synthetic events from a node */
-F.prototype.removeEvents = function (node, eventNames) {
-    for (let name of eventNames) {
-        node[eventPrefix + name] = undefined;
+/** Remove all given events from a node */
+F.prototype.removeEvent = function (node, name) {
+    let eventKey = eventPrefix + name;
 
-        this.applicationEvents[name] = this.applicationEvents[name] - 1;
-        if (this.applicationEvents[name] === 0) {
-            this.applicationEvents[name] = undefined;
-            this.root.removeEventListener(name, this.runEvent.bind(this), false);
+    if (nonBubblingEvents.includes(name)) {
+        let runNonBubblingEvent = node[eventKey];
+
+        node.removeEventListener(name, runNonBubblingEvent, false);
+    } else {
+        let count = --this.applicationEvents.get(name).count;
+
+        if (count === 0) {
+            this.root.removeEventListener(name, this.applicationEvents.get(name).handler, false);
+            this.applicationEvents.delete(name);
         }
     }
+
+    node[eventKey] = undefined;
 };

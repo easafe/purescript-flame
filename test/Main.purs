@@ -527,7 +527,14 @@ main =
                         state <- mountHtml html
                         nodeProperties <- getProperties "input" [eventPrefix <> "click"]
                         TUA.assert "event was registered" $ DA.length nodeProperties == 1
-                  --TU.test "remove all events"
+
+                  TU.test "removing event also removes dom property" do
+                        let html = HE.input [HA.onClick unit, HA.onScroll unit]
+                        state <- mountHtml html
+                        let updatedHtml = HE.input [HA.onClick unit]
+                        liftEffect $ FRID.resume state updatedHtml
+                        nodeProperties <- getProperties "input" [eventPrefix <> "click", eventPrefix <> "scroll"]
+                        TUA.assert "property removed" $ DA.length nodeProperties == 1
 
             TU.suite "keyed" do
                   TU.test "common prefix" do
