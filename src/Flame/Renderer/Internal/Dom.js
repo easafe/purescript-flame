@@ -72,15 +72,14 @@ F.prototype.hydrate = function (parent, html, referenceNode) {
             }
             let htmlChildrenLength;
 
-            if (html.children !== undefined && (htmlChildrenLength = html.children.length) > 0) {
+            if (html.text === undefined && html.children !== undefined && (htmlChildrenLength = html.children.length) > 0) {
                 let childNodes = parent.childNodes;
 
                 for (let i = 0, cni = 0; i < htmlChildrenLength; ++i, ++cni) {
                     let c = html.children[i] = (html.children[i].node === undefined ? html.children[i] : shallowCopy(html.children[i]));
                     //will happen when:
                     // managed nodes
-                    // client side view is different from server side view
-                    // the parent node has an empty text node
+                    // client side view is different from server side view or actual dom
                     if (childNodes[cni] === undefined)
                         this.createAllNodes(parent, c);
                     else {
@@ -144,22 +143,27 @@ function shallowCopy(origin) {
                 node: undefined,
                 tag: origin.tag,
                 nodeData: origin.nodeData,
-                children: origin.children
+                children: origin.children,
+                text: origin.text
             };
     }
 }
 
 /**Creates all nodes from a given html into a parent*/
 F.prototype.createAllNodes = function (parent, html, referenceNode) {
-    let nodeParent = this.createNode(html);
+    let node = this.createNode(html);
 
-    if (html.children !== undefined)
-        this.createChildrenNodes(nodeParent, html.children);
-    if (html.rendered != undefined && html.rendered.children !== undefined)
-        this.createChildrenNodes(nodeParent, html.rendered.children);
+    if (html.text !== undefined)
+        node.textContent = html.text;
+    else {
+        if (html.children !== undefined)
+            this.createChildrenNodes(node, html.children);
+        if (html.rendered != undefined && html.rendered.children !== undefined)
+            this.createChildrenNodes(node, html.rendered.children);
+    }
 
     //same as appendChild if referenceNode is null
-    parent.insertBefore(nodeParent, referenceNode);
+    parent.insertBefore(node, referenceNode);
 };
 
 /** Abstract over shallow copying a html object before creating its nodes */
@@ -179,10 +183,14 @@ F.prototype.createChildrenNodes = function (parent, children) {
         let c = children[i] = (children[i].node === undefined ? children[i] : shallowCopy(children[i])),
             node = this.createNode(c);
 
-        if (c.children !== undefined)
-            this.createChildrenNodes(node, c.children);
-        if (c.rendered !== undefined && c.rendered.children !== undefined)
-            this.createChildrenNodes(node, c.rendered.children);
+        if (c.text !== undefined)
+            node.textContent = c.text;
+        else {
+            if (c.children !== undefined)
+                this.createChildrenNodes(node, c.children);
+            if (c.rendered !== undefined && c.rendered.children !== undefined)
+                this.createChildrenNodes(node, c.rendered.children);
+        }
 
         parent.appendChild(node);
     }
@@ -406,7 +414,11 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             //the usual case, element/svg to be patched
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
-                this.updateChildrenNodes(currentHtml.node, currentHtml, updatedHtml);
+                //it is a pain but save us some work
+                if (updatedHtml.text !== undefined && updatedHtml.text != currentHtml.text)
+                    currentHtml.node.textContent = updatedHtml.text;
+                else
+                    this.updateChildrenNodes(currentHtml.node, currentHtml, updatedHtml);
         }
     }
 

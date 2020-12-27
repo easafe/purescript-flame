@@ -60,7 +60,8 @@ foreign import createLazyNode :: forall message arg. Array String -> (arg -> Htm
 foreign import createManagedNode :: forall arg message. NodeRenderer arg -> Array (NodeData message) -> arg -> Html message
 foreign import createDatalessManagedNode :: forall arg message. NodeRenderer arg -> arg -> Html message
 
--- it is likely we can cut down on memory usage by not creating text node objects if they are the sole inner text child of an element
+--this function creates text nodes that are either standalone, or have siblings
+-- single text nodes are added instead to the text property of their parents
 -- | Creates a text node
 foreign import text :: forall message. String -> Html message
 

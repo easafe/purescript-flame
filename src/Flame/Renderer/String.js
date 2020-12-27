@@ -145,6 +145,8 @@ function stringify(html) {
             if (!voidElements.has(tag) && !isSvg || isSvg && containerElements.has(tag)) {
                 if (html.nodeData.properties !== undefined && html.nodeData.properties.innerHTML !== undefined)
                     markup.push(html.nodeData.properties.innerHTML);
+                else if (html.text !== undefined)
+                    markup.push(escape(html.text));
                 else if (html.children !== undefined && html.children.length > 0)
                     for (let i = 0; i < html.children.length; ++i)
                         markup.push(stringify(html.children[i]));

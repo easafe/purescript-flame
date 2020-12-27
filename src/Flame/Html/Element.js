@@ -12,26 +12,44 @@ let styleData = 1,
 
 exports.createElementNode = function (tag) {
     return function (nodeData) {
-        return function (children) {
+        return function (potentialChildren) {
+            let children = potentialChildren,
+                text = undefined;
+
+            if (potentialChildren.length === 1 && potentialChildren[0].nodeType == textNode) {
+                children = undefined;
+                text = potentialChildren[0].text;
+            }
+
             return {
                 nodeType: elementNode,
                 node: undefined,
                 tag: tag,
                 nodeData: fromNodeData(nodeData),
-                children: children
+                children: children,
+                text: text
             };
         };
     };
 };
 
 exports.createDatalessElementNode = function (tag) {
-    return function (children) {
+    return function (potentialChildren) {
+        let children = potentialChildren,
+            text = undefined;
+
+        if (potentialChildren.length === 1 && potentialChildren[0].nodeType == textNode) {
+            children = undefined;
+            text = potentialChildren[0].text;
+        }
+
         return {
             nodeType: elementNode,
             node: undefined,
             tag: tag,
             nodeData: {},
-            children: children
+            children: children,
+            text: text
         };
     };
 };
