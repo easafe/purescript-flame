@@ -380,6 +380,18 @@ main =
                         updatedText <- textContent "#mount-point"
                         TUA.equal "ola" updatedText
 
+                  TU.test "update node with text property" do
+                        --nodes with a single text node child have the textConten property set
+                        let html = HE.div "test-div" "oi"
+                        state <- mountHtml html
+                        let updatedHtml = HE.div' "test-div"
+                        text <- textContent "#test-div"
+                        TUA.equal "oi" text
+
+                        liftEffect $ FRID.resume state updatedHtml
+                        text2 <- textContent "#test-div"
+                        TUA.equal "" text2
+
                   TU.test "update node tag" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
                         state <- mountHtml html

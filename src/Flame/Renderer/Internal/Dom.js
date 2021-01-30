@@ -415,7 +415,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
                 //it is a pain but save us some work
-                if (updatedHtml.text !== undefined && updatedHtml.text != currentHtml.text)
+                if ((updatedHtml.text !== undefined || currentHtml.text != undefined) && updatedHtml.text != currentHtml.text)
                     currentHtml.node.textContent = updatedHtml.text;
                 else
                     this.updateChildrenNodes(currentHtml.node, currentHtml, updatedHtml);
