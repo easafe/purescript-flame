@@ -101,7 +101,7 @@ main =
                                 let html2 = HE.a [HA.style { width: "23px", display: "none" }] [HE.text "TEST"]
                                 html2' <- liftEffect $ FRS.render html2
                                 TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
-                            
+                                
                                 let html3 = HE.a (HA.style1 "mystyle" "test-test") [HE.text "TEST"]
                                 html3' <- liftEffect $ FRS.render html3
                                 TUA.equal """<a style="mystyle: test-test">TEST</a>""" html3'
