@@ -8,6 +8,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String.CodeUnits as DSC
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as AF
@@ -100,6 +101,10 @@ main =
                                 let html2 = HE.a [HA.style { width: "23px", display: "none" }] [HE.text "TEST"]
                                 html2' <- liftEffect $ FRS.render html2
                                 TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
+                            
+                                let html3 = HE.a (HA.style1 "mystyle" "test-test") [HE.text "TEST"]
+                                html3' <- liftEffect $ FRS.render html3
+                                TUA.equal """<a style="mystyle: test-test">TEST</a>""" html3'
 
                         test "style merging" do
                                 let html = HE.a [ HA.style { mystyle: "test", mylife: "good" }, HA.style { mystyle: "check" } ] [HE.text "TEST"]
@@ -109,6 +114,10 @@ main =
                                 let html2 = HE.a [HA.style { width: "23px", display: "none" }, HA.style { height: "10px" } ] [HE.text "TEST"]
                                 html2' <- liftEffect $ FRS.render html2
                                 TUA.equal """<a style="width: 23px; display: none; height: 10px">TEST</a>""" html2'
+
+                                let html3 = HE.a [HA.style [ Tuple "width" "64px", Tuple "display" "none" ], HA.style (Tuple "height" "10px") ] [HE.text "TEST"]
+                                html3' <- liftEffect $ FRS.render html3
+                                TUA.equal """<a style="width: 64px; display: none; height: 10px">TEST</a>""" html3'
 
                         test "style/class name case" do
                                 html <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "superClass"
