@@ -9,10 +9,10 @@ import Data.Foldable as DF
 import Effect (Effect)
 import Effect.Console as EC
 import Effect.Ref as ER
-import Examples.Effectful.Webchat.Server.WS (Port(..), WebSocketConnection(..), WebSocketMessage(..))
+import Examples.Effectful.Webchat.Server.WS (Port(..))
 import Examples.Effectful.Webchat.Server.WS as EEWSW
 
-main :: forall e . Effect Unit
+main :: Effect Unit
 main = do
         database <- ER.new {
                 connections: [],

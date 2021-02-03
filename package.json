@@ -26,7 +26,7 @@
                 "webchat": "npm run example-webchat && node examples/Effectful/Webchat/dist/webchat-server.js",
                 "server-side-rendering": "npm run example-server-side-rendering && node examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
                 "build-examples": "npm run example-affjax-list && npm run example-webchat && npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
-                "test": "spago test && npm run build-examples"
+                "test": "spago -x examples.dhall test && npm run build-examples"
         },
         "devDependencies": {
                 "jsdom": "^14.1.0",

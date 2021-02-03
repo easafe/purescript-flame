@@ -27,6 +27,7 @@ import Partial.Unsafe (unsafePartial)
 import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
+import Test.Basic.Functor as TBF
 import Test.Basic.NoEffects as TBN
 import Test.Effectful.SlowEffects as TES
 import Test.External.EffectList (TEELMessage(..))
@@ -692,6 +693,28 @@ main =
                         TUA.equal "2" currentIncrement3
                         TUA.equal "-2" currentDecrement3
                         TUA.equal "2" currentLuckyNumber3
+
+                  TU.test "functor" do
+                        liftEffect do
+                              unsafeCreateEnviroment
+                              TBF.mount
+                        childrenLength <- childrenNodeLength
+                        --button, div
+                        TUA.equal 2 childrenLength
+
+                        dispatchEvent clickEvent "#add-button"
+                        initial <- textContent "#text-output-0"
+                        TUA.equal "0" initial
+
+                        dispatchEvent clickEvent "#decrement-button-0"
+                        current <- textContent "#text-output-0"
+                        TUA.equal "-1" current
+
+                        dispatchEvent clickEvent "#add-button"
+                        dispatchEvent clickEvent "#increment-button-1"
+                        dispatchEvent clickEvent "#increment-button-1"
+                        current2 <- textContent "#text-output-1"
+                        TUA.equal "2" current2
 
             TU.suite "Effectful specific" do
                   TU.test "slower effects" do

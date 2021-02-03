@@ -1,8 +1,9 @@
 -- | Types common to Flame modules
-module Flame.Types where
+module Flame.Types (PreApplication, App, (:>), ToNodeData, Tag, Key, DomRenderingState, DomNode, NodeData, Html) where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 
 -- | `PreApplication` contains
@@ -38,3 +39,9 @@ foreign import data NodeData :: Type -> Type
 --Html can actually be typed, but since it is only used in FFI code, I don't think it'd be very useful
 -- | The type of virtual nodes
 foreign import data Html :: Type -> Type
+
+--we support events that are not fired on Nothing message
+foreign import messageMapper :: forall message mapped. (Maybe message -> Maybe mapped) -> Html message -> Html mapped
+
+instance functorHtml :: Functor Html where
+      map f html = messageMapper (map f) html

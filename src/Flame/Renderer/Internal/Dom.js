@@ -1,7 +1,8 @@
 'use strict';
 
 let namespace = 'http://www.w3.org/2000/svg',
-    eventPrefix = '__flame_';
+    eventPrefix = '__flame_',
+    eventPostfix = 'updater';
 let textNode = 1,
     elementNode = 2,
     svgNode = 3,
@@ -23,7 +24,7 @@ exports.resume_ = function (f, html) {
     f.resume(html);
 };
 
-/** Class to scope application data since a document can have many mount points*/
+/** Class to scope application data since a document can have many mount points */
 function F(eventWrapper, root, updater, html, isDry) {
     /** Hack so all kinds of events have the same result type */
     this.eventWrapper = eventWrapper;
@@ -68,7 +69,7 @@ F.prototype.hydrate = function (parent, html, referenceNode) {
                 html.node = parent;
 
                 if (html.nodeData.events !== undefined)
-                    this.createAllEvents(parent, html.nodeData.events);
+                    this.createAllEvents(parent, html);
             }
             let htmlChildrenLength;
 
@@ -135,7 +136,8 @@ function shallowCopy(origin) {
                 nodeData: origin.nodeData,
                 createNode: origin.createNode,
                 updateNode: origin.updateNode,
-                arg: origin.arg
+                arg: origin.arg,
+                messageMapper: origin.messageMapper
             };
         default:
             return {
@@ -144,7 +146,8 @@ function shallowCopy(origin) {
                 tag: origin.tag,
                 nodeData: origin.nodeData,
                 children: origin.children,
-                text: origin.text
+                text: origin.text,
+                messageMapper: origin.messageMapper
             };
     }
 }
@@ -221,7 +224,7 @@ F.prototype.createNode = function (html) {
 F.prototype.createElement = function (html) {
     let element = document.createElement(html.tag);
 
-    this.createNodeData(element, html.nodeData, false);
+    this.createNodeData(element, html, false);
 
     return element;
 };
@@ -230,7 +233,7 @@ F.prototype.createElement = function (html) {
 F.prototype.createSvg = function (html) {
     let svg = document.createElementNS(namespace, html.tag);
 
-    this.createNodeData(svg, html.nodeData, true);
+    this.createNodeData(svg, html, true);
 
     return svg;
 };
@@ -240,28 +243,28 @@ F.prototype.createManagedNode = function (html) {
     let node = html.createNode(html.arg)();
     html.createNode = undefined;
     //the svg element is an instance of HTMLElement
-    this.createNodeData(node, html.nodeData, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
+    this.createNodeData(node, html, node instanceof SVGElement || node.nodeName.toLowerCase() === "svg");
 
     return node;
 };
 
 /** Sets node updatedChildren: attributes, properties, events, etc */
-F.prototype.createNodeData = function (node, nodeData, isSvg) {
-    if (nodeData.styles !== undefined)
-        createStyles(node, nodeData.styles);
+F.prototype.createNodeData = function (node, html, isSvg) {
+    if (html.nodeData.styles !== undefined)
+        createStyles(node, html.nodeData.styles);
 
-    if (nodeData.classes !== undefined && nodeData.classes.length > 0)
-        createClasses(node, nodeData.classes, isSvg);
+    if (html.nodeData.classes !== undefined && html.nodeData.classes.length > 0)
+        createClasses(node, html.nodeData.classes, isSvg);
 
-    if (nodeData.attributes !== undefined)
-        createAttributes(node, nodeData.attributes);
+    if (html.nodeData.attributes !== undefined)
+        createAttributes(node, html.nodeData.attributes);
 
-    if (nodeData.properties !== undefined)
-        for (let key in nodeData.properties)
-            node[key] = nodeData.properties[key];
+    if (html.nodeData.properties !== undefined)
+        for (let key in html.nodeData.properties)
+            node[key] = html.nodeData.properties[key];
 
-    if (nodeData.events !== undefined)
-        this.createAllEvents(node, nodeData.events);
+    if (html.nodeData.events !== undefined)
+        this.createAllEvents(node, html);
 };
 
 /** Sets the style attribute */
@@ -289,16 +292,17 @@ function createAttributes(node, attributes) {
 /** Creates synthethic events
  *
  *  If the event bubbles, a single listener for its type is added to the root, and fired at the nearest node from the target that contains a handler. Otherwise the event is added to the node */
-F.prototype.createAllEvents = function (node, events) {
-    for (let key in events)
-        this.createEvent(node, key, events[key]);
+F.prototype.createAllEvents = function (node, html) {
+    for (let key in html.nodeData.events)
+        this.createEvent(node, key, html);
 };
 
-F.prototype.createEvent = function (node, name, handlers) {
-    let eventKey = eventPrefix + name;
+F.prototype.createEvent = function (node, name, html) {
+    let handlers = html.nodeData.events[name],
+        eventKey = eventPrefix + name;
 
     if (nonBubblingEvents.includes(name)) {
-        let runNonBubblingEvent = this.runNonBubblingEvent(handlers);
+        let runNonBubblingEvent = this.runNonBubblingEvent(handlers, html.messageMapper);
 
         //same as with applicationEvents, save the listener so we can unregister it later
         node[eventKey] = runNonBubblingEvent;
@@ -306,6 +310,9 @@ F.prototype.createEvent = function (node, name, handlers) {
     }
     else {
         node[eventKey] = handlers;
+        //to support functors, the mapping function is saved on the node
+        if (html.messageMapper !== undefined)
+            node[eventKey + eventPostfix] = html.messageMapper;
 
         let synthethic = this.applicationEvents.get(name);
 
@@ -324,9 +331,9 @@ F.prototype.createEvent = function (node, name, handlers) {
 };
 
 /** Runs a non bubbling event */
-F.prototype.runNonBubblingEvent = function (handlers) {
+F.prototype.runNonBubblingEvent = function (handlers, messageMapper) {
     return function (event) {
-        this.runHandlers(handlers, event);
+        this.runHandlers(handlers, messageMapper, event);
     }.bind(this);
 };
 
@@ -339,7 +346,7 @@ F.prototype.runEvent = function (event) {
         let handlers = node[eventKey];
 
         if (handlers !== undefined) {
-            this.runHandlers(handlers, event);
+            this.runHandlers(handlers, node[eventKey + eventPostfix], event);
             return;
         }
         node = node.parentNode;
@@ -347,13 +354,16 @@ F.prototype.runEvent = function (event) {
 };
 
 /** Runs all event handlers for a given event */
-F.prototype.runHandlers = function (handlers, event) {
+F.prototype.runHandlers = function (handlers, messageMapper, event) {
     let handlersLength = handlers.length;
 
     for (let i = 0; i < handlersLength; ++i) {
-        let h = handlers[i];
+        let h = handlers[i],
+            maybeMessage = typeof h === "function" ? h(event)() : this.eventWrapper(h);
+
         //handler can be just a message or a function that takes an event
-        this.updater(typeof h === "function" ? h(event)() : this.eventWrapper(h))();
+        // a
+        this.updater(messageMapper === undefined ? maybeMessage : messageMapper(maybeMessage))();
     }
     event.stopPropagation();
 };
@@ -393,12 +403,12 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                     isSvg = node instanceof SVGElement || node.nodeName.toLowerCase() === "svg";
 
                 if (node !== currentHtml.node || node.nodeType !== currentHtml.node.nodeType || node.nodeName !== currentHtml.node.nodeName) {
-                    this.createNodeData(node, updatedHtml.nodeData, isSvg);
+                    this.createNodeData(node, updatedHtml, isSvg);
                     parent.insertBefore(node, currentHtml.node);
                     parent.removeChild(currentHtml.node);
                 }
                 else
-                    this.updateNodeData(node, currentHtml.nodeData, updatedHtml.nodeData, isSvg);
+                    this.updateNodeData(node, currentHtml.nodeData, updatedHtml, isSvg);
 
                 updatedHtml.node = node;
                 break;
@@ -413,7 +423,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
                 break;
             //the usual case, element/svg to be patched
             default:
-                this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml.nodeData, updatedHtml.nodeType == svgNode);
+                this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml, updatedHtml.nodeType == svgNode);
                 //it is a pain but save us some work
                 if ((updatedHtml.text !== undefined || currentHtml.text != undefined) && updatedHtml.text != currentHtml.text)
                     currentHtml.node.textContent = updatedHtml.text;
@@ -716,16 +726,16 @@ F.prototype.updateNonKeyedChildrenNodes = function (parent, currentChildren, upd
 };
 
 /** Updates the node data of a node */
-F.prototype.updateNodeData = function (node, currentNodeData, updatedNodeData, isSvg) {
-    updateStyles(node, currentNodeData.styles, updatedNodeData.styles);
+F.prototype.updateNodeData = function (node, currentNodeData, updatedHtml, isSvg) {
+    updateStyles(node, currentNodeData.styles, updatedHtml.nodeData.styles);
 
-    updateAttributes(node, currentNodeData.attributes, updatedNodeData.attributes);
+    updateAttributes(node, currentNodeData.attributes, updatedHtml.nodeData.attributes);
 
-    updateClasses(node, currentNodeData.classes, updatedNodeData.classes, isSvg);
+    updateClasses(node, currentNodeData.classes, updatedHtml.nodeData.classes, isSvg);
 
-    updateProperties(node, currentNodeData.properties, updatedNodeData.properties);
+    updateProperties(node, currentNodeData.properties, updatedHtml.nodeData.properties);
 
-    this.updateEvents(node, currentNodeData.events, updatedNodeData.events);
+    this.updateEvents(node, currentNodeData.events, updatedHtml);
 };
 
 /** Updates the style attribute of a node */
@@ -877,10 +887,12 @@ function updateProperties(node, currentProperties, updatedProperties) {
 }
 
 /** Updates node events */
-F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
+F.prototype.updateEvents = function (node, currentEvents, updatedHtml) {
+    let updatedEvents = updatedHtml.nodeData.events;
+
     if (currentEvents === undefined) {
         if (updatedEvents !== undefined)
-            this.createAllEvents(node, updatedEvents);
+            this.createAllEvents(node, updatedHtml);
     }
     else if (updatedEvents === undefined) {
         if (currentEvents !== undefined)
@@ -918,7 +930,7 @@ F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
                 matchCount++;
 
                 this.removeEvent(node, key);
-                this.createEvent(node, key, updated);
+                this.createEvent(node, key, updatedHtml);
             }
         }
 
@@ -929,10 +941,9 @@ F.prototype.updateEvents = function (node, currentEvents, updatedEvents) {
             let key = newKeys[i];
 
             if (currentEvents[key] === undefined) {
-                let updated = updatedEvents[key];
                 ++matchCount;
 
-                this.createEvent(node, key, updated);
+                this.createEvent(node, key, updatedHtml);
             }
         }
     }
