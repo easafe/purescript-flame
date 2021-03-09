@@ -22,7 +22,7 @@
                 "example-counters": "parcel build examples/NoEffects/Counters/counters.js -d examples/NoEffects/Counters/dist",
                 "example-dice": "parcel build examples/EffectList/Dice/dice.js -d examples/EffectList/Dice/dist",
                 "example-todo": "parcel build examples/EffectList/Todo/todo.js -d examples/EffectList/Todo/dist",
-                "scratchpad": "parcel watch test/scratchpadloader.js -d test/dist",
+                "scratchpad": "parcel build test/scratchpadloader.js -d test/dist",
                 "webchat": "npm run example-webchat && node examples/Effectful/Webchat/dist/webchat-server.js",
                 "server-side-rendering": "npm run example-server-side-rendering && node examples/EffectList/ServerSideRendering/dist/server-side-rendering-server.js",
                 "build-examples": "npm run example-affjax-list && npm run example-webchat && npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",

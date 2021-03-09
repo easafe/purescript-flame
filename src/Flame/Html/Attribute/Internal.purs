@@ -268,7 +268,7 @@ itemprop :: ToStringAttribute
 itemprop = createProperty "itemprop"
 
 list :: ToStringAttribute
-list = createProperty "list"
+list = createAttribute "list"
 
 manifest :: ToStringAttribute
 manifest = createProperty "manifest"
