@@ -425,7 +425,7 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             default:
                 this.updateNodeData(currentHtml.node, currentHtml.nodeData, updatedHtml, updatedHtml.nodeType == svgNode);
                 //it is a pain but save us some work
-                if ((updatedHtml.text !== undefined || currentHtml.text != undefined) && !hasInnerHtml(updatedHtml.nodeData) && updatedHtml.text != currentHtml.node.textContent)
+                if ((updatedHtml.text !== undefined || updatedHtml.children === undefined && currentHtml.text != undefined) && !hasInnerHtml(updatedHtml.nodeData) && updatedHtml.text != currentHtml.node.textContent)
                     currentHtml.node.textContent = updatedHtml.text;
                 else
                     this.updateChildrenNodes(currentHtml.node, currentHtml, updatedHtml);
@@ -448,9 +448,9 @@ F.prototype.updateChildrenNodes = function (parent, currentHtml, updatedHtml) {
         let updatedChildrenLength;
 
         if (updatedChildren !== undefined && (updatedChildrenLength = updatedChildren.length) > 0) {
-            //nodes are appended to the parent, so we must clear it if innerHTML was set
+            //nodes are appended to the parent, so we must clear it if innerHTML or textContent was set
             // there are a few situations in which this is unsafe, but innerHTML should be considered always dangerous anyway
-            if (hasInnerHtml(currentHtml.nodeData))
+            if (currentHtml.text !== undefined || hasInnerHtml(currentHtml.nodeData))
                 clearNode(parent);
 
             for (let i = 0; i < updatedChildrenLength; ++i)
@@ -460,7 +460,7 @@ F.prototype.updateChildrenNodes = function (parent, currentHtml, updatedHtml) {
     //remove all nodes regardless
     else if (updatedChildren === undefined || updatedChildren.length === 0) {
         //html that uses innerHTML usually has no child nodes
-        if (currentChildren !== undefined && currentChildren.length > 0 && !hasInnerHtml(updatedHtml.nodeData))
+        if (currentChildren !== undefined && (currentChildren.length > 0 || currentHtml.text !== undefined) && !hasInnerHtml(updatedHtml.nodeData))
             clearNode(parent);
     }
     //if both first nodes have keys, assume keyed

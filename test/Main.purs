@@ -381,17 +381,46 @@ main =
                         updatedText <- textContent "#mount-point"
                         TUA.equal "ola" updatedText
 
-                  TU.test "update node with text property" do
-                        --nodes with a single text node child have the textConten property set
+                  TU.test "unset text property" do
+                        --nodes with a single text node child have the textContent property set
                         let html = HE.div "test-div" "oi"
                         state <- mountHtml html
-                        let updatedHtml = HE.div' "test-div"
                         text <- textContent "#test-div"
                         TUA.equal "oi" text
 
+                        let updatedHtml = HE.div' "test-div"
                         liftEffect $ FRID.resume state updatedHtml
                         text2 <- textContent "#test-div"
                         TUA.equal "" text2
+
+                  TU.test "text to children" do
+                        --nodes with a single text node child have the textContent property set
+                        let html = HE.div "test-div" "oi"
+                        state <- mountHtml html
+                        text <- textContent "#test-div"
+                        TUA.equal "oi" text
+
+                        let updatedHtml = HE.div "test-div" [HE.span_ "ola", HE.div_ "hah", HE.br]
+                        liftEffect $ FRID.resume state updatedHtml
+                        text2 <- textContent "#test-div"
+                        --from children
+                        TUA.equal "olahah" text2
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 3 childrenCount
+
+                  TU.test "children to text" do
+                        --nodes with a single text node child have the textContent property set
+                        let html = HE.div "test-div" [HE.span_ "ola", HE.div_ "hah", HE.br]
+                        state <- mountHtml html
+                        childrenCount <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 3 childrenCount
+
+                        let updatedHtml = HE.div "test-div" "oi"
+                        liftEffect $ FRID.resume state updatedHtml
+                        text <- textContent "#test-div"
+                        TUA.equal "oi" text
+                        childrenCount2 <- childrenNodeLengthOf "#test-div"
+                        TUA.equal 0 childrenCount
 
                   TU.test "update node tag" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
