@@ -34,7 +34,7 @@ view model = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = F.mount_ (QuerySelector "main") {
+main = F.mount_ (QuerySelector "body") {
         init: init :> [],
         update,
         view

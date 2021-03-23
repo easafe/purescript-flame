@@ -57,7 +57,7 @@ view { url, result } = HE.main "main" [
 ]
 
 main :: Effect Unit
-main = FAE.mount_ (QuerySelector "main") {
+main = FAE.mount_ (QuerySelector "body") {
         init: init :> Nothing,
         update,
         view

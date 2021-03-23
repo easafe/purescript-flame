@@ -124,7 +124,7 @@ function shallowCopy(origin) {
             return {
                 nodeType: lazyNode,
                 node: undefined,
-                nodeData: origin.key,
+                nodeData: origin.nodeData,
                 render: origin.render,
                 arg: origin.arg,
                 rendered: undefined

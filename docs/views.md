@@ -9,14 +9,14 @@ permalink: /views
 In the application record
 ```haskell
 type Application model message = {
-        init :: model,
-        view :: model -> Html message,
-        update :: model -> message -> model
+      init :: model,
+      view :: model -> Html message,
+      update :: model -> message -> model
 }
 ```
 the `view` field maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.
 
-A custom DSL, defined by the type `Html`, is used to write markup. You will need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes, properties and events
+A custom DSL, defined by the type `Html`, is used to write markup. You will likely need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes, properties and events
 
 ```haskell
 import Flame.Html.Element as HE
@@ -31,9 +31,11 @@ The module `Flame.Html.Attribute` exports
 
 * Presential properties, such as `disabled` or `checked`, expecting boolean parameters
 
-* Regular name value HTML attributes
+* Regular name value pair HTML attributes
 
-* Events, such as `onClick` or `onInput`, expecting a `message` type constructor
+* Events, such as `onClick` or `onInput`, expecting a `message` data constructor
+
+* A special attribute, `key` used to enable ["keyed" rendering](https://www.stefankrause.net/wp/?p=342)
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of attributes. In the case you need to define your own attributes/properties/events, Flame provides the combinators
 
@@ -72,28 +74,59 @@ Attributes and children elements are passed as arrays
 
 ```haskell
 HE.div [HA.id "my-div", HA.disabled False, HA.title "div tite"] [
-        HE.span' [HA.id "special-span"],
-        HE.br,
-        HE.span_ [HE.text "I am regular"],
+      HE.span' [HA.id "special-span"],
+      HE.br,
+      HE.span_ [HE.text "I am regular"],
 ]
 {- renders
 <div id="my-div" title="div title">
-        <span id="special-span"></span>
-        <br>
-        <span>I am regular</span>
+      <span id="special-span"></span>
+      <br>
+      <span>I am regular</span>
 </div>
 -}
 ```
 
 But for some common cases, the markup DSL also defines convenience type classes so we can write
 
-* `HE.element "my-element" _` instead of `HE.element [HA.id "my-element"] _` to declare an element with only id as attributes
+* `HE.element "my-element" _` instead of `HE.element [HA.id "my-element"] _` to declare an element with only id as attribute
 
 * `HE.element _ "text content"` instead of `HE.element _ [HE.text "text content"]` to declare elements with only text as children
 
 * `HE.element (HA.attribute _) _` instead of `HE.element [HA.attribute _] _` to declare elements with a single attribute
 
 * `HE.element _ $ HE.element _ _` instead of `HE.element _ [HE.Element _ _]` to declare elements with a single child element
+
+Flame also offers a few special elements for cases where finer control over the DOM is necessary
+
+* Managed elements
+
+`HE.managed` accepts user supplied functions to manipulate an element's DOM node
+
+```haskell
+type NodeRenderer arg = {
+      createNode :: arg -> Effect Node,
+      updateNode :: Node -> arg -> arg -> Effect Node
+}
+
+managed :: forall arg nd message. ToNode nd message NodeData => NodeRenderer arg -> nd -> arg -> Html message
+```
+
+On rendering, Flame will call `createNode` only once and from then on `updateNode`. These functions can check on their local state `arg` to decide whether/how to change a DOM node. For easy of use, the elements attributes and events are still automatically patched -- if that's not the desired behavior, `HE.managed_` can be used instead
+
+```haskell
+managed_ :: forall arg message. NodeRenderer arg -> arg -> Html message
+```
+
+* Lazy elements
+
+Lazy elements are only re-rendered if their local state `arg` changes
+
+```haskell
+lazy :: forall arg message. Maybe Key -> (arg -> Html message) -> arg -> Html message
+```
+
+This is useful to avoid recomputing potentially expensive elements, such as large lists.
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of elements. In the case you need to define your own elements, Flame provides a few combinators as well
 
@@ -108,9 +141,12 @@ HE.createEmptyElement
 
 A `view` is just a regular PureScript function, meaning we can compose it or pass it around as any other value. For example, we can use the model in attributes
 ```haskell
-newtype Model = Model { done :: Int, enabled :: Boolean }
+type Model = {
+      done :: Int,
+      enabled :: Boolean
+}
 
-type Message = Do
+data Message = Do
 
 view :: Model -> Html Message
 view model = HE.div [HA.class' { usefulClass: model.enabled }] $ HE.input [HA.type' "button", HA.value "Do thing number " <> show $ model.done, HA.onClick Do]
@@ -119,17 +155,17 @@ or to selective alter the markup
 ```haskell
 type Name = String
 
-type Model = Just Name
+type Model = Maybe Name
 
-type Message = Update Name | Greet
+data Message = Update Name | Greet
 
 view :: Model -> Html Message
 view = case _ of
-        Nothing -> HE.div' [
-                HE.input [HA.type' "text", HA.onInput Update],
-                HE.input [HA.type' "button", HA.value "Greet!", HA.onClick Greet]
-        ]
-        Just name -> "Greetings, " <> name <> "!"
+      Nothing -> HE.div_ [
+            HE.input [HA.type' "text", HA.onInput Update],
+            HE.input [HA.type' "button", HA.value "Greet!", HA.onClick Greet]
+      ]
+      Just name -> "Greetings, " <> name <> "!"
 ```
 but perhaps more interesting is the ability to create "partial views" without any special syntax support. We will talk more about how to structure applications in the next section, [Handling events](events), but creating reusable views is remarkably simple.
 ```haskell
@@ -141,9 +177,9 @@ footer = ...
 
 view :: Model -> Html Message
 view model = HE.content' [
-        header,
-        ...
-        footer
+      header,
+      ...
+      footer
 ]
 ```
 

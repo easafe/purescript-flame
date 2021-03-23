@@ -81,7 +81,7 @@ view (Model model) = HE.main "main" [
 -- | Mount the application on the given selector and bind WebSocket events to the app channel
 main :: Effect Unit
 main = do
-        channel <- FAE.mount (QuerySelector "main") {
+        channel <- FAE.mount (QuerySelector "body") {
                 init: init :> Nothing,
                 update,
                 view

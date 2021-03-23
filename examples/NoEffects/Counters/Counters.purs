@@ -40,7 +40,7 @@ view model = HE.main "main" [
                 ]
 
 main :: Effect Unit
-main =  FAN.mount_ (QuerySelector "main") {
+main =  FAN.mount_ (QuerySelector "body") {
         init,
         update,
         view

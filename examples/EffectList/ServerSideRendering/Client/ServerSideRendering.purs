@@ -22,7 +22,7 @@ update m@(Model model) = case _ of
         Update int -> Model (Just int) :> []
 
 main :: Effect Unit
-main = F.resumeMount_ (QuerySelector "main") {
+main = F.resumeMount_ (QuerySelector "body") {
         init: [],
         update,
         view: EESS.view

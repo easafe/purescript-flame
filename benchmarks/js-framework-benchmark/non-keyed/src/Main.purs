@@ -52,7 +52,7 @@ createRandomNRows :: Int -> Int -> Aff (Array Row)
 createRandomNRows n lastID = liftEffect (EU.runEffectFn2 createRandomNRows_ n lastID)
 
 main :: Effect Unit
-main = F.mount_ (QuerySelector "main") {
+main = F.mount_ (QuerySelector "body") {
     init: model :> [],
     view,
     update

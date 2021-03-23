@@ -59,7 +59,7 @@ view model = HE.main "main" [
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount_ (QuerySelector "main") {
+main = FAN.mount_ (QuerySelector "body") {
         init,
         update,
         view

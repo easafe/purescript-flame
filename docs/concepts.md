@@ -9,9 +9,9 @@ permalink: /concepts
 A Flame application consists of the following record
 ```haskell
 type Application model message = {
-        init :: model,
-        view :: model -> Html message,
-        update :: model -> message -> model
+      init :: model,
+      view :: model -> Html message,
+      update :: model -> message -> model
 }
 ```
 The type variable `model` refers to the state of the application. `message`, on the other hand, describe the kind of events the application handles.
@@ -39,9 +39,9 @@ In the counter example, the model is defined as
 ```haskell
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.button [HA.onClick Decrement] "-",
-        HE.text $ show model,
-        HE.button [HA.onClick Increment] "+"
+      HE.button [HA.onClick Decrement] "-",
+      HE.text $ show model,
+      HE.button [HA.onClick Increment] "+"
 ]
 ```
 The `Message`s raised as events will be used to signal how the application state should be updated.
@@ -58,8 +58,8 @@ and thus our update function looks like
 ```haskell
 update :: Model -> Message -> Model
 update model = case _ of
-        Increment -> model + 1
-        Decrement -> model - 1
+      Increment -> model + 1
+      Decrement -> model - 1
 ```
 
 See [Handling events](events) for an in depth look at update strategies.
@@ -72,7 +72,7 @@ In the counter example, no external events are handled, so we use the version of
 ```haskell
 main :: Effect Unit
 main = FAN.mount_ "main" {
-        ...
+      ...
 }
 ```
 
@@ -83,13 +83,13 @@ See [Handling external events](events#handling-external-events) for an in depth 
 Having all pieces put together, we can either render the application to the DOM, as in the case of the counter example
 ```haskell
 main :: Effect Unit
-main = FAN.mount_ "main" {
-        init,
-        update,
-        view
+main = FAN.mount_ (QuerySelector "body") {
+      init,
+      update,
+      view
 }
 ```
-or as a `String` with `Flame.Renderer.StringRenderer.render`, which can be used server-side.
+or as a `String` with `Flame.Renderer.String.render`, which can be used server-side.
 
 See [Rendering the app](rendering) for an in depth look at rendering.
 
