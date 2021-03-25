@@ -54,6 +54,7 @@ lazyEntry roll = HE.lazy Nothing toEntry roll -- lazy node will only be recomput
 main :: Effect Unit
 main = F.mount_ (QuerySelector "body") {
       init: init :> [],
+      subscribe: [],
       update,
       view
 }
