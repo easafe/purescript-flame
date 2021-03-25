@@ -1,1 +1,0 @@
-require('../../../output/Examples.NoEffects.Counter.Main').main();

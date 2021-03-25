@@ -36,8 +36,6 @@ type Application model message = {
 ```
 This is enough for toy examples or small modules, but probably not sufficient to build an user facing application. If we want to do any sort of effectul computation we need to look into the next update strategies.
 
-See all [no effects examples](https://github.com/easafe/purescript-flame/tree/master/examples/NoEffects).
-
 ### Effect list updating
 
 In the effect list strategy, our update function is still "pure", but we also return an array of effects to be performed
@@ -119,8 +117,6 @@ init = model :> [
 ]
 ```
 which has the same expected behavior of calling `update` with the resulting message of every entry in the array.
-
-See all [effect list examples](https://github.com/easafe/purescript-flame/tree/master/examples/EffectList).
 
 ### Effectful updating
 
@@ -213,8 +209,6 @@ update { display, model: MyModel model, message } =
 
 Here, no matter how many fields `MyModel` has, we update only what's required in each case expression. Notice that `diff` always takes a record as first parameter. The model, however, can be either a record or newtype (given a `Newtype` instance)/plain functor that holds a record to be updated.
 
-See all [effectful examples](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful).
-
 ## [Handling external events](#handling-external-events)
 
 More often than not, a real world application needs to handle events that don't come from the view. These might include events targeting `window` or `document`, or third party components. To solve this problem, the `mount` function returns a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel) which can be fed arbitrary messages
@@ -242,7 +236,7 @@ main = do
       SC.send channel [Message4]
 ```
 
-See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Effectful/Webchat) for more examples of external events.
+See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Webchat) for more examples of external events.
 
 ## Event handling and components
 

@@ -14,7 +14,7 @@ type Application model message = {
       update :: model -> message -> model
 }
 ```
-The type variable `model` refers to the state of the application. `message`, on the other hand, describe the kinds of events the application can handle.
+The type variable `model` refers to the state of the application. `message`, on the other hand, describes the kinds of events the application can handle.
 
 ### Application state
 

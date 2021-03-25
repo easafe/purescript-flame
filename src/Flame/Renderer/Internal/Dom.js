@@ -37,7 +37,7 @@ function F(eventWrapper, root, updater, html, isDry) {
     /** The current virtual nodes to be diff'd when the view updates */
     this.cachedHtml = html.node === undefined ? html : shallowCopy(html); //if node is already defined, then this object has been reused in views
 
-    //a "dry" application means that it was server-side rendered
+    //a "dry" application means that it was server side rendered
     if (isDry)
         this.hydrate(this.root, this.cachedHtml);
     else
@@ -80,7 +80,7 @@ F.prototype.hydrate = function (parent, html, referenceNode) {
                     let c = html.children[i] = (html.children[i].node === undefined ? html.children[i] : shallowCopy(html.children[i]));
                     //will happen when:
                     // managed nodes
-                    // client side view is different from server-side view or actual dom
+                    // client side view is different from server side view or actual dom
                     if (childNodes[cni] === undefined)
                         this.createAllNodes(parent, c);
                     else {

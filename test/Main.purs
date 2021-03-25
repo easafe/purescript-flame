@@ -420,7 +420,7 @@ main =
                         text <- textContent "#test-div"
                         TUA.equal "oi" text
                         childrenCount2 <- childrenNodeLengthOf "#test-div"
-                        TUA.equal 0 childrenCount
+                        TUA.equal 0 childrenCount2
 
                   TU.test "update node tag" do
                         let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]

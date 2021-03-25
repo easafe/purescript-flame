@@ -23,7 +23,7 @@ import Flame.Html.Element as HE
 import Flame.Html.Attribute as HA
 ```
 
-### Attributes, properties and events
+### Attributes and properties and events
 
 The module `Flame.Html.Attribute` exports
 
@@ -73,7 +73,7 @@ HE.div' [HA.id "my-div"] -- renders <div id="my-div"></div>
 Attributes and children elements are passed as arrays
 
 ```haskell
-HE.div [HA.id "my-div", HA.disabled False, HA.title "div tite"] [
+HE.div [HA.id "my-div", HA.disabled False, HA.title "div title"] [
       HE.span' [HA.id "special-span"],
       HE.br,
       HE.span_ [HE.text "I am regular"],
@@ -147,6 +147,60 @@ HE.createElement'
 HE.createEmptyElement
 ```
 
+### Combining attributes and event
+
+For most attributes and properties, later declarations overwrite previous ones
+
+```haskell
+HE.div' [HA.title "title", HA.title "title 2"]
+{- renders
+<div title="title 2">
+</div>
+-}
+```
+
+```haskell
+HE.input [HA.type' "input", HA.value "test", HA.value "not a test!"]
+{- renders
+<input type="text">
+with value set to "not a test!"
+-}
+```
+
+However, classes, inline styles and events behave differently:
+
+* Classes and styles
+
+All uses of `HE.class'` on a single element are combined
+
+```haskell
+HE.div' [HA.class' "a b", HA.class' { c: true }]
+{- renders
+<div class="a b c">
+</div>
+-}
+```
+
+So does `HE.style`
+
+```haskell
+HE.div' [HA.style { display: "flex", color: "red" }, HA.style { order: "1" }]
+{- renders
+<div style="display: flex; color: red; order:1">
+</div>
+-}
+```
+
+* Events
+
+Different messages for the same event on a single element are raised in the order they were declared. For example, clicking on a `div` like follows
+
+```haskell
+HE.div' [HA.onClick Message1, HA.onClick Message2]
+```
+
+will result on the `update` function being called with `Message1` and then `Message2`.
+
 ### View logic
 
 A `view` is just a regular PureScript function: we can compose it or pass it around as any other value. For example, we can use the model in attributes
@@ -193,7 +247,7 @@ view model = HE.content' [
 ]
 ```
 
-See the [counters test application](https://github.com/easafe/purescript-flame/tree/master/examples/NoEffects/Counters) for more examples of how to compose views.
+See the [counters test application](https://github.com/easafe/purescript-flame/tree/master/examples/Counters) for more examples of how to compose views.
 
 <a href="/concepts" class="direction previous">Previous: Main concepts</a>
 <a href="/events" class="direction">Next: Handling events</a>

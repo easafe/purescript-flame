@@ -59,6 +59,6 @@ resumeMount :: forall model message. UnserializeModel model => QuerySelector -> 
 ```
 to install event handlers in the pre rendered markup. The `SerializeModel`/`UnserializeModel` type class automatically serializes the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well.
 
-See the [Dice application](https://github.com/easafe/purescript-flame/tree/master/examples/EffectList/ServerSideRendering) for an example of how to pre render an application on server-side.
+See the [Dice application](https://github.com/easafe/purescript-flame/tree/master/examples/ServerSideRendering) for an example of how to pre render an application on server-side.
 
 <a href="/events" class="direction previous">Previous: Handling events</a>
