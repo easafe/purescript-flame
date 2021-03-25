@@ -125,7 +125,7 @@ function stringify(html) {
                 childrenTag.push(stringify(html.children[i]));
 
             return childrenTag.join('');
-        //skip for now, as element creation needs polyfills on server side
+        //skip for now, as element creation needs polyfills on server-side
         case managedNode:
             return '';
         default:

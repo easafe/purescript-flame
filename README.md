@@ -1,6 +1,6 @@
 # Flame [![Build Status](https://travis-ci.com/easafe/purescript-flame.svg?branch=master)](https://travis-ci.com/easafe/purescript-flame)
 
-Flame is a fast & simple framework for building web applications in PureScript inspired by [purescript-hedwig](https://github.com/utkarshkukreti/purescript-hedwig) and Elm
+Flame is a fast & simple framework inspired by the Elm architecture for building web applications in PureScript
 
 ## Documentation
 
@@ -15,14 +15,13 @@ See the [examples folder](/examples)
 Install:
 
 ```bash
-npm install snabbdom snabbdom-to-html # for server side rendering
 bower install purescript-flame
 ```
 
 Example counter app:
 
 ```purescript
-module App.Main where
+module Counter.Main where
 
 import Prelude
 
@@ -46,23 +45,23 @@ init = 0
 -- | `update` is called to handle events
 update :: Model -> Message -> Model
 update model = case _ of
-        Increment -> model + 1
-        Decrement -> model - 1
+      Increment -> model + 1
+      Decrement -> model - 1
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.button [HA.onClick Decrement] "-",
-        HE.text $ show model,
-        HE.button [HA.onClick Increment] "+"
+      HE.button [HA.onClick Decrement] "-",
+      HE.text $ show model,
+      HE.button [HA.onClick Increment] "+"
 ]
 
 -- | Mount the application on the given selector
 main :: Effect Unit
 main = FAN.mount_ (QuerySelector "body") {
-        init,
-        update,
-        view
+      init,
+      update,
+      view
 }
 ```
 

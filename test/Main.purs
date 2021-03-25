@@ -852,7 +852,7 @@ main =
 
                         childrenLength2 <- childrenNodeLengthOf "#my-id"
                         TUA.equal 3 childrenLength2
-                        --managed nodes are not rendered server side
+                        --managed nodes are not rendered server-side
                         span <- liftEffect $ FAD.querySelector "#text-output"
                         TUA.assert "managed node not created yet" $ DM.isNothing span
 

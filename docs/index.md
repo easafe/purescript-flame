@@ -26,7 +26,7 @@ bower install purescript-flame
 Example counter app:
 
 ```haskell
-module App.Main where
+module Counter.Main where
 
 import Prelude
 

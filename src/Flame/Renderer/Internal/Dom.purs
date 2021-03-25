@@ -25,7 +25,7 @@ foreign import resume_ :: forall message. EffectFn2 DomRenderingState (Html mess
 start :: forall message. DomNode -> (message -> Effect Unit) -> Html message -> Effect DomRenderingState
 start parent updater = EU.runEffectFn4 start_ Just parent (maybeUpdater updater)
 
--- | Hydrates a server side rendered application
+-- | Hydrates a server-side rendered application
 startFrom :: forall message. DomNode -> (message -> Effect Unit) -> Html message -> Effect DomRenderingState
 startFrom parent updater = EU.runEffectFn4 startFrom_ Just parent (maybeUpdater updater)
 

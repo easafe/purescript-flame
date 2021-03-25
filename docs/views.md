@@ -14,7 +14,7 @@ type Application model message = {
       update :: model -> message -> model
 }
 ```
-the `view` field maps the current state to markup. Whenever the model is updated, flame will patch the DOM by calling `view` with the new state.
+the `view` field maps the current state to markup. Whenever the model is updated, flame patches the DOM by calling `view` with the new state.
 
 A custom DSL, defined by the type `Html`, is used to write markup. You will likely need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes, properties and events
 
@@ -97,7 +97,7 @@ But for some common cases, the markup DSL also defines convenience type classes 
 
 * `HE.element _ $ HE.element _ _` instead of `HE.element _ [HE.Element _ _]` to declare elements with a single child element
 
-Flame also offers a few special elements for cases where finer control over the DOM is necessary
+Flame also offers a few special elements for cases where finer control is necessary
 
 * Managed elements
 
@@ -112,7 +112,7 @@ type NodeRenderer arg = {
 managed :: forall arg nd message. ToNode nd message NodeData => NodeRenderer arg -> nd -> arg -> Html message
 ```
 
-On rendering, Flame will call `createNode` only once and from then on `updateNode`. These functions can check on their local state `arg` to decide whether/how to change a DOM node. For easy of use, the elements attributes and events are still automatically patched -- if that's not the desired behavior, `HE.managed_` can be used instead
+On rendering, Flame calls `createNode` only once and from then on `updateNode`. These functions can check on their local state `arg` to decide whether/how to change a DOM node. For easy of use, the elements attributes and events are still automatically patched -- otherwise, `HE.managed_` should be used
 
 ```haskell
 managed_ :: forall arg message. NodeRenderer arg -> arg -> Html message
@@ -126,7 +126,17 @@ Lazy elements are only re-rendered if their local state `arg` changes
 lazy :: forall arg message. Maybe Key -> (arg -> Html message) -> arg -> Html message
 ```
 
-This is useful to avoid recomputing potentially expensive elements, such as large lists.
+This is useful to avoid recomputing potentially expensive views, such as large lists.
+
+* Fragments
+
+Fragments are wrappers for their children elements
+
+```haskell
+fragment :: forall children message. ToNode children message Html => children -> Html message
+```
+
+meaning that only the children elements will be rendered to the DOM. Fragments are useful in cases where having an extra parent element is unnecessary, or wherever [`DocumentFragment`](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) could be used.
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of elements. In the case you need to define your own elements, Flame provides a few combinators as well
 
@@ -139,7 +149,7 @@ HE.createEmptyElement
 
 ### View logic
 
-A `view` is just a regular PureScript function, meaning we can compose it or pass it around as any other value. For example, we can use the model in attributes
+A `view` is just a regular PureScript function: we can compose it or pass it around as any other value. For example, we can use the model in attributes
 ```haskell
 type Model = {
       done :: Int,
