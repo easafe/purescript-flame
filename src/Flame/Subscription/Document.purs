@@ -1,9 +1,17 @@
 -- | Defines events for the native `document` object
-module Flame.Html.Signal.Document (onBlur, onBlur', onClick, onClick', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onFocus, onFocus', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onScroll, onScroll', onWheel, onWheel') where
+module Flame.Subscription.Document (onBlur, onBlur', onClick, onClick', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onFocus, onFocus', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onScroll, onScroll', onWheel, onWheel', onClick2, onClick2') where
 
-import Flame.Html.Signal.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
-import Flame.Html.Signal.Source (createEventSource, createRawEventSource, createSpecialEventSource)
-import Flame.Types (Key)
+import Prelude
+
+import Data.Tuple.Nested as DTN
+import Effect (Effect)
+import Flame.Subscription.Source (createEventSource, createRawEventSource, createSpecialEventSource)
+import Flame.Subscription.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
+import Flame.Serialization (class UnserializeState)
+import Flame.Serialization as FS
+import Flame.Types (AppId(..), Key, Source(..), Subscription)
+import Foreign as F
+import Web.Event.Event (Event, EventType(..))
 
 foreign import onClick_ :: forall message. ToEventSource_ message
 foreign import onClick__ :: forall message. ToRawEventSource_ message
@@ -39,6 +47,13 @@ foreign import onDragover_ :: forall message. ToEventSource_ message
 foreign import onDragover__ :: forall message. ToRawEventSource_ message
 foreign import onDrop_ :: forall message. ToEventSource_ message
 foreign import onDrop__ :: forall message. ToRawEventSource_ message
+
+-- | click event fired for the document
+onClick2 :: forall message. message -> Subscription message
+onClick2 message = DTN.tuple3 Document "click" (const message)
+
+onClick2' :: forall message. (Event -> message) -> Subscription message
+onClick2' message = DTN.tuple3 Document "click" (message <<< F.unsafeFromForeign)
 
 -- | click event fired for the document
 onClick :: forall message. ToEventSource message

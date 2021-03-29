@@ -1,8 +1,14 @@
 -- | Defines events for the native `window` object
-module Flame.Html.Signal.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload') where
+module Flame.Subscription.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload', onError2, onError2') where
 
-import Flame.Html.Signal.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_)
-import Flame.Html.Signal.Source (createEventSource, createRawEventSource)
+import Prelude
+
+import Data.Tuple.Nested as DTN
+import Flame.Subscription.Source (createEventSource, createRawEventSource)
+import Flame.Subscription.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_)
+import Flame.Types (Source(..), Subscription)
+import Foreign as F
+import Web.Event.Internal.Types (Event)
 
 foreign import onError_ :: forall message. ToEventSource_ message
 foreign import onError__ :: forall message. ToRawEventSource_ message
@@ -16,6 +22,13 @@ foreign import onLoad_ :: forall message. ToEventSource_ message
 foreign import onLoad__ :: forall message. ToRawEventSource_ message
 foreign import onUnload_ :: forall message. ToEventSource_ message
 foreign import onUnload__ :: forall message. ToRawEventSource_ message
+
+onError2 :: forall message. message -> Subscription message
+onError2 message = DTN.tuple3 Window "error" (const message)
+
+onError2' :: forall message. (Event -> message) -> Subscription message
+onError2' message = DTN.tuple3 Window "error" (message <<< F.unsafeFromForeign)
+
 
 onError :: forall message. ToEventSource message
 onError = createEventSource onError_

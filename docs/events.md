@@ -219,11 +219,11 @@ More often than not, a real world application needs to handle events that don't 
 
 `Flame.Application.Effectful.mount` returns a `Channel (Maybe message)`
 
-The module `Flame.Html.Signal` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a channel
+The module `Flame.Subscription` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a channel
 
 ```haskell
 import Flame.Application.NoEffects as FAN
-import Flame.Html.Signal as FE
+import Flame.Subscription as FE
 import Signal.Channel as SC
 ...
 

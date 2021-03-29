@@ -21,19 +21,20 @@ data TEELMessage = TEELIncrement | TEELDecrement
 -- | `update` is called to handle events
 update :: Model -> TEELMessage -> Tuple Model (Array (Aff (Maybe TEELMessage)))
 update model = case _ of
-        TEELIncrement -> (model + 1) :> []
-        TEELDecrement -> (model - 1) :> []
+      TEELIncrement -> (model + 1) :> []
+      TEELDecrement -> (model - 1) :> []
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html TEELMessage
 view model = HE.main "main" [
-        HE.span "text-output" $ show model
+      HE.span "text-output" $ show model
 ]
 
 -- | Mount the application on the given selector
 mount :: Effect (Channel (Array TEELMessage))
 mount = FAE.mount (QuerySelector "#mount-point") {
-                init : 0 :> [],
-                update,
-                view
-        }
+      init : 0 :> [],
+      subscribe: [],
+      update,
+      view
+}

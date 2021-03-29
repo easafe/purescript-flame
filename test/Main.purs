@@ -39,7 +39,7 @@ import Test.ServerSideRendering.FragmentNode as TSF
 import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Test.Unit.Main (runTest)
+import Test.Unit.Main as TUM
 import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
@@ -72,170 +72,167 @@ foreign import createSvg :: Effect Node
 foreign import createDiv :: Effect Node
 
 main :: Effect Unit
-main =
-      runTest do
-            TU.suite "Server side virtual node creation" do
-                        TU.test "ToHtml instances" do
-                              let html = HE.a [HA.id "test"] [HE.text "TEST"]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<a id="test">TEST</a>""" html'
+main = TUM.runTest do
+      TU.suite "Server side virtual node creation" do
+            TU.test "ToHtml instances" do
+                  let html = HE.a [HA.id "test"] [HE.text "TEST"]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<a id="test">TEST</a>""" html'
 
-                              let html2 = HE.a (HA.id "test") [HE.text "TEST"]
-                              html2' <- liftEffect $ FRS.render html2
-                              TUA.equal """<a id="test">TEST</a>""" html2'
+                  let html2 = HE.a (HA.id "test") [HE.text "TEST"]
+                  html2' <- liftEffect $ FRS.render html2
+                  TUA.equal """<a id="test">TEST</a>""" html2'
 
-                              let html3 = HE.a "test" [HE.text "TEST"]
-                              html3' <- liftEffect $ FRS.render html3
-                              TUA.equal """<a id="test">TEST</a>""" html3'
+                  let html3 = HE.a "test" [HE.text "TEST"]
+                  html3' <- liftEffect $ FRS.render html3
+                  TUA.equal """<a id="test">TEST</a>""" html3'
 
-                              let html4 = HE.a "test" $ HE.text "TEST"
-                              html4' <- liftEffect $ FRS.render html4
-                              TUA.equal """<a id="test">TEST</a>""" html4'
+                  let html4 = HE.a "test" $ HE.text "TEST"
+                  html4' <- liftEffect $ FRS.render html4
+                  TUA.equal """<a id="test">TEST</a>""" html4'
 
-                              let html5 = HE.a "test" "TEST"
-                              html5' <- liftEffect $ FRS.render html5
-                              TUA.equal """<a id="test">TEST</a>""" html5'
+                  let html5 = HE.a "test" "TEST"
+                  html5' <- liftEffect $ FRS.render html5
+                  TUA.equal """<a id="test">TEST</a>""" html5'
 
-                        TU.test "ToClassList instances" do
-                              let html = HE.a [HA.class' "test"] [HE.text "TEST"]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<a class="test">TEST</a>""" html'
+            TU.test "ToClassList instances" do
+                  let html = HE.a [HA.class' "test"] [HE.text "TEST"]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<a class="test">TEST</a>""" html'
 
-                              let html2 = HE.svg [HA.class' { "test": false, "test2": true, "test3": true }] [HE.text "TEST"]
-                              html2' <- liftEffect $ FRS.render html2
-                              TUA.equal """<svg class="test2 test3">TEST</svg>""" html2'
+                  let html2 = HE.svg [HA.class' { "test": false, "test2": true, "test3": true }] [HE.text "TEST"]
+                  html2' <- liftEffect $ FRS.render html2
+                  TUA.equal """<svg class="test2 test3">TEST</svg>""" html2'
 
-                        TU.test "inline style" do
-                              let html = HE.a (HA.style { mystyle: "test" }) [HE.text "TEST"]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<a style="mystyle: test">TEST</a>""" html'
+            TU.test "inline style" do
+                  let html = HE.a (HA.style { mystyle: "test" }) [HE.text "TEST"]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<a style="mystyle: test">TEST</a>""" html'
 
-                              let html2 = HE.a [HA.style { width: "23px", display: "none" }] [HE.text "TEST"]
-                              html2' <- liftEffect $ FRS.render html2
-                              TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
+                  let html2 = HE.a [HA.style { width: "23px", display: "none" }] [HE.text "TEST"]
+                  html2' <- liftEffect $ FRS.render html2
+                  TUA.equal """<a style="width: 23px; display: none">TEST</a>""" html2'
 
-                        TU.test "styles merge" do
-                              let html = HE.a [ HA.style { mystyle: "test", mylife: "good" }, HA.style { mystyle: "check" } ] [HE.text "TEST"]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<a style="mystyle: check; mylife: good">TEST</a>""" html'
+            TU.test "styles merge" do
+                  let html = HE.a [ HA.style { mystyle: "test", mylife: "good" }, HA.style { mystyle: "check" } ] [HE.text "TEST"]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<a style="mystyle: check; mylife: good">TEST</a>""" html'
 
-                              let html2 = HE.a [HA.style { width: "23px", display: "none" }, HA.style { height: "10px" } ] [HE.text "TEST"]
-                              html2' <- liftEffect $ FRS.render html2
-                              TUA.equal """<a style="width: 23px; display: none; height: 10px">TEST</a>""" html2'
+                  let html2 = HE.a [HA.style { width: "23px", display: "none" }, HA.style { height: "10px" } ] [HE.text "TEST"]
+                  html2' <- liftEffect $ FRS.render html2
+                  TUA.equal """<a style="width: 23px; display: none; height: 10px">TEST</a>""" html2'
 
-                        TU.test "classes merge" do
-                              let html = HE.a [ HA.class' "a b", HA.class' { c: true } ] [HE.text "TEST"]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<a class="a b c">TEST</a>""" html'
+            TU.test "classes merge" do
+                  let html = HE.a [ HA.class' "a b", HA.class' { c: true } ] [HE.text "TEST"]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<a class="a b c">TEST</a>""" html'
 
-                        TU.test "style/class name case" do
-                              html <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "superClass"
-                              TUA.equal """<element class="super-class"></element>""" html
+            TU.test "style/class name case" do
+                  html <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "superClass"
+                  TUA.equal """<element class="super-class"></element>""" html
 
-                              html2 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "SuperClass"
-                              TUA.equal """<element class="super-class"></element>""" html2
+                  html2 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "SuperClass"
+                  TUA.equal """<element class="super-class"></element>""" html2
 
-                              html3 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "MySuperClass my-other-class"
-                              TUA.equal """<element class="my-super-class my-other-class"></element>""" html3
+                  html3 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "MySuperClass my-other-class"
+                  TUA.equal """<element class="my-super-class my-other-class"></element>""" html3
 
-                              html4 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "SUPERCLASS"
-                              TUA.equal """<element class="superclass"></element>""" html4
+                  html4 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' "SUPERCLASS"
+                  TUA.equal """<element class="superclass"></element>""" html4
 
-                              html5 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.style { borderBox : "23", s : "34", borderLeftTopRadius : "20px"}
-                              TUA.equal """<element style="border-box: 23; s: 34; border-left-top-radius: 20px"></element>""" html5
+                  html5 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.style { borderBox : "23", s : "34", borderLeftTopRadius : "20px"}
+                  TUA.equal """<element style="border-box: 23; s: 34; border-left-top-radius: 20px"></element>""" html5
 
-                              html6 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' { borderBox : true, s : false, borderLeftTopRadius : true}
-                              TUA.equal """<element class="border-box border-left-top-radius"></element>""" html6
+                  html6 <- liftEffect <<< FRS.render $ HE.createElement' "element" $ HA.class' { borderBox : true, s : false, borderLeftTopRadius : true}
+                  TUA.equal """<element class="border-box border-left-top-radius"></element>""" html6
 
-                        TU.test "custom elements" do
-                              let html = HE.createElement' "custom-element" "test"
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<custom-element id="test"></custom-element>""" html'
+            TU.test "custom elements" do
+                  let html = HE.createElement' "custom-element" "test"
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<custom-element id="test"></custom-element>""" html'
 
-                              let html2 = HE.createElement' "custom-element" "test"
-                              html2' <- liftEffect $ FRS.render html2
-                              TUA.equal """<custom-element id="test"></custom-element>""" html2'
+                  let html2 = HE.createElement' "custom-element" "test"
+                  html2' <- liftEffect $ FRS.render html2
+                  TUA.equal """<custom-element id="test"></custom-element>""" html2'
 
-                              let html3 = HE.createElement_ "custom-element" "test"
-                              html3' <- liftEffect $ FRS.render html3
-                              TUA.equal """<custom-element>test</custom-element>""" html3'
+                  let html3 = HE.createElement_ "custom-element" "test"
+                  html3' <- liftEffect $ FRS.render html3
+                  TUA.equal """<custom-element>test</custom-element>""" html3'
 
-                        TU.test "lazy nodes" do
-                              let html = HE.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<p id="p" min="23">TEST</p>""" html'
+            TU.test "lazy nodes" do
+                  let html = HE.lazy Nothing (const (HE.p [HA.id "p", HA.min "23"] "TEST")) unit
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<p id="p" min="23">TEST</p>""" html'
 
-                        TU.test "fragment nodes" do
-                              let html = HE.fragment [
-                                    HE.a [HA.class' "test"] [HE.text "TEST"],
-                                    HE.a [HA.class' "test-2"] [HE.text "TEST-2"]
-                              ]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<a class="test">TEST</a><a class="test-2">TEST-2</a>""" html'
+            TU.test "fragment nodes" do
+                  let html = HE.fragment [
+                        HE.a [HA.class' "test"] [HE.text "TEST"],
+                        HE.a [HA.class' "test-2"] [HE.text "TEST-2"]
+                  ]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<a class="test">TEST</a><a class="test-2">TEST-2</a>""" html'
 
-                        TU.test "svg nodes" do
-                              let html = HE.svg [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] <<< HE.path' $ HA.d "234"
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
+            TU.test "svg nodes" do
+                  let html = HE.svg [HA.id "oi", HA.class' "ola", HA.viewBox "0 0 23 0"] <<< HE.path' $ HA.d "234"
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<svg class="ola" id="oi" viewBox="0 0 23 0"><path d="234" /></svg>""" html'
 
-                        TU.test "managed nodes are ignored" do
-                              let html = HE.div [ HA.class' "a b" ] $ HE.managed_ {createNode: const createDiv, updateNode: \e _ _ -> pure e} unit
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<div class="a b"></div>""" html'
+            TU.test "managed nodes are ignored" do
+                  let html = HE.div [ HA.class' "a b" ] $ HE.managed_ {createNode: const createDiv, updateNode: \e _ _ -> pure e} unit
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<div class="a b"></div>""" html'
 
-                        TU.test "nested elements" do
-                              let html = HE.html_ [
-                                    HE.head_ [HE.title "title"],
-                                    HE.body_ [
-                                          HE.main_ [
-                                                HE.button_ "-",
-                                                HE.br,
-                                                HE.text "Test",
-                                                HE.button_ "+",
-                                                HE.svg (HA.viewBox "0 0 23 0") <<< HE.path' $ HA.d "234",
-                                                HE.div_ $ HE.div_ [
-                                                      HE.span_ [ HE.a_ "here" ]
-                                                ]
-                                          ]
+            TU.test "nested elements" do
+                  let html = HE.html_ [
+                        HE.head_ [HE.title "title"],
+                        HE.body_ [
+                              HE.main_ [
+                                    HE.button_ "-",
+                                    HE.br,
+                                    HE.text "Test",
+                                    HE.button_ "+",
+                                    HE.svg (HA.viewBox "0 0 23 0") <<< HE.path' $ HA.d "234",
+                                    HE.div_ $ HE.div_ [
+                                          HE.span_ [ HE.a_ "here" ]
                                     ]
                               ]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><svg viewBox="0 0 23 0"><path d="234" /></svg><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
+                        ]
+                  ]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><svg viewBox="0 0 23 0"><path d="234" /></svg><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                        TU.test "nested nodes with attributes" do
-                              let html = HE.html [HA.lang "en"] [
-                                    HE.head_ [HE.title "title"],
-                                    HE.body "content" [
-                                          HE.main_ [
-                                                HE.button (HA.style { display: "block", width: "20px"}) "-",
-                                                HE.br,
-                                                HE.text "Test",
-                                                HE.button (HA.createAttribute "my-attribute" "myValue") "+",
-                                                HE.hr' [HA.style { border: "200px solid blue"}] ,
-                                                HE.div_ $ HE.div_ [
-                                                      HE.span_ [ HE.a_ "here" ]
-                                                ]
-                                          ]
+            TU.test "nested nodes with attributes" do
+                  let html = HE.html [HA.lang "en"] [
+                        HE.head_ [HE.title "title"],
+                        HE.body "content" [
+                              HE.main_ [
+                                    HE.button (HA.style { display: "block", width: "20px"}) "-",
+                                    HE.br,
+                                    HE.text "Test",
+                                    HE.button (HA.createAttribute "my-attribute" "myValue") "+",
+                                    HE.hr' [HA.style { border: "200px solid blue"}] ,
+                                    HE.div_ $ HE.div_ [
+                                          HE.span_ [ HE.a_ "here" ]
                                     ]
                               ]
-                              html' <- liftEffect $ FRS.render html
-                              TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
+                        ]
+                  ]
+                  html' <- liftEffect $ FRS.render html
+                  TUA.equal """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
-                        TU.test "nested nodes with properties and attributes" do
-                              let html = HE.html [HA.lang "en"] [
-                                    HE.head [HA.disabled true] [HE.title "title"],
-                                    HE.body "content" [
-                                          HE.lazy Nothing (const (HE.main_ [
-                                                HE.button (HA.style { display: "block", width: "20px"}) "-",
-                                                HE.br,
-                                                HE.text "Test",
-                                                HE.button (HA.createAttribute "my-attribute" "myValue") "+",
-                                                HE.hr' [HA.autocomplete "off", HA.style { border: "200px solid blue"}] ,
-                                                HE.div_ $ HE.div_ [
-                                                      --empty data should not be rendered
-                                                      HE.span (HA.class' "") [ HE.a [HA.autofocus true] "here" ]
-                                                ]
-                                          ])) unit
+            TU.test "nested nodes with properties and attributes" do
+                  let html = HE.html [HA.lang "en"] [
+                        HE.head [HA.disabled true] [HE.title "title"],
+                        HE.body "content" [
+                              HE.lazy Nothing (const (HE.main_ [
+                                    HE.button (HA.style { display: "block", width: "20px"}) "-",
+                                    HE.br,
+                                    HE.text "Test",
+                                    HE.button (HA.createAttribute "my-attribute" "myValue") "+",
+                                    HE.hr' [HA.autocomplete "off", HA.style { border: "200px solid blue"}] ,
+                                    HE.div_ $ HE.div_ [
+                                          --empty data should not be rendered
+                                          HE.span (HA.class' "") [ HE.a [HA.autofocus true] "here" ]
                                     ]
                               ]
                               html' <- liftEffect $ FRS.render html

@@ -45,7 +45,7 @@ type PreApplication model message = {
         view :: model -> Html message
 }
 
-preMount :: forall model message. SerializeModel model => QuerySelector -> PreApplication model message -> Effect String
+preMount :: forall model message. SerializeState model => QuerySelector -> PreApplication model message -> Effect String
 ```
 which can used to render server-side the initial state of an application. On client side, we can use
 ```haskell
@@ -55,9 +55,9 @@ type ResumedApplication model message = {
         update :: model -> message -> Tuple model (Array (Aff (Maybe message))) --update is only available client side
 }
 
-resumeMount :: forall model message. UnserializeModel model => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
+resumeMount :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect (Channel (Array message))
 ```
-to install event handlers in the pre rendered markup. The `SerializeModel`/`UnserializeModel` type class automatically serializes the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well.
+to install event handlers in the pre rendered markup. The `SerializeState`/`UnserializeState` type class automatically serializes the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well.
 
 See the [Dice application](https://github.com/easafe/purescript-flame/tree/master/examples/ServerSideRendering) for an example of how to pre render an application on server-side.
 

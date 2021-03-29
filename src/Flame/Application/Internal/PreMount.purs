@@ -1,18 +1,6 @@
-module Flame.Application.PreMount where
+module Flame.Application.Internal.PreMount where
 
-import Data.Argonaut.Core as DAC
-import Data.Argonaut.Decode (JsonDecodeError)
-import Data.Argonaut.Decode as DAD
-import Data.Argonaut.Decode.Class (class GDecodeJson)
-import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Argonaut.Decode.Generic.Rep as DADEGR
-import Data.Argonaut.Encode as DAE
-import Data.Argonaut.Encode.Class (class GEncodeJson)
-import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Encode.Generic.Rep as DAEGR
-import Data.Bifunctor as DB
 import Data.Either (Either(..))
-import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (global)
@@ -23,9 +11,10 @@ import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
+import Flame.Serialization (class UnserializeState, class SerializeState)
+import Flame.Serialization as FS
 import Flame.Types (Html, PreApplication)
-import Prelude (bind, discard, pure, ($), (<<<), (<>))
-import Prim.RowList (class RowToList)
+import Prelude (bind, discard, pure, ($), (<>))
 import Web.DOM.ParentNode (QuerySelector(..))
 
 foreign import injectState :: forall message. Html message -> Html message -> Html message
@@ -45,29 +34,13 @@ onlyLetters = DSR.replace (DSRU.unsafeRegex "[^aA-zZ]" global) ""
 selectorSerializedState :: String -> String
 selectorSerializedState selector = tagSerializedState <> "#" <> idSerializedState selector <> "[" <> attributeSerializedState selector <> "=" <> selector <> "]"
 
-class UnserializeModel m where
-      unserializeModel :: String -> Either String m
-
-instance recordUnserializeModel :: (GDecodeJson m list, RowToList m list) => UnserializeModel (Record m) where
-      unserializeModel model = jsonStringError do
-            json <- DAD.parseJson model
-            DAD.decodeJson json
-else
-instance genericUnserializeModel :: (Generic m r, DecodeRep r) => UnserializeModel m where
-      unserializeModel model = jsonStringError do
-            json <- DAD.parseJson model
-            DADEGR.genericDecodeJson json
-
-jsonStringError :: forall a. Either JsonDecodeError a -> Either String a
-jsonStringError = DB.lmap DAD.printJsonDecodeError
-
-serializedState :: forall model. UnserializeModel model => String -> Effect model
+serializedState :: forall model. UnserializeState model => String -> Effect model
 serializedState selector = do
       maybeElement <- FAD.querySelector stateSelector
       case maybeElement of
             Just el -> do
                   contents <- FAD.textContent el
-                  case unserializeModel contents of
+                  case FS.unserialize contents of
                         Right model -> do
                               FAD.removeElement stateSelector
                               pure model
@@ -75,16 +48,7 @@ serializedState selector = do
             Nothing -> EE.throw $ "Error resuming application mount: serialized state ("<> stateSelector <>") not found!"
       where stateSelector = selectorSerializedState $ onlyLetters selector
 
-class SerializeModel m where
-      serializeModel :: m -> String
-
-instance encodeJsonSerializeModel :: (GEncodeJson m list, RowToList m list) => SerializeModel (Record m) where
-      serializeModel = DAC.stringify <<< DAE.encodeJson
-else
-instance genericSerializeModel :: (Generic m r, EncodeRep r) => SerializeModel m where
-      serializeModel = DAC.stringify <<< DAEGR.genericEncodeJson
-
-preMount :: forall model message. SerializeModel model => QuerySelector -> PreApplication model message -> Effect String
+preMount :: forall model message. SerializeState model => QuerySelector -> PreApplication model message -> Effect String
 preMount (QuerySelector selector) application = do
       let html = injectState state $ application.view application.init
       FRS.render html
@@ -93,4 +57,4 @@ preMount (QuerySelector selector) application = do
                   HA.style { display: "none" },
                   HA.id $ idSerializedState sanitizedSelector,
                   HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
-            ] $ serializeModel application.init
+            ] $ FS.serialize application.init

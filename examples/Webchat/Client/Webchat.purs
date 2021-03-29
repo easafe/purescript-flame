@@ -21,7 +21,6 @@ import Flame.Subscription.Window as FSW
 import Partial.Unsafe (unsafePartial)
 import Prelude (class Show, Unit, bind, discard, map, pure, ($), (<<<))
 import Record as R
-import Signal.Channel as SC
 import WebSocket (Connection(..), URL(..))
 import WebSocket as W
 

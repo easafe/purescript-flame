@@ -1,11 +1,11 @@
-module Flame.Html.Signal.Source (createEventSource, createRawEventSource, createSpecialEventSource, send) where
+module Flame.Subscription.Source (createEventSource, createRawEventSource, createSpecialEventSource, send) where
 
 import Prelude
 
 import Data.Foldable as DF
 import Effect (Effect)
 import Effect.Uncurried as EU
-import Flame.Html.Signal.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
+import Flame.Subscription.Types (ToEventSource, ToEventSource_, ToRawEventSource, ToRawEventSource_, ToSpecialEventSource, ToSpecialEventSource_)
 import Signal.Channel (Channel)
 
 createEventSource :: forall message. ToEventSource_ message -> ToEventSource message
