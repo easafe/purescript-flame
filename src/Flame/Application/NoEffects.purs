@@ -14,15 +14,16 @@ where
 import Effect (Effect)
 import Flame.Application.EffectList as FAE
 import Flame.Serialization (class UnserializeState)
-import Flame.Types (App, AppId(..), (:>))
-import Prelude (class Show, Unit, void, ($), (<<<))
-import Signal.Channel (Channel)
+import Flame.Types (App, AppId, (:>))
+import Prelude (class Show, Unit, ($), (<<<))
+
 import Web.DOM.ParentNode (QuerySelector)
 
 -- | `Application` contains
 -- | * `init` – the initial model
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
+-- | * `subscribe` – list of external events
 type Application model message = App model message (
       init :: model,
       update :: model -> message -> model
@@ -31,6 +32,7 @@ type Application model message = App model message (
 -- | `ResumedApplication` contains
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
+-- | * `subscribe` – list of external events
 type ResumedApplication model message = App model message (
       update :: model -> message -> model
 )

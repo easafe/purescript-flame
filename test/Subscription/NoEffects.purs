@@ -1,4 +1,4 @@
-module Test.External.NoEffects (mount) where
+module Test.Subscription.NoEffects (mount) where
 
 -- | Counter example using a side effects free function
 import Prelude
@@ -31,10 +31,9 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-      channel <- FAN.mount (QuerySelector "#mount-point") {
+      FAN.mount_ (QuerySelector "#mount-point") {
             init: 0,
-            subscribe: [],
+            subscribe: [FE.onClick' Decrement, FE.onKeydown Increment],
             update,
             view
       }
-      FE.send [FE.onClick' [Decrement], FE.onKeydown [Increment]] channel

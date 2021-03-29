@@ -20,7 +20,6 @@ where
 import Data.Either as DET
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
@@ -35,12 +34,10 @@ import Flame.Application.Internal.Dom as FAD
 import Flame.Application.Internal.PreMount as FAP
 import Flame.Renderer.Internal.Dom as FRD
 import Flame.Serialization (class UnserializeState)
-import Flame.Types (App, DomNode, DomRenderingState, (:>))
-import Prelude (class Functor, Unit, bind, discard, flip, identity, map, pure, show, unit, void, ($), (<<<), (<>))
+import Flame.Subscription.Internal.Listener as FSIL
+import Flame.Types (App, AppId(..), ApplicationId, DomNode, DomRenderingState, (:>))
+import Prelude (class Functor, class Show, Unit, bind, discard, flip, identity, map, pure, show, unit, ($), (<<<), (<>))
 import Prim.Row (class Union, class Nub)
-import Signal as S
-import Signal.Channel (Channel)
-import Signal.Channel as SC
 import Unsafe.Coerce as UC
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -52,6 +49,7 @@ type AffUpdate model message = Environment model message -> Aff (model -> model)
 -- | * `init` – the initial model and an optional message to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
+-- | * `subscribe` – list of external events
 type Application model message = App model message (
       init :: Tuple model (Maybe message),
       update :: AffUpdate model message
@@ -61,6 +59,7 @@ type Application model message = App model message (
 -- | * `init` – initial list of messages to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
+-- | * `subscribe` – list of external events
 type ResumedApplication model message = App model message (
       init :: Maybe message,
       update :: AffUpdate model message
@@ -75,9 +74,6 @@ type Environment model message = {
       message :: message,
       display :: (model -> model) -> Aff Unit
 }
-
-noChanges :: forall model. Aff (model -> model)
-noChanges = pure identity
 
 -- | Convenience type class to update only the given fields of a model
 class Diff changed model where
@@ -96,54 +92,69 @@ instance newtypeRecordDiff :: (Newtype newtypeModel (Record model), Union change
 diff :: forall changed model. Diff changed model => changed -> Aff (model -> model)
 diff = pure <<< diff'
 
+noChanges :: forall model. Aff (model -> model)
+noChanges = pure identity
+
+noAppId :: forall message. Maybe (AppId Unit message)
+noAppId = Nothing
+
+showId :: forall id message. Show id => (AppId id message) -> String
+showId (AppId id) = show id
+
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect (Channel (Maybe message))
-resumeMount (QuerySelector selector) { init, view, update, subscribe } = do
+resumeMount_ :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ selector = resumeMountWith selector noAppId
+
+-- | Mount on the given selector a Flame application which was rendered server-side and can be fed arbitrary external messages
+resumeMount :: forall id model message. UnserializeState model => Show id => QuerySelector -> AppId id message -> ResumedApplication model message -> Effect Unit
+resumeMount selector appId = resumeMountWith selector (Just appId)
+
+-- | Mount on the given selector a Flame application which was rendered server-side and can be fed arbitrary external messages
+resumeMountWith :: forall id model message. UnserializeState model => Show id => QuerySelector -> Maybe (AppId id message) -> ResumedApplication model message -> Effect Unit
+resumeMountWith (QuerySelector selector) appId { update, view, init, subscribe } = do
       initialModel <- FAP.serializedState selector
       maybeElement <- FAD.querySelector selector
       case maybeElement of
-            Just element -> run element true {
+            Just parent -> run parent true (map showId appId) {
                   init: initialModel :> init,
                   view,
                   update,
                   subscribe
             }
-            Nothing -> EE.throw $ "Error resuming application mount: no element matching selector " <> show selector <> " found!"
-
--- | Mount a Flame application on the given selector which was rendered server-side, discarding the message Channel
-resumeMount_ :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect Unit
-resumeMount_ selector application = void $ resumeMount selector application
+            Nothing -> EE.throw $ "Error resuming application mount: no element matching selector " <> selector <> " found!"
 
 -- | Mount a Flame application on the given selector
-mount :: forall model message. QuerySelector -> Application model message -> Effect (Channel (Maybe message))
-mount (QuerySelector selector) application = do
+mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
+mount_ selector = mountWith selector noAppId
+
+-- | Mount a Flame application that can be fed arbitrary external messages
+mount :: forall id model message. Show id => QuerySelector -> AppId id message -> Application model message -> Effect Unit
+mount selector appId = mountWith selector (Just appId)
+
+mountWith :: forall id model message. Show id => QuerySelector -> Maybe (AppId id message) -> Application model message -> Effect Unit
+mountWith (QuerySelector selector) appId application = do
       maybeElement <- FAD.querySelector selector
       case maybeElement of
-            Just el -> run el false application
-            Nothing -> EE.throw $ "Error mounting application: no element matching selector " <> show selector <> " found!"
-
--- | Mount a Flame application on the given selector, discarding the message Channel
-mount_ :: forall model message. QuerySelector -> Application model message -> Effect Unit
-mount_ selector application = void $ mount selector application
+            Just parent -> run parent false (map showId appId) application
+            Nothing -> EE.throw $ "Error mounting application"
 
 -- | `run` keeps the state in a `Ref` and call `Flame.Renderer.Internal.Dom.render` for every update
-run :: forall model message. DomNode -> Boolean -> Application model message -> Effect (Channel (Maybe message))
-run parent isResumed application = do
-      let Tuple initialModel initialMessage = application.init
+run :: forall model message. DomNode -> Boolean -> Maybe ApplicationId -> Application model message -> Effect Unit
+run parent isResumed appId { init: Tuple initialModel initialMessage, update, view, subscribe } = do
       modelState <- ER.new initialModel
       renderingState <- ER.new (UC.unsafeCoerce 21 :: DomRenderingState)
 
       let     --the function which actually run events
             runUpdate message = do
                   model <- ER.read modelState
-                  EA.runAff_ (DET.either (EC.log <<< EE.message) render) $ application.update { display: renderFromUpdate, model, message }
+                  EA.runAff_ (DET.either (EC.log <<< EE.message) render) $ update { display: renderFromUpdate, model, message }
 
             --the function which renders to the dom
             render recordUpdate = do
                   model <- ER.read modelState
                   rendering <- ER.read renderingState
                   let updatedModel = recordUpdate model
-                  FRD.resume rendering $ application.view updatedModel
+                  FRD.resume rendering $ view updatedModel
                   ER.write updatedModel modelState
 
             --the function used to arbitraly render the view from inside Environment.update
@@ -151,16 +162,17 @@ run parent isResumed application = do
 
       rendering <-
             if isResumed then
-                  FRD.startFrom parent runUpdate $ application.view initialModel
+                  FRD.startFrom parent runUpdate $ view initialModel
             else
-                  FRD.start parent runUpdate $ application.view initialModel
+                  FRD.start parent runUpdate $ view initialModel
       ER.write rendering renderingState
 
       case initialMessage of
             Nothing -> pure unit
             Just message -> runUpdate message
 
-      --signals are used for some dom events as well user supplied custom events
-      channel <- SC.channel Nothing
-      S.runSignal <<< map (DF.traverse_ runUpdate) <<< S.filter DM.isJust Nothing $ SC.subscribe channel
-      pure channel
+      --subscriptions are used for external events
+      case appId of
+            Nothing -> pure unit
+            Just id -> FSIL.createMessageListener id runUpdate
+      DF.traverse_ (FSIL.createSubscription runUpdate) subscribe

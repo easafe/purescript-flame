@@ -1,4 +1,4 @@
-module Test.External.Effectful (mount) where
+module Test.Subscription.Effectful (mount) where
 
 -- | Counter example using a side effects free function
 import Prelude
@@ -37,10 +37,9 @@ view model = HE.main "main" [
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = do
-      channel <- FAE.mount (QuerySelector "#mount-point") {
+      FAE.mount_ (QuerySelector "#mount-point") {
             init : 5 :> Nothing,
-            subscribe: [],
+            subscribe: [FE.onError' Decrement, FE.onOffline Increment],
             update,
             view
       }
-      FE.send [FE.onError' (Just Decrement), FE.onOffline (Just Increment)] channel

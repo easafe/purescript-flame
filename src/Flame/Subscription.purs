@@ -2,7 +2,7 @@
 -- | For view events, see `Flame.Html.Attribute`
 module Flame.Subscription (
       module Exported,
-      send2,
+      send,
       onCustomEvent
 ) where
 
@@ -12,7 +12,6 @@ import Flame.Application.Internal.Dom as FAID
 import Flame.Serialization (class UnserializeState)
 import Flame.Serialization as FS
 import Flame.Subscription.Document (onBlur, onBlur', onClick, onClick', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onFocus, onFocus', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onScroll, onScroll', onWheel, onWheel') as Exported
-import Flame.Subscription.Source (createEventSource, createRawEventSource, createSpecialEventSource, send) as Exported
 import Flame.Subscription.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload') as Exported
 import Flame.Types (AppId(..), Source(..), Subscription)
 import Foreign as F
@@ -20,8 +19,8 @@ import Prelude (class Show, Unit, show, (<<<))
 import Web.Event.Event (EventType(..))
 
 -- | Raises an arbitrary message on the given application
-send2 :: forall id message. Show id => AppId id message -> message -> Effect Unit
-send2 (AppId id) = FAID.dispatchCustomEvent (show id)
+send :: forall id message. Show id => AppId id message -> message -> Effect Unit
+send (AppId id) = FAID.dispatchCustomEvent (show id)
 
 -- | Subscribe to a `CustomEvent`
 -- |

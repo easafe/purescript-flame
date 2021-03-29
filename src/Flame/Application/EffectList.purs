@@ -15,9 +15,6 @@ where
 
 import Data.Either (Either(..))
 import Data.Foldable as DF
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (class GenericShow)
-import Data.Generic.Rep.Show as DGRS
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -33,10 +30,8 @@ import Flame.Renderer.Internal.Dom as FRD
 import Flame.Serialization (class UnserializeState)
 import Flame.Subscription.Internal.Listener as FSIL
 import Flame.Types (App, AppId(..), ApplicationId, DomNode, DomRenderingState, (:>))
-import Prelude (class Show, Unit, bind, discard, map, pure, show, unit, void, when, ($), (<<<), (<>))
-import Signal as S
-import Signal.Channel (Channel)
-import Signal.Channel as SC
+import Prelude (class Show, Unit, bind, discard, map, pure, show, unit, when, ($), (<>))
+
 import Unsafe.Coerce as UC
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -46,6 +41,7 @@ type ListUpdate model message = model -> message -> Tuple model (Array (Aff (May
 -- | * `init` – the initial model and a list of messages to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
+-- | * `subscribe` – list of external events
 type Application model message = App model message (
       init :: Tuple model (Array (Aff (Maybe message))),
       update :: ListUpdate model message
@@ -55,6 +51,7 @@ type Application model message = App model message (
 -- | * `init` – initial list of messages to invoke `update` with
 -- | * `view` – a function to update your markup
 -- | * `update` – a function to update your model
+-- | * `subscribe` – list of external events
 type ResumedApplication model message = App model message (
       init :: Array (Aff (Maybe message)),
       update :: ListUpdate model message

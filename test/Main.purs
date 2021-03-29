@@ -23,17 +23,17 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.Internal.Dom as FRID
 import Flame.Renderer.String as FRS
+import Flame.Subscription as FS
 import Partial.Unsafe (unsafePartial)
-import Signal.Channel as SC
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.Functor as TBF
 import Test.Basic.NoEffects as TBN
 import Test.Effectful.SlowEffects as TES
-import Test.External.EffectList (TEELMessage(..))
-import Test.External.EffectList as TEEL
-import Test.External.Effectful as TEE
-import Test.External.NoEffects as TEN
+import Test.Subscription.EffectList (TEELMessage(..))
+import Test.Subscription.EffectList as TEEL
+import Test.Subscription.Effectful as TEE
+import Test.Subscription.NoEffects as TEN
 import Test.ServerSideRendering.Effectful as TSE
 import Test.ServerSideRendering.FragmentNode as TSF
 import Test.ServerSideRendering.ManagedNode as TSM
@@ -772,7 +772,7 @@ main = TUM.runTest do
                         TUA.equal "2" outputCurrent3
                         TUA.equal "[0]" outputNumbers3
 
-            TU.suite "Signal applications" do
+            TU.suite "Subscription applications" do
                   TU.test "noeffects" do
                         liftEffect do
                               unsafeCreateEnviroment
@@ -791,17 +791,17 @@ main = TUM.runTest do
                         TUA.equal "2" output3
 
                   TU.test "effectlist" do
-                        channel <- liftEffect do
+                        id <- liftEffect do
                               unsafeCreateEnviroment
                               TEEL.mount
                         output <- textContent "#text-output"
                         TUA.equal "0" output
 
-                        liftEffect $ SC.send channel [TEELDecrement]
+                        liftEffect $ FS.send id TEELDecrement
                         output2 <- textContent "#text-output"
                         TUA.equal "-1" output2
 
-                        liftEffect $ SC.send channel [TEELIncrement]
+                        liftEffect $ FS.send id TEELIncrement
                         output3 <- textContent "#text-output"
                         TUA.equal "0" output3
 

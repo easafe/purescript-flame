@@ -224,12 +224,12 @@ The module `Flame.Subscription` defines common events such as (`window`) `load` 
 ```haskell
 import Flame.Application.NoEffects as FAN
 import Flame.Subscription as FE
-import Signal.Channel as SC
+
 ...
 
 main :: Effect Unit
 main = do
-      channel <- FAN.mount {...}
+      FAN.mount {...}
       --raise these messages when the given events are fired
       FE.send [FE.offline [Message3], FE.onClick [Message, Message2]] channel
       --manualy raise a message
