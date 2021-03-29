@@ -61,7 +61,8 @@ main :: Effect Unit
 main = FAN.mount_ (QuerySelector "body") {
       init,
       update,
-      view
+      view,
+      subscribe: []
 }
 ```
 

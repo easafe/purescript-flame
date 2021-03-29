@@ -31,6 +31,7 @@ view model = HE.main "main" [
 main :: Effect Unit
 main = FAE.mount_ (QuerySelector "body") {
       init: init :> Nothing,
+      subscribe: [],
       update,
       view
 }

@@ -219,7 +219,7 @@ More often than not, a real world application needs to handle events that don't 
 
 `Flame.Application.Effectful.mount` returns a `Channel (Maybe message)`
 
-The module `Flame.Subscription` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a channel
+The module `Flame.Subscription` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a
 
 ```haskell
 import Flame.Application.NoEffects as FAN
@@ -231,9 +231,9 @@ main :: Effect Unit
 main = do
       FAN.mount {...}
       --raise these messages when the given events are fired
-      FE.send [FE.offline [Message3], FE.onClick [Message, Message2]] channel
+      FE.send [FE.offline [Message3], FE.onClick [Message, Message2]]
       --manualy raise a message
-      SC.send channel [Message4]
+      FS.send [Message4]
 ```
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Webchat) for more examples of external events.

@@ -4,6 +4,7 @@ module Examples.Effectful.Webchat.Client.Main where
 import Examples.Effectful.Webchat.Shared
 
 import Data.Array as DA
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)

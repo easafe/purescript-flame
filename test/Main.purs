@@ -24,19 +24,21 @@ import Flame.Html.Element as HE
 import Flame.Renderer.Internal.Dom as FRID
 import Flame.Renderer.String as FRS
 import Flame.Subscription as FS
+import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Partial.Unsafe (unsafePartial)
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
 import Test.Basic.Functor as TBF
 import Test.Basic.NoEffects as TBN
 import Test.Effectful.SlowEffects as TES
+import Test.ServerSideRendering.Effectful as TSE
+import Test.ServerSideRendering.FragmentNode as TSF
+import Test.ServerSideRendering.ManagedNode as TSM
+import Test.Subscription.Broadcast as TSB
 import Test.Subscription.EffectList (TEELMessage(..))
 import Test.Subscription.EffectList as TEEL
 import Test.Subscription.Effectful as TEE
 import Test.Subscription.NoEffects as TEN
-import Test.ServerSideRendering.Effectful as TSE
-import Test.ServerSideRendering.FragmentNode as TSF
-import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Test.Unit.Main as TUM
@@ -47,6 +49,7 @@ import Web.DOM.HTMLCollection as WDHC
 import Web.DOM.Node (Node)
 import Web.DOM.Node as WDN
 import Web.DOM.ParentNode as WDP
+import Web.Event.Event (EventType(..))
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
@@ -821,6 +824,21 @@ main = TUM.runTest do
                         dispatchWindowEvent offlineEvent
                         output3 <- textContent "#text-output"
                         TUA.equal "3" output3
+
+                  TU.test "broadcast" do
+                        id <- liftEffect do
+                              unsafeCreateEnviroment
+                              TSB.mount
+                        output <- textContent "#text-output"
+                        TUA.equal "0" output
+
+                        liftEffect <<< FSUC.broadcast (EventType "decrement-event") $ Just 34
+                        output2 <- textContent "#text-output"
+                        TUA.equal "-34" output2
+
+                        liftEffect $ FSUC.broadcast' (EventType "increment-event")
+                        output3 <- textContent "#text-output"
+                        TUA.equal "-33" output3
 
             TU.suite "Server side rendering" do
                   TU.test "effectful" do

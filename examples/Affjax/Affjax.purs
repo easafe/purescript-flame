@@ -59,6 +59,7 @@ view { url, result } = HE.main "main" [
 main :: Effect Unit
 main = F.mount_ (QuerySelector "body") {
       init: F.noMessages init,
+      subscribe: [],
       update,
       view
 }

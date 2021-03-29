@@ -3,7 +3,8 @@
 module Flame.Subscription (
       module Exported,
       send,
-      onCustomEvent
+      onCustomEvent,
+      onCustomEvent'
 ) where
 
 import Data.Tuple.Nested as DTN
@@ -15,7 +16,7 @@ import Flame.Subscription.Document (onBlur, onBlur', onClick, onClick', onContex
 import Flame.Subscription.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload') as Exported
 import Flame.Types (AppId(..), Source(..), Subscription)
 import Foreign as F
-import Prelude (class Show, Unit, show, (<<<))
+import Prelude (class Show, Unit, const, show, (<<<))
 import Web.Event.Event (EventType(..))
 
 -- | Raises an arbitrary message on the given application
@@ -27,3 +28,7 @@ send (AppId id) = FAID.dispatchCustomEvent (show id)
 -- | `arg` must be serializable since it might come from external JavaScript
 onCustomEvent :: forall arg message. UnserializeState arg => EventType -> (arg -> message) -> Subscription message
 onCustomEvent (EventType eventName) message = DTN.tuple3 Custom eventName (message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign)
+
+-- | Subscribe to a `CustomEvent` that has no data associated
+onCustomEvent' :: forall message. EventType -> message -> Subscription message
+onCustomEvent' (EventType eventName) message = DTN.tuple3 Custom eventName (const message)
