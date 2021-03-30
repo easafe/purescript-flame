@@ -29,6 +29,6 @@ exports.createCustomListener_ = function (eventName, updater) {
     });
 };
 
-exports.dispatchCustomEvent_ = function(eventName, detail) {
-    document.dispatchEvent(new CustomEvent(eventName, { detail } ));
+exports.dispatchCustomEvent_ = function(eventName, payload) {
+    document.dispatchEvent(new CustomEvent(eventName, { detail: payload } ));
 }

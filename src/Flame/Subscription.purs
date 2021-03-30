@@ -18,7 +18,7 @@ import Web.Event.Event (EventType(..))
 
 -- | Raises an arbitrary message on the given application
 send :: forall id message. Show id => AppId id message -> message -> Effect Unit
-send (AppId id) = FAID.dispatchCustomEvent (show id)
+send (AppId id) message = FAID.dispatchCustomEvent (show id) message
 
 -- | Subscribe to a `CustomEvent`
 -- |
