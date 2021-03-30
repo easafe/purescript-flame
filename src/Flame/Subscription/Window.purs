@@ -1,5 +1,5 @@
 -- | Defines events for the native `window` object
-module Flame.Subscription.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload') where
+module Flame.Subscription.Window (onError, onError', onLoad, onLoad', onOffline, onOffline', onOnline, onOnline', onResize, onResize', onUnload, onUnload', onFocus) where
 
 import Flame.Subscription.Internal.Create as FSIC
 import Flame.Types (Source(..), Subscription)
@@ -7,6 +7,9 @@ import Web.Event.Internal.Types (Event)
 
 onFocus :: forall message. message -> Subscription message
 onFocus = FSIC.createSubscription Window "focus"
+
+onFocus' :: forall message. (Event -> message) -> Subscription message
+onFocus' = FSIC.createRawSubscription Window "focus"
 
 onError :: forall message. message -> Subscription message
 onError = FSIC.createSubscription Window "error"
