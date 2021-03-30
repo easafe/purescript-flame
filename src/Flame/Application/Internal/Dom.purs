@@ -14,7 +14,7 @@ import Data.Maybe (Maybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as DN
 import Effect (Effect)
-import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
+import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Flame.Types (DomNode, EventName)
 import Foreign (Foreign)

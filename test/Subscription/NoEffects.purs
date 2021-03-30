@@ -1,14 +1,15 @@
 module Test.Subscription.NoEffects (mount) where
 
 -- | Counter example using a side effects free function
+
 import Prelude
 
 import Effect (Effect)
 import Flame (QuerySelector(..), Html)
 import Flame.Application.NoEffects as FAN
 import Flame.Html.Element as HE
+import Flame.Subscription.Document as FED
 import Web.Event.Internal.Types (Event)
-import Flame.Subscription as FE
 
 -- | The model represents the state of the app
 type Model = Int
@@ -33,7 +34,7 @@ mount :: Effect Unit
 mount = do
       FAN.mount_ (QuerySelector "#mount-point") {
             init: 0,
-            subscribe: [FE.onClick' Decrement, FE.onKeydown Increment],
+            subscribe: [FED.onClick' Decrement, FED.onKeydown Increment],
             update,
             view
       }

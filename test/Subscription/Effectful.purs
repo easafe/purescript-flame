@@ -1,6 +1,7 @@
 module Test.Subscription.Effectful (mount) where
 
 -- | Counter example using a side effects free function
+
 import Prelude
 
 import Data.Maybe (Maybe(..))
@@ -8,9 +9,9 @@ import Effect (Effect)
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
-import Flame.Html.Element as HE
 import Flame.Html.Attribute as HA
-import Flame.Subscription as FE
+import Flame.Html.Element as HE
+import Flame.Subscription.Window as FEW
 import Web.Event.Internal.Types (Event)
 
 -- | The model represents the state of the app
@@ -39,7 +40,7 @@ mount :: Effect Unit
 mount = do
       FAE.mount_ (QuerySelector "#mount-point") {
             init : 5 :> Nothing,
-            subscribe: [FE.onError' Decrement, FE.onOffline Increment],
+            subscribe: [FEW.onError' Decrement, FEW.onOffline Increment],
             update,
             view
       }

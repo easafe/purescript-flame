@@ -5,6 +5,9 @@ import Flame.Subscription.Internal.Create as FSIC
 import Flame.Types (Source(..), Subscription)
 import Web.Event.Internal.Types (Event)
 
+onFocus :: forall message. message -> Subscription message
+onFocus = FSIC.createSubscription Window "focus"
+
 onError :: forall message. message -> Subscription message
 onError = FSIC.createSubscription Window "error"
 
