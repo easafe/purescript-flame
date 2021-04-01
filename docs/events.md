@@ -46,7 +46,7 @@ type Application model message = {
       update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
 }
 ```
-This is the default strategy to run a flame application. For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
+This is the default strategy to run a Flame application. For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
 ```haskell
 type Model = Maybe Int
 

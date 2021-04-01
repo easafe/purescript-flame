@@ -26,8 +26,8 @@ module Counter.Main where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html, QuerySelector(..))
--- Update strategy for side effects free functions; see docs for other strategies
+import Flame (Html, QuerySelector(..), Subscription)
+-- Side effects free updating; see docs for other examples
 import Flame.Application.NoEffects as FAN
 import Flame.Html.Element as HE
 import Flame.Html.Attribute as HA
@@ -35,7 +35,7 @@ import Flame.Html.Attribute as HA
 -- | The model represents the state of the app
 type Model = Int
 
--- | This datatype is used to signal events to `update`
+-- | Data type used to represent events
 data Message = Increment | Decrement
 
 -- | Initial state of the app
@@ -56,13 +56,17 @@ view model = HE.main "main" [
       HE.button [HA.onClick Increment] "+"
 ]
 
+-- | Events that come from outside the `view`
+subscribe :: Array (Subscription Message)
+subscribe = []
+
 -- | Mount the application on the given selector
 main :: Effect Unit
 main = FAN.mount_ (QuerySelector "body") {
       init,
-      update,
       view,
-      subscribe: []
+      update,
+      subscribe
 }
 ```
 
