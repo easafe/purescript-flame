@@ -3,7 +3,7 @@ module Flame.Types (PreApplication, App, (:>), ToNodeData, Tag, Key, DomRenderin
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))
 
 -- | `PreApplication` contains

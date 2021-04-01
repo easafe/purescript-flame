@@ -39,7 +39,7 @@ newtype CloseReason = CloseReason String
 -- |
 -- | The supplied callback is called when the created HTTP server
 -- | starts listening.
-createWebSocketServerWithPort :: forall e options options' trash . Union options options' WebSocketServerOptions => Lacks "port" options => Cons "port" Port options trash => Port -> { | options } -> (Unit -> Effect Unit) -> Effect WebSocketServer
+createWebSocketServerWithPort :: forall options options' trash . Union options options' WebSocketServerOptions => Lacks "port" options => Cons "port" Port options trash => Port -> { | options } -> (Unit -> Effect Unit) -> Effect WebSocketServer
 createWebSocketServerWithPort (Port port) options callback = EU.runEffectFn2 createWebSocketServer_ options' callback'
       where options' = R.insert (SProxy :: SProxy "port") port options
             callback' = EU.mkEffectFn1 callback

@@ -369,6 +369,12 @@ main =
                         updatedNodeProperties <- getProperties "input" ["id", "pattern"]
                         TUA.equal ["q", "aaa"] updatedNodeProperties
 
+                  TU.test "text property of lazy nodes" do
+                        let html = HE.lazy Nothing (const (HE.div_ "oi")) unit
+                        void $ mountHtml html
+                        text <- textContent "#mount-point"
+                        TUA.equal "oi" text
+
             TU.suite "dom node update" do
                   TU.test "update text nodes" do
                         let html = HE.text "oi"

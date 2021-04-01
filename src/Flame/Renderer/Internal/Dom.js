@@ -161,8 +161,13 @@ F.prototype.createAllNodes = function (parent, html, referenceNode) {
     else {
         if (html.children !== undefined)
             this.createChildrenNodes(node, html.children);
-        if (html.rendered != undefined && html.rendered.children !== undefined)
-            this.createChildrenNodes(node, html.rendered.children);
+        else if (html.rendered !== undefined) {
+            if (html.rendered.text !== undefined) {
+                node.textContent = html.rendered.text;
+            }
+            else if (html.rendered.children !== undefined)
+                this.createChildrenNodes(node, html.rendered.children);
+        }
     }
 
     //same as appendChild if referenceNode is null

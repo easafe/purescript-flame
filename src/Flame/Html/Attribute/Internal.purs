@@ -68,7 +68,7 @@ class' = createClass <<< map caseify <<< to
 -- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
 style :: forall a r. Homogeneous r String => { | r } -> NodeData a
 style = createStyle <<< FO.fromFoldable <<< map go <<< toArray
-      where go (Tuple name value') = Tuple (caseify name) value'
+      where go (Tuple name' value') = Tuple (caseify name') value'
             toArray :: _ -> Array (Tuple String String)
             toArray = FO.toUnfoldable <<< FO.fromHomogeneous
 

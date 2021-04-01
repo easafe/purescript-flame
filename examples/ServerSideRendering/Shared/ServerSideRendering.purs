@@ -1,4 +1,4 @@
--- | Definitions commom to server and client
+-- | Definitions common code to server and client
 -- |
 -- | The same view, and model type are reused; the generic instance is necessary to serialize the inital state
 module Examples.EffectList.ServerSideRendering.Shared where
@@ -7,7 +7,7 @@ import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Flame (QuerySelector(..), Html)
+import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 

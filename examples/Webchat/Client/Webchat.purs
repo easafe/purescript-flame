@@ -2,13 +2,12 @@
 module Examples.Effectful.Webchat.Client.Main where
 
 import Examples.Effectful.Webchat.Shared
-import Prelude
+import Prelude (Unit, ($), bind, map, pure, discard, (<<<))
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -16,9 +15,9 @@ import Effect.Var (($=))
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (Environment)
 import Flame.Application.Effectful as FAE
-import Flame.Html.Signal as FE
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Html.Signal as FE
 import Partial.Unsafe (unsafePartial)
 import Record as R
 import Signal.Channel as SC

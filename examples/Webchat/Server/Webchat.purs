@@ -1,8 +1,8 @@
 -- | Quick and dirty WebSocket server
 module Examples.Effectful.Webchat.Server.Main where
 
-import Examples.Effectful.Webchat.Shared
-import Prelude
+import Examples.Effectful.Webchat.Shared (wsPort)
+import Prelude (Unit, bind, const, discard, show, ($), (<$>), (<<<), (<>))
 
 import Data.Array as DA
 import Data.Foldable as DF
