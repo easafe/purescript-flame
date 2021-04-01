@@ -1,1 +1,1 @@
-require('../../output/Examples.EffectList.Special.Main').main();
+require('../../output/Examples.EffectList.Subscriptions.Main').main();

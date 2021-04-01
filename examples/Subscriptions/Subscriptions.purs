@@ -1,60 +1,65 @@
 module Examples.EffectList.Subscriptions.Main where
 
+
 import Prelude
 
-import Data.Array ((:))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame (QuerySelector(..), Html, (:>))
+import Effect.Timer as ET
+import Flame (AppId(..), Html, QuerySelector(..), Subscription, (:>))
 import Flame as F
-import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Subscription as FS
+import Flame.Subscription.Document as FSD
 
 type Model = {
-      current :: Maybe Int,
-      history :: Array Int
+      roll :: Maybe Int,
+      from :: String
 }
 
 init :: Model
 init = {
-     current: Nothing,
-     history: []
+      roll : Nothing,
+      from : ""
 }
 
-data Message = Roll | Update Int
+data Message =
+      IntervalRoll |
+      ClickRoll |
+      Update String Int
 
 update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
-update model@{ history } = case _ of
-      Roll -> model :> [
-          Just <<< Update <$> liftEffect (ER.randomInt 1 6)
-      ]
-      Update roll -> model {
-            current = Just roll,
-            history = roll : history
+update model = case _ of
+      IntervalRoll -> model :> next "interval"
+      ClickRoll -> model :> next "click"
+      Update from int -> {
+            roll : Just int,
+            from
       } :> []
+      where next from = [ Just <<< Update from <$> liftEffect (ER.randomInt 1 6) ]
 
 view :: Model -> Html Message
-view model@{ current, history } = HE.fragment [ --only children elements will be rendered
-      HE.text $ show current,
-      HE.button [HA.onClick Roll] "Roll",
-      HE.br,
-      HE.span_ "History",
-      HE.div_ $ map lazyEntry history
+view { roll, from } = HE.text $ case roll of
+      Nothing -> "No rolls!"
+      Just r -> "Roll from " <> from <> ": " <> show r
+
+subscribe :: Array (Subscription Message)
+subscribe = [
+      FSD.onClick ClickRoll -- `document` click event
 ]
 
-lazyEntry :: Int -> Html Message
-lazyEntry roll = HE.lazy Nothing toEntry roll --lazy node will only be recomputed in case the roll changes
-      where rolled = show roll
-            toEntry = const (HE.div (HA.key rolled) rolled) --keyed rendering for rolls
-
 main :: Effect Unit
-main = F.mount_ (QuerySelector "body") {
-      init: init :> [],
-      subscribe: [],
-      update,
-      view
-}
+main = do
+      let id = AppId "dice-rolling"
+      F.mount (QuerySelector "body") id {
+            init: init :> [],
+            subscribe,
+            update,
+            view
+      }
+      -- roll dice every 5 seconds
+      void $ ET.setInterval 5000 (FS.send id IntervalRoll)
