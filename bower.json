@@ -16,7 +16,6 @@
     "purescript-web-html": "^2.0.0",
     "purescript-nullable": "^4.1.1",
     "purescript-aff": "^5.1.0",
-    "purescript-signal": "^10.1.0",
     "purescript-foreign-object": "^2.0.1",
     "purescript-argonaut-generic": "^6.0.0",
     "purescript-argonaut-codecs": "^7.0.0"

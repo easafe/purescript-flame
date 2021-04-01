@@ -28,9 +28,9 @@ data Message = Increment | Decrement Event
 -- | `update` is called to handle events
 update :: AffUpdate Model Message
 update { model: Model m, message } =
-        pure $ const (Model $ case message of
-                Increment -> m + 1
-                Decrement _ -> m - 1)
+      pure $ const (Model $ case message of
+            Increment -> m + 1
+            Decrement _ -> m - 1)
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
@@ -41,20 +41,21 @@ preView model = HE.main "my-id" $ children model
 
 children :: Model -> Array (Html Message)
 children (Model model) = [
-        HE.span "text-output" $ show model,
-        HE.br,
-        HE.button [HA.id "increment-button", HA.onClick Increment] "+"
+      HE.span "text-output" $ show model,
+      HE.br,
+      HE.button [HA.id "increment-button", HA.onClick Increment] "+"
 ]
 
 preMount :: Effect Unit
 preMount = do
-        contents <- F.preMount (QuerySelector "#my-id") { init: Model 2, view: preView }
-        EU.runEffectFn2 setInnerHTML "#mount-point" contents
+      contents <- F.preMount (QuerySelector "#my-id") { init: Model 2, view: preView }
+      EU.runEffectFn2 setInnerHTML "#mount-point" contents
 
 -- | Mount the application on the given selector
 mount :: Effect Unit
 mount = FAE.resumeMount_ (QuerySelector "#my-id") {
-                init: Nothing,
-                update,
-                view
-        }
+      init: Nothing,
+      subscribe: [],
+      update,
+      view
+}

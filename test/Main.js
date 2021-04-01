@@ -4,9 +4,7 @@ const enviroment = (new jsdom.JSDOM('', { runScripts: "outside-only" }));
 global.window = enviroment.window;
 global.document = enviroment.window.document;
 global.SVGElement = enviroment.window.SVGElement;
-
-// a dirty hack to make snabbdom style module import properly
-window.requestAnimationFrame = setTimeout;
+global.CustomEvent = enviroment.window.CustomEvent;
 
 exports.unsafeCreateEnviroment = function () {
     //removes event listeners and child nodes

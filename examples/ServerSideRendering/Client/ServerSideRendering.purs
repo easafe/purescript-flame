@@ -24,6 +24,7 @@ update m@(Model model) = case _ of
 main :: Effect Unit
 main = F.resumeMount_ (QuerySelector "body") {
       init: [],
+      subscribe: [],
       update,
       view: EESS.view
 }

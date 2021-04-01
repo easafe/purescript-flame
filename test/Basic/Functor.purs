@@ -21,22 +21,22 @@ init = []
 
 update :: Model -> Message -> Model
 update model = case _ of
-        Add -> DA.snoc model nestedInit
-        Remove index -> DM.fromMaybe model $ DA.deleteAt index model
-        CounterMessage index message ->
-                case model !! index of
-                        Nothing -> model
-                        Just model' -> DM.fromMaybe model $ DA.updateAt index (nestedUpdate model' message) model
+      Add -> DA.snoc model nestedInit
+      Remove index -> DM.fromMaybe model $ DA.deleteAt index model
+      CounterMessage index message ->
+            case model !! index of
+                  Nothing -> model
+                  Just model' -> DM.fromMaybe model $ DA.updateAt index (nestedUpdate model' message) model
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.button [HA.id "add-button", HA.onClick Add] "Add",
-        HE.div_ $ DA.mapWithIndex viewCounter model
+      HE.button [HA.id "add-button", HA.onClick Add] "Add",
+      HE.div_ $ DA.mapWithIndex viewCounter model
 ]
-        where   viewCounter index model' = HE.div [HA.style { display: "flex" }] [
-                        CounterMessage index <$> nestedView index model',
-                        HE.button [HA.onClick $ Remove index] "Remove"
-                ]
+      where   viewCounter index model' = HE.div [HA.style { display: "flex" }] [
+                  CounterMessage index <$> nestedView index model',
+                  HE.button [HA.onClick $ Remove index] "Remove"
+            ]
 
 
 -- | The model represents the state of the app
@@ -56,14 +56,15 @@ nestedUpdate model = case _ of
 -- | `view` updates the app markup whenever the model is updated
 nestedView :: Int -> NestedModel -> Html NestedMessage
 nestedView index model = HE.main ("main-" <> show index) [
-        HE.button [HA.id ("decrement-button-" <> show index), HA.onClick Decrement] "-",
-        HE.span ("text-output-" <> show index) $ show model,
-        HE.button [HA.id ("increment-button-" <> show index), HA.onClick Increment] "+"
+      HE.button [HA.id ("decrement-button-" <> show index), HA.onClick Decrement] "-",
+      HE.span ("text-output-" <> show index) $ show model,
+      HE.button [HA.id ("increment-button-" <> show index), HA.onClick Increment] "+"
 ]
 
 mount :: Effect Unit
-mount =  FAN.mount_ (QuerySelector "#mount-point") {
-        init,
-        update,
-        view
+mount = FAN.mount_ (QuerySelector "#mount-point") {
+      init,
+      subscribe: [],
+      update,
+      view
 }

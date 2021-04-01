@@ -2,9 +2,9 @@
 module Examples.Effectful.Webchat.Client.Main where
 
 import Examples.Effectful.Webchat.Shared
-import Prelude (Unit, ($), bind, map, pure, discard, (<<<))
 
 import Data.Array as DA
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
@@ -12,15 +12,16 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Var (($=))
-import Flame (QuerySelector(..), Html, (:>))
+import Flame (AppId(..), Html, QuerySelector(..), (:>))
 import Flame.Application.Effectful (Environment)
 import Flame.Application.Effectful as FAE
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Html.Signal as FE
+import Flame.Subscription as FS
+import Flame.Subscription.Window as FSW
 import Partial.Unsafe (unsafePartial)
+import Prelude (class Show, Unit, bind, discard, map, pure, ($), (<<<))
 import Record as R
-import Signal.Channel as SC
 import WebSocket (Connection(..), URL(..))
 import WebSocket as W
 
@@ -77,19 +78,23 @@ view (Model model) = HE.main "main" [
       ]
 ]
 
--- | Mount the application on the given selector and bind WebSocket events to the app channel
+data WebchatApp = WebchatApp
+instance wcShow :: Show WebchatApp where
+      show _ = "WebchatApp"
+
+-- | Mount the application on the given selector and bind WebSocket events
 main :: Effect Unit
 main = do
-      channel <- FAE.mount (QuerySelector "body") {
+      let appId = AppId WebchatApp
+      FAE.mount (QuerySelector "body") appId {
             init: init :> Nothing,
+            subscribe: [FSW.onOnline $ Online true, FSW.onOffline $ Online false],
             update,
             view
       }
 
-      FE.send [FE.onOnline (Just $ Online true), FE.onOffline (Just $ Online false)] channel
-
       Connection connection <- W.newWebSocket (URL wsAddress) []
 
-      connection.onopen $= \event -> SC.send channel <<< Just <<< SetSocket <<< Just $ Connection connection
-      connection.onclose $= \event -> SC.send channel <<< Just $ SetSocket Nothing
-      connection.onmessage $= \event -> SC.send channel <<< Just <<< Receive <<< W.runMessage $ W.runMessageEvent event
+      connection.onopen $= \event -> FS.send appId <<< SetSocket <<< Just $ Connection connection
+      connection.onclose $= \event -> FS.send appId $ SetSocket Nothing
+      connection.onmessage $= \event -> FS.send appId <<< Receive <<< W.runMessage $ W.runMessageEvent event

@@ -30,6 +30,7 @@ view model = HE.main_ [
 mount :: Effect Unit
 mount = FAN.mount_ (QuerySelector "#mount-point") {
       init,
+      subscribe: [],
       update,
       view
 }
