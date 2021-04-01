@@ -5,11 +5,11 @@ title: Getting started
 
 ## Simple, fast & type safe web applications
 
-Flame is a PureScript frontend framework inspired by the Elm architecture with focus on simplicity and performance. Featuring:
+Flame is a PureScript front-end framework inspired by the Elm architecture with focus on simplicity and performance. Featuring:
 
 * Message based state updating -- see [Handling events](events)
 
-* Subscriptions -- see [Handling external events](events#handling-external-events)
+* Subscriptions -- see [Handling external events](events#subscriptions)
 
 * Server side rendering -- see [Rendering the app](rendering)
 

@@ -7,46 +7,58 @@ permalink: /events
 ## Handling events
 
 Perhaps the most important field in the application record
+
 ```haskell
 type Application model message = {
       init :: model,
       view :: model -> Html message,
-      update :: model -> message -> model
+      update :: model -> message -> model,
+      subscribe :: Array (Subscription message)
 }
 ```
-is the `update` function. This is where we define our business logic by matching event `message`s and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function. These are called update strategies.
 
-An update strategy is chosen by importing the `mount` (or `mount_`) function from a given module
+is the `update` function. This is where we define our business logic by matching event `message`s and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function.
+
+Each module under `Flame.Application` export a `mount` (or `mount_`) function which asks for an application record with different `init` and `update` types
+
 ```haskell
 import Flame.Application.NoEffects (mount) -- side effects free updating
 import Flame (mount) -- Elm style updating, using a list of effects
 import Flame.Application.Effectful (mount) -- Aff based updating
 ```
-which each asks for an application record with different `init` and `update` types. Let's take a look at each of them.
+
+Let's discuss each of them in detail.
 
 ### No effects updating
 
-For this strategy, the application record is the same as we have seen so far
+The application record is the same as we have seen so far
+
 ```haskell
 type Application model message = {
       init :: model,
       view :: model -> Html message,
-      update :: model -> message -> model
+      update :: model -> message -> model,
+      subscribe :: Array (Subscription message)
 }
 ```
-This is enough for toy examples or small modules, but probably not sufficient to build an user facing application. If we want to do any sort of effectul computation we need to look into the next update strategies.
+
+This is enough for toy examples or small modules, but probably not sufficient to build an user facing application. If we want to do any sort of effectul computation we need to look into the next `update` types.
 
 ### Effect list updating
 
-In the effect list strategy, our update function is still "pure", but we also return an array of effects to be performed
+This is the default way to run a Flame application. The record here has `init` and `update` return an array of effects to be performed
+
 ```haskell
 type Application model message = {
       init :: Tuple model (Array (Aff (Maybe message))),
       view :: model -> Html message,
-      update :: model -> message -> Tuple model (Array (Aff (Maybe message)))
+      update :: model -> message -> Tuple model (Array (Aff (Maybe message))),
+      subscribe :: Array (Subscription message)
 }
 ```
-This is the default strategy to run a Flame application. For every entry in the array, the effect is performed and `update` is called again with the resulting `message`. Consider an application to roll dices
+
+For every entry in the array, the effect is run and `update` is called again with the resulting `message`. Consider an application to roll dices
+
 ```haskell
 type Model = Maybe Int
 
@@ -65,13 +77,22 @@ view model = HE.main "main" [
       HE.button [HA.onClick Roll] "Roll"
 ]
 ```
+
 Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operator `:>`) of the model and effect list is returned. Performing the effect in the list raises the `Update` message, which carries the generated random number that will be the new model.
 
 Likewise, we could define a loading screen to appear before AJAX requests
-```haskell
-type Model = { response :: String, isLoading :: Boolean }
 
-data Message = Loading | Response String | DifferentResponse String | Finish String
+```haskell
+type Model = {
+      response :: String,
+      isLoading :: Boolean
+}
+
+data Message =
+      Loading |
+      Response String |
+      DifferentResponse String |
+      Finish String
 
 performAJAX :: String -> Aff String
 performAJAX url = ...
@@ -103,9 +124,11 @@ view model = HE.main "main" [
             ...
 ]
 ```
+
 In the same way, here every call to `performAJAX` also causes `update` to be called again with a new `Response` or `DifferentResponse` until we get a `Finish` message.
 
 Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Maybe message)))`. This enables us to run effects at the startup of the application. Suppose in the previous example we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` as follows
+
 ```haskell
 init :: Tuple Model (Array (Aff (Maybe Message)))
 init = model :> [
@@ -116,20 +139,24 @@ init = model :> [
       pure <<< Just $ Finish "Performed all"
 ]
 ```
+
 which has the same expected behavior of calling `update` with the resulting message of every entry in the array.
 
 ### Effectful updating
 
-The effect list strategy is great for testability and isolating effects, but certain program flows became somewhat awkward to write. For most messages, we essentially have to define a different data constructor for each step in the computation. For that reason, Flame provides an alternative way to perform effects in the `update` function.
+Returning an array of effects is great for testability and isolating input/output, but certain program flows became somewhat awkward to write. For most messages, we essentially have to create a different data constructor for each step in the computation. For that reason, Flame provides an alternative way to perform effects in the `update` function.
 
 The effectful updating defines `Application` as
+
 ```haskell
 type Application model message = {
       init :: Tuple model (Maybe message),
       view :: model -> Html message,
-      update :: Environment model message -> Aff (model -> model)
+      update :: Environment model message -> Aff (model -> model),
+      subscribe :: Array (Subscription message)
 }
 ```
+
 Here instead of returning a list of effects, we perform them directly in the `Aff` monad. Because the `update` function is now fully asynchronous, its type is a little different. Instead of the model, we return a function to modify it -- this ensures slower computations don't overwrite unrelated updates that might happen in the meanwhile. `Environment` is defined as follows
 
 ```haskell
@@ -142,7 +169,8 @@ type Environment model message = {
 
 `model` and `message` are now grouped in a record. `display` is a function to arbitrarily re-render the view.
 
-Let's rewrite the dice application using the effectful strategy:
+Let's rewrite the dice application using the effectful updates
+
 ```haskell
 type Model = Maybe Int
 
@@ -152,19 +180,22 @@ update :: Environment Model Message -> Aff (Model -> Model)
 update _ = map (const <<< Just) $ liftEffect $ ER.randomInt 1 6
 ```
 
-Since we are always generating a new model, and don't need an intermediate message to update it, we can ignore the enviroment and perform the update in a single go.
+Since we are always generating a new model, and don't need an intermediate message to update it, we can ignore the environment and perform the update in a single go.
 
 Let's see how we can use `display` to rewrite the AJAX example from above as well
 
 ```haskell
-type Model = { response :: String, isLoading :: boolean }
+type Model = {
+      response :: String,
+      isLoading :: boolean
+}
 
 data Message = Loading
 
 update :: AffUpdate Model Message -- type synonym to reduce clutter
 update { display } = do
             display _ { isLoading = true }
-            traverse (\rs -> display  _ { response = rs}) [
+            traverse (\rs -> display  _ { response = rs }) [
                   performAJAX "url",
                   performAJAX "url2",
                   performAJAX "url3",
@@ -175,9 +206,10 @@ update { display } = do
 init :: Tuple Model (Maybe Message)
 init = model :> Just Loading
 ```
+
 `display` renders the view with the modified model without leaving the `update` function, which is again a little more straightforward.
 
-But juggling record update functions can quickly turn messy, specially if we are using records as a model. For that reason, helper functions are provided to modify only given fields:
+But juggling model update functions can quickly turn messy, specially if we are using records. For that reason, helper functions are provided to modify only given fields
 
 ```haskell
 diff' :: forall changed model. Diff changed model => changed -> (model -> model)
@@ -209,40 +241,110 @@ update { display, model: MyModel model, message } =
 
 Here, no matter how many fields `MyModel` has, we update only what's required in each case expression. Notice that `diff` always takes a record as first parameter. The model, however, can be either a record or newtype (given a `Newtype` instance)/plain functor that holds a record to be updated.
 
-## [Handling external events](#handling-external-events)
+## [Subscriptions](#subscriptions)
 
-More often than not, a real world application needs to handle events that don't come from the view. These might include events targeting `window` or `document`, or third party components. To solve this problem, the `mount` function returns a [`Channel`](https://pursuit.purescript.org/packages/purescript-signal/10.1.0/docs/Signal.Channel) which can be fed arbitrary messages
+More often than not, a real world application needs to handle events that don't come from the view. These may include events targeting `window`, `document`, third party JavaScript components or in some cases messages from other mount points or application code. We can tackle these scenarios in a few different ways:
 
-`Flame.Application.NoEffects.mount` returns a `Channel (Array message)`
+* External event handlers
 
-`Flame.mount` returns a `Channel (Array message)`
-
-`Flame.Application.Effectful.mount` returns a `Channel (Maybe message)`
-
-The module `Flame.Subscription` defines common events such as (`window`) `load` or (`document`) `onclick` and a helper `send` to bind multiple events to a
+When mounting the application, `subscribe` can be used to specify `message`s as a list of subscriptions. The modules under `Flame.Subscription` define `on` event handlers similar to those used in views
 
 ```haskell
-import Flame.Application.NoEffects as FAN
-import Flame.Subscription as FE
+FAN.mount_ (QuerySelector "body") {
+      ...
+      subscribe: [
+            FSW.onLoad Message, -- `window` event from `Flame.Subscription.Window`
+            FSD.onClick Message2, -- `document` event from `Flame.Subscription.Document`,
+            FS.onCustomEvent (EventType "custom") Message3 -- `CustomEvent` with `Flame.Subscription.onCustomEvent`
+      ]
+}
+```
 
-...
+The only restriction is that `CustomEvent` messages payloads must be JSON serializable
+
+```haskell
+onCustomEvent :: forall arg message. UnserializeState arg => EventType -> (arg -> message) -> Subscription message
+```
+
+since they might come from external JavaScript that is not guaranteed to match PureScript data types.
+
+Once a subscription has been defined, the raised `message` will be handled by the `update` function as usual.
+
+* Arbitrary message passing
+
+Sometimes, we need to talk to an application from external events handlers or other points in code far away from the mount point. Consider an app that uses web sockets, or a singe page application that uses multiple mount points for lazy loading. For these and other use cases, Flame provides a `mount` function that takes an application id, as well a `send` function to raise messages for application ids
+
+```haskell
+mount :: forall id model message. Show id => QuerySelector -> AppId id message -> Application model message -> Effect Unit
+
+send :: forall id message. Show id => AppId id message -> message -> Effect Unit
+```
+
+Anything that has a `Show` instance can be an id, but the application will crash while mounting if the id isn't unique. That being said, passing `message` to an application is straightforward
+
+```haskell
+import Flame as F
+import Flame(AppId(..))
+import Flame.Subscription as FS
+
+data Applications = FirstApp | SecondApp
+instance appShow :: Show Applications where
+      ...
+
+data FirstAppMessage = MyFirstMessage
 
 main :: Effect Unit
 main = do
-      FAN.mount {...}
-      --raise these messages when the given events are fired
-      FE.send [FE.offline [Message3], FE.onClick [Message, Message2]]
-      --manualy raise a message
-      FS.send [Message4]
+      -- application id
+      let id = AppId FirstApp :: AppId Applications FirstAppMessage
+      -- mount instead of mount_
+      F.mount (QuerySelector "body") id {
+            ...
+      }
+      -- raise a message for FirstApp
+      FS.send id MyFirstMessage
 ```
 
-See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See the [webchat test application](https://github.com/easafe/purescript-flame/tree/master/examples/Webchat) for more examples of external events.
+Then if there is another mount point someplace else in the code, it can still talk to `FirstApp`. There is no need to persist application ids, as long as the correct type is used
 
-## Event handling and components
+```haskell
+import Flame as F
+import Flame.Subscription as FS
+import Flame(AppId(..))
 
-If you have used JavaScript frameworks like React or are just worried how complex state updating could become, you might be wondering how to struct Flame in "components". That is, to isolate state and business logic to individual units that maybe can be reused later.
+data SecondAppMessage = MySecondMessage
 
-Such approach however is not quite necessary in a purely functional language like PureScript. We could, for instance, break down a big application into several smaller ones and create type mappings for the model/use channels/functors, but that seems hardly any improvement over just composing functions. As we have seen before, views can be easily composed -- an effective way to organize an application is to split views, together with the business logic related to them, into modules. This way, by virtue of having a single `update` and `model` per application, we avoid the boilerplate of having to sync the model or map its types, and still keep our application manageable.
+main :: Effect Unit
+main = do
+      -- diffent application id
+      let secondId = AppId SecondApp :: AppId Applications SecondAppMessage
+
+      F.mount (QuerySelector "body") secondId {
+            ...
+      }
+      -- raise a message for FirstApp again
+      FS.send (AppId FirstApp) MyFirstMessage -- with type AppId Applications FirstAppMessage
+      -- raise a message for SecondApp
+      FS.send secondId MySecondMessage
+```
+
+* Broadcasting
+
+Flame also provides a way to "broadcast" `CustomEvent`s for any listeners. `Flame.Subscription.Unsafe.CustomEvent` provides the following function
+
+```haskell
+broadcast :: forall arg. SerializeState arg => EventType -> arg -> Effect Unit
+```
+
+whose events can be handled with `onCustomEven` on your `subscribe` list. Broadcasting events is considered unsafe, as it is user code responsibility to make sure all listeners expect the same `message` payload.
+
+See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See this [test application](https://github.com/easafe/purescript-flame/tree/master/examples/Subscriptions) for a full example of subscriptions.
+
+## Structuring applications
+
+Having a single model of the whole application state may to lead to unwieldy code structure. For that reason, JavaScript frameworks such as React encourage the use of "components", i.e, (reusable) units of code with isolated state and business logic. This in turn necessitates some way to keep the state in sync for all moving parts.
+
+In a purely functional language like PureScript, however, we have most of benefits of components (and libraries like Redux) built in. Views or business logic code can be easily broken down into modules. Abstractions and general functions promote composition and reuse. Events from your view, as opposed to messages passed down between hierarchies of components, are also easier to follow and modify. Because of that, splitting a application into smaller ones brings an overhead of type mappings/communication without much of benefits supposed by more imperative frameworks.
 
 <a href="/views" class="direction previous">Previous: Defining views</a>
 <a href="/rendering" class="direction">Next: Rendering the app</a>
