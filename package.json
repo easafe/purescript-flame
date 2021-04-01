@@ -22,12 +22,13 @@
             "example-counters": "parcel build examples/Counters/counters.js -d examples/Counters/dist",
             "example-dice": "parcel build examples/Dice/dice.js -d examples/Dice/dist",
             "example-special": "parcel build examples/SpecialElements/special.js -d examples/SpecialElements/dist",
+            "example-subscriptions": "parcel build examples/Subscriptions/subscriptions.js -d examples/Subscriptions/dist",
             "example-todo": "parcel build examples/Todo/todo.js -d examples/Todo/dist",
             "scratchpad": "parcel watch test/scratchpadloader.js -d test/dist",
             "webchat": "npm run example-webchat && node examples/Webchat/dist/webchat-server.js",
             "server-side-rendering": "npm run example-server-side-rendering && node examples/ServerSideRendering/dist/server-side-rendering-server.js",
             "build-examples": "npm run example-affjax-list && npm run example-webchat && npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
-            "test": "spago -x examples.dhall test && npm run build-examples && npm run example-special"
+            "test": "spago -x examples.dhall test && npm run build-examples && npm run example-special && npm run example-subscriptions"
       },
       "devDependencies": {
             "jsdom": "^14.1.0",

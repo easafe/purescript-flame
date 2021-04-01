@@ -10,10 +10,10 @@ With all pieces in place
 
 ```haskell
 type Application model message = {
-        init :: model,
-        view :: model -> Html message,
-        update :: model -> message -> model,
-        subscribe :: Array (Subscription message)
+      init :: model,
+      view :: model -> Html message,
+      update :: model -> message -> model,
+      subscribe :: Array (Subscription message)
 }
 ```
 
@@ -51,8 +51,8 @@ The module `Flame` provides
 
 ```haskell
 type PreApplication model message = {
-        init :: model,
-        view :: model -> Html message
+      init :: model,
+      view :: model -> Html message
 }
 
 preMount :: forall model message. SerializeState model => QuerySelector -> PreApplication model message -> Effect String
@@ -62,9 +62,10 @@ which can used to render server-side the initial state of an application. On cli
 
 ```haskell
 type ResumedApplication model message = {
-        init :: Array (Aff (Maybe message)), -- only the (optional) initial message to be raised
-        view :: model -> Html message,
-        update :: model -> message -> Tuple model (Array (Aff (Maybe message))) --update is only available client side
+      init :: Array (Aff (Maybe message)), -- only the (optional) initial message to be raised
+      view :: model -> Html message,
+      update :: model -> message -> Tuple model (Array (Aff (Maybe message))), -- update is only available client side
+      subscribe :: Array (Subscription message) -- subscriptions are only available client side
 }
 
 resumeMount_ :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect Unit
