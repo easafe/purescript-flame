@@ -8,8 +8,8 @@ import Effect.Aff (Aff)
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.Effectful (Environment)
 import Flame.Application.Effectful as FAE
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 
 type Model = {
         increments :: Int,

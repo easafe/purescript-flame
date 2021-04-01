@@ -19,7 +19,8 @@ _site/
 
 scratchpad.*
 scratchpadloader.*
-
+vendor
 .cache
+.bundle
 
 .spago

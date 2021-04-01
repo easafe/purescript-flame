@@ -9,7 +9,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Flame (QuerySelector(..), Html, (:>))
 import Flame.Application.EffectList as FAE
-import Flame.HTML.Element as HE
+import Flame.Html.Element as HE
 import Signal.Channel (Channel)
 
 -- | The model represents the state of the app

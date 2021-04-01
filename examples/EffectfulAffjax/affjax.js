@@ -1,0 +1,1 @@
+require('../../output/Examples.Effectful.Affjax.Main').main();

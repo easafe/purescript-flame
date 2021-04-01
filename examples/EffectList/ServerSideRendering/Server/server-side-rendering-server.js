@@ -1,1 +1,0 @@
-require('../../../../output/Examples.EffectList.ServerSideRendering.Server.Main').main();

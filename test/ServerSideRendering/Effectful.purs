@@ -10,9 +10,9 @@ import Effect.Uncurried as EU
 import Flame (QuerySelector(..), Html)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
-import Flame.HTML.Attribute as HA
+import Flame.Html.Attribute as HA
 import Flame as F
-import Flame.HTML.Element as HE
+import Flame.Html.Element as HE
 import Web.Event.Internal.Types (Event)
 
 foreign import setInnerHTML :: EffectFn2 String String Unit
@@ -20,7 +20,7 @@ foreign import setInnerHTML :: EffectFn2 String String Unit
 -- | The model represents the state of the app
 newtype Model = Model Int
 
-derive instance genericModle :: Generic Model _
+derive instance genericModel :: Generic Model _
 
 -- | This datatype is used to signal events to `update`
 data Message = Increment | Decrement Event
