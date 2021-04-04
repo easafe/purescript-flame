@@ -9,3 +9,9 @@ script:
   - spago test
   - spago -x examples.dhall build
   - npm run build-examples
+  - cd benchmarks/js-framework-benchmark/keyed
+  - npm install
+  - npm run build
+  - cd ../non-keyed
+  - npm install
+  - npm run build
