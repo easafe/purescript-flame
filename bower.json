@@ -1,35 +1,39 @@
 {
-    "name": "purescript-flame",
-    "license": [
-        "MIT"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/easafe/purescript-flame"
-    },
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "output"
-    ],
-    "dependencies": {
-        "purescript-aff": "^v5.1.2",
-        "purescript-argonaut-codecs": "^v7.0.0",
-        "purescript-argonaut-generic": "^v6.0.0",
-        "purescript-console": "^v4.4.0",
-        "purescript-debug": "^v4.0.0",
-        "purescript-effect": "^v2.0.1",
-        "purescript-foreign-object": "^v2.0.3",
-        "purescript-integers": "^v4.0.0",
-        "purescript-nullable": "^v4.1.1",
-        "purescript-prelude": "^v4.1.1",
-        "purescript-psci-support": "^v4.0.0",
-        "purescript-random": "^v4.0.0",
-        "purescript-record": "^v2.0.2",
-        "purescript-test-unit": "^v15.0.0",
-        "purescript-web-events": "^v2.0.1",
-        "purescript-web-html": "^v2.3.0",
-        "purescript-web-uievents": "^v2.0.0"
-    }
+  "name": "purescript-flame",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^4.1.0",
+    "purescript-console": "^4.2.0",
+    "purescript-effect": "^2.0.1",
+    "purescript-web-events": "^2.0.0",
+    "purescript-web-dom": "^2.0.0",
+    "purescript-web-html": "^2.0.0",
+    "purescript-nullable": "^4.1.1",
+    "purescript-aff": "^5.1.0",
+    "purescript-foreign-object": "^2.0.1",
+    "purescript-argonaut-generic": "^6.0.0",
+    "purescript-argonaut-codecs": "^7.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0",
+    "purescript-random": "^4.0.0",
+    "purescript-integers": "^4.0.0",
+    "purescript-affjax": "^7.0.0",
+    "purescript-test-unit": "^14.0.0",
+    "purescript-debug": "^4.0.0",
+    "purescript-websocket-simple": "^3.0.1",
+    "purescript-record": "^2.0.1",
+    "purescript-node-http": "^5.0.1",
+    "purescript-httpure": "^0.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/easafe/purescript-flame.git"
+  }
 }
