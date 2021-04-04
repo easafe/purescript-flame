@@ -14,8 +14,6 @@ import Flame (Html, ListUpdate, QuerySelector(..), (:>))
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.Lazy as FRL
-import Flame.Renderer.Key as FRK
 
 import Flame.Types(NodeData)
 
@@ -55,13 +53,16 @@ createRandomNRows n lastID = liftEffect (EU.runEffectFn2 createRandomNRows_ n la
 main :: Effect Unit
 main = F.mount_ (QuerySelector "body") {
     init: model :> [],
+    subscribe: [],
     view,
     update
 }
-    where   model = {
-                rows: [],
-                lastID: 0
-            }
+
+model :: Model
+model = {
+    rows: [],
+    lastID: 0
+}
 
 view :: Model -> Html Message
 view model = HE.div [HA.class' "container"] [
@@ -76,7 +77,7 @@ jumbotron :: Html Message
 jumbotron = HE.div [ HA.class' "jumbotron" ] [
     HE.div [ HA.class' "row" ] [
         HE.div [ HA.class' "col-md-6" ] [
-            HE.h1_ [ HE.text "Flame 0.9.0 (keyed)" ]
+            HE.h1_ [ HE.text "Flame 1.0.0 (keyed)" ]
         ],
         HE.div [ HA.class' "col-md-6" ] [
             map renderActionButton buttons
@@ -105,10 +106,10 @@ buttons = [
 ]
 
 renderLazyRow :: Row -> Html Message
-renderLazyRow row = FRL.lazy (Just (show row.id)) renderRow row
+renderLazyRow row = HE.lazy (Just (show row.id)) renderRow row
 
 renderRow :: Row -> Html Message
-renderRow row = HE.tr [ HA.class' { "danger": row.selected }, FRK.key (show row.id)] [
+renderRow row = HE.tr [ HA.class' { "danger": row.selected }, HA.key (show row.id)] [
     HE.td colMd1 [ HE.text (show row.id) ],
     HE.td colMd4 [ HE.a [ HA.onClick (Select row.id) ] [ HE.text row.label ] ],
     HE.td colMd1 [ HE.a [ HA.onClick (Remove row.id) ] removeIcon ],

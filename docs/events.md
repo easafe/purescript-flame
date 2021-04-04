@@ -330,7 +330,7 @@ main = do
 
 * Broadcasting
 
-Flame also provides a way to "broadcast" `CustomEvent`s for any listeners. `Flame.Subscription.Unsafe.CustomEvent` provides the following function
+Flame also provides a way to "broadcast" `CustomEvent`s for all listeners. `Flame.Subscription.Unsafe.CustomEvent` provides the following function
 
 ```haskell
 broadcast :: forall arg. SerializeState arg => EventType -> arg -> Effect Unit

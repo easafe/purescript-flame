@@ -14,15 +14,15 @@ let additions = {
               "web-html",
               "nullable",
               "aff",
-              "signal",
               "foreign-object",
               "argonaut-generic"
             ]
             , repo =
                 "https://github.com/easafe/purescript-flame.git"
             , version =
-                "e04514f4a03d492896f01b93c2d6e403e39d354e"
+                "v1.0.0"
         }
 }
 
 in upstream // overrides // additions
+

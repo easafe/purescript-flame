@@ -28,6 +28,7 @@ h1, h2, h3, h4 {
       font-family: "Catamaran";
 }
 
+
 a {
       text-decoration: none;
       font-weight: bold;
@@ -116,8 +117,8 @@ a.direction, .menu a:not(.project-name) {
 
 @media (max-width:600px) {
       .menu, .content {
-            width: 100%;
-            padding: 5px;
+            max-width: 100%;
+            padding: 5px 10px;
       }
       body {
             display: block;
@@ -125,8 +126,15 @@ a.direction, .menu a:not(.project-name) {
       div {
             width: 100%;
             display: block;
-            position: static;
       }
+
+      p {
+            display: block;
+    word-wrap: break-word;
+    max-width: 97vw;
+
+      }
+
 }
 
 .highlight .c {
