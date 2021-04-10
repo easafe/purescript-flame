@@ -1,14 +1,15 @@
-/bower_components/
-/node_modules/
-/.pulp-cache/
-/output/
-/generated-docs/
-/.psc-package/
-/.psc*
+bower_components/
+node_modules/
+.pulp-cache/
+output/
+generated-docs/
+.psc-package/
+.psc*
 /.purs*
-/.psa*
+.psa*
 dist/
 todo
+dce-output
 
 npm-debug.log
 
@@ -19,7 +20,8 @@ _site/
 
 scratchpad.*
 scratchpadloader.*
-
+vendor
 .cache
+.bundle
 
 .spago

@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html lang=en>
-        <head>
-                <meta charset=utf-8>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <title>Flame - {{ page.title }}</title>
-                <link rel=stylesheet href=/assets/css/site.css />
-        </head>
-        <body>
-                <div>
-                        <div class=menu>
-                                <h1><a href=/index class=project-name>flame</a></h1>
-                                <ul id=guide>
-                                        <li><a href=/index >Getting started</a></li>
-                                        <li><a href=/concepts >Main concepts</a></li>
-                                        <li><a href=/views >Defining views</a></li>
-                                        <li><a href=/events >Handling events</a></li>
-                                        <li><a href=/rendering >Rendering the app</a></li>
-                                </ul>
-                                <br>
-                                <ul>
-                                                <li><a href=https://github.com/easafe/purescript-flame/tree/master/examples>Examples</a></li>
-                                        <li><a href=/benchmarks>Benchmarks</a></li>
-                                        <li><a href=https://pursuit.purescript.org/packages/purescript-flame>API Reference</a></li>
-                                        <li><a href=https://github.com/easafe/purescript-flame>GitHub</a></li>
-                                </ul>
-                        </div>
-                </div>
-                <div class=content>
-                        {{ content }}
-                </div>
-                <script type=text/javascript>
-                        var as = [].slice.call(document.querySelectorAll('#guide li a'));
+      <head>
+            <meta charset=utf-8>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Flame - {{ page.title }}</title>
+            <link rel=stylesheet href=/assets/css/site.css />
+      </head>
+      <body>
+            <div>
+                  <div class=menu>
+                        <h1><a href=/index class=project-name>flame</a></h1>
+                        <ul id=guide>
+                              <li><a href=/index >Getting started</a></li>
+                              <li><a href=/concepts >Main concepts</a></li>
+                              <li><a href=/views >Defining views</a></li>
+                              <li><a href=/events >Handling events</a></li>
+                              <li><a href=/rendering >Rendering the app</a></li>
+                        </ul>
+                        <br>
+                        <ul>
+                                    <li><a href=https://github.com/easafe/purescript-flame/tree/master/examples>Examples</a></li>
+                              <li><a href=/benchmarks>Benchmarks</a></li>
+                              <li><a href=https://pursuit.purescript.org/packages/purescript-flame>API Reference</a></li>
+                              <li><a href=https://github.com/easafe/purescript-flame>GitHub</a></li>
+                        </ul>
+                  </div>
+            </div>
+            <div class=content>
+                  {{ content }}
+            </div>
+            <script type=text/javascript>
+                  var as = [].slice.call(document.querySelectorAll('#guide li a'));
 
-                        if (location.pathname == '/')
-                                as[0].classList.add('current');
-                        else
-                                for (var i = 0; i < as.length; ++i)
-                                        if (location.href == as[i].href) {
-                                                as[i].classList.add('current');
-                                                break;
-                                        }
-                </script>
-        </body>
+                  if (location.pathname == '/')
+                        as[0].classList.add('current');
+                  else
+                        for (var i = 0; i < as.length; ++i)
+                              if (location.href == as[i].href) {
+                                    as[i].classList.add('current');
+                                    break;
+                              }
+            </script>
+      </body>
 </html>

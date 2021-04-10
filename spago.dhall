@@ -19,10 +19,10 @@ You can edit this file as you like.
   , "psci-support"
   , "random"
   , "record"
-  , "signal"
   , "test-unit"
   , "web-events"
   , "web-html"
+  , "web-uievents"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

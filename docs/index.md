@@ -5,11 +5,11 @@ title: Getting started
 
 ## Simple, fast & type safe web applications
 
-Flame is a PureScript frontend framework inspired by [purescript-hedwig](https://github.com/utkarshkukreti/purescript-hedwig) and Elm with focus on simplicity and performance. Featuring:
+Flame is a PureScript front-end framework inspired by the Elm architecture with focus on simplicity and performance. Featuring:
 
-* Different strategies for state updating -- see [Handling events](events)
+* Message based state updating -- see [Handling events](events)
 
-* [Signal](https://pursuit.purescript.org/packages/purescript-signal) based interface for handling custom events -- see [Handling external events](events#handling-external-events)
+* Subscriptions -- see [Handling external events](events#subscriptions)
 
 * Server side rendering -- see [Rendering the app](rendering)
 
@@ -20,28 +20,27 @@ Flame is a PureScript frontend framework inspired by [purescript-hedwig](https:/
 Install:
 
 ```bash
-npm install snabbdom snabbdom-to-html # the latter is used for server side rendering
 bower install purescript-flame
 ```
 
 Example counter app:
 
 ```haskell
-module App.Main where
+module Counter.Main where
 
 import Prelude
 
 import Effect (Effect)
-import Flame (Html, QuerySelector(..))
--- Update strategy for side effects free functions; see docs for other strategies
+import Flame (Html, QuerySelector(..), Subscription)
+-- Side effects free updating; see docs for other examples
 import Flame.Application.NoEffects as FAN
-import Flame.HTML.Element as HE
-import Flame.HTML.Attribute as HA
+import Flame.Html.Element as HE
+import Flame.Html.Attribute as HA
 
 -- | The model represents the state of the app
 type Model = Int
 
--- | This datatype is used to signal events to `update`
+-- | Data type used to represent events
 data Message = Increment | Decrement
 
 -- | Initial state of the app
@@ -51,23 +50,28 @@ init = 0
 -- | `update` is called to handle events
 update :: Model -> Message -> Model
 update model = case _ of
-        Increment -> model + 1
-        Decrement -> model - 1
+      Increment -> model + 1
+      Decrement -> model - 1
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
 view model = HE.main "main" [
-        HE.button [HA.onClick Decrement] "-",
-        HE.text $ show model,
-        HE.button [HA.onClick Increment] "+"
+      HE.button [HA.onClick Decrement] "-",
+      HE.text $ show model,
+      HE.button [HA.onClick Increment] "+"
 ]
+
+-- | Events that come from outside the `view`
+subscribe :: Array (Subscription Message)
+subscribe = []
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount_ (QuerySelector "main") {
-        init,
-        update,
-        view
+main = FAN.mount_ (QuerySelector "body") {
+      init,
+      view,
+      update,
+      subscribe
 }
 ```
 
