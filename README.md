@@ -4,7 +4,7 @@ Flame is a fast & simple framework inspired by the Elm architecture for building
 
 ## Documentation
 
-See the [project page](https://flamepurs.org) or [pursuit](https://pursuit.purescript.org/packages/purescript-flame)
+See the [project page](https://flame.asafe.dev/) or [pursuit](https://pursuit.purescript.org/packages/purescript-flame)
 
 ## Examples
 
