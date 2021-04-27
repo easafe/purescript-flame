@@ -2,7 +2,11 @@ language: node_js
 node_js:
   - 13
 install:
-  - npm install -g purescript@0.14.1 spago parcel-bundler
+  - npm install -g spago parcel-bundler
+  - TAG=v0.141
+  - curl --location --output $HOME/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$TAG/linux64.tar.gz
+  - tar -xvf $HOME/purescript.tar.gz -C $HOME/
+  - chmod a+x $HOME/purescript
 script:
   - npm install
   - spago build
