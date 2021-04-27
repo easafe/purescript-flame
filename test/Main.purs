@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Array as DA
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show as DGRS
+import Data.Show.Generic as DSG
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
@@ -1001,4 +1001,4 @@ derive instance genericTestNewtype :: Generic TestNewtype _
 derive instance newtypeTestNewtype :: Newtype TestNewtype _
 derive instance eqTestNewtype :: Eq TestNewtype
 instance showTestNewtype :: Show TestNewtype where
-      show = DGRS.genericShow
+      show = DSG.genericShow
