@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - 13
 install:
-  - npm install -g purescript@0.13.8 spago parcel-bundler
+  - npm install -g purescript@0.14.1 spago parcel-bundler
 script:
   - npm install
   - spago build
