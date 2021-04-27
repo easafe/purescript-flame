@@ -1,3 +1,15 @@
 language: node_js
 node_js:
   - 13
+install:
+  - npm install -g purescript@0.14.1 spago parcel-bundler
+script:
+  - npm install
+  - spago build
+  - spago test
+  - spago -x examples.dhall build
+  - npm run build-examples
+  - cd benchmarks/js-framework-benchmark/keyed
+  - npm run build
+  - cd ../non-keyed
+  - npm run build
