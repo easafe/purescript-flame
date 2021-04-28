@@ -69,8 +69,3 @@ main = FAN.mount_ (QuerySelector "body") {
       subscribe
 }
 ```
-
-## License
-
-Flame is [MIT licensed](LICENSE).
-
