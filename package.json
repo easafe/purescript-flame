@@ -9,26 +9,25 @@
             "package.json"
       ],
       "scripts": {
-            "example-dice-aff": "parcel build examples/EffectfulDice/dice.js -d examples/EffectfulDice/dist/",
-            "example-server-side-rendering-server": "parcel build examples/ServerSideRendering/Server/dist/server-side-rendering-server.js -d examples/ServerSideRendering/Server/dist -t node",
-            "example-server-side-rendering-client": "parcel build examples/ServerSideRendering/Client/server-side-rendering-client.js -d examples/ServerSideRendering/Client/dist",
+            "example-dice-aff": "parcel build examples/EffectfulDice/dice.js --dist-dir examples/EffectfulDice/dist/",
+            "example-server-side-rendering-server": "parcel build examples/ServerSideRendering/Server/dist/server-side-rendering-server.js --dist-dir examples/ServerSideRendering/Server/dist -t node",
+            "example-server-side-rendering-client": "parcel build examples/ServerSideRendering/Client/server-side-rendering-client.js --dist-dir examples/ServerSideRendering/Client/dist",
             "example-server-side-rendering": "npm run example-server-side-rendering-server && npm run example-server-side-rendering-client",
-            "example-affjax": "parcel build examples/EffectfulAffjax/affjax.js -d examples/EffectfulAffjax/dist",
-            "example-affjax-list": "parcel build examples/Affjax/affjax.js -d examples/Affjax/dist",
-            "example-counter": "parcel build examples/Counter/counter.js -d examples/Counter/dist",
-            "example-counters": "parcel build examples/Counters/counters.js -d examples/Counters/dist",
-            "example-dice": "parcel build examples/Dice/dice.js -d examples/Dice/dist",
-            "example-special": "parcel build examples/SpecialElements/special.js -d examples/SpecialElements/dist",
-            "example-subscriptions": "parcel build examples/Subscriptions/subscriptions.js -d examples/Subscriptions/dist",
-            "example-todo": "parcel build examples/Todo/todo.js -d examples/Todo/dist",
-            "scratchpad": "parcel watch test/scratchpadloader.js -d test/dist",
+            "example-affjax": "parcel build examples/EffectfulAffjax/affjax.js --dist-dir examples/EffectfulAffjax/dist",
+            "example-affjax-list": "parcel build examples/Affjax/affjax.js --dist-dir examples/Affjax/dist",
+            "example-counter": "parcel build examples/Counter/counter.js --dist-dir examples/Counter/dist",
+            "example-counters": "parcel build examples/Counters/counters.js --dist-dir examples/Counters/dist",
+            "example-dice": "parcel build examples/Dice/dice.js --dist-dir examples/Dice/dist",
+            "example-special": "parcel build examples/SpecialElements/special.js --dist-dir examples/SpecialElements/dist",
+            "example-subscriptions": "parcel build examples/Subscriptions/subscriptions.js --dist-dir examples/Subscriptions/dist",
+            "example-todo": "parcel build examples/Todo/todo.js --dist-dir examples/Todo/dist",
+            "scratchpad": "parcel watch test/scratchpadloader.js --dist-dir test/dist",
             "server-side-rendering": "npm run example-server-side-rendering && node examples/ServerSideRendering/dist/server-side-rendering-server.js",
             "build-examples": "npm run example-affjax-list && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
             "test": "spago -x examples.dhall test && npm run build-examples && npm run example-special && npm run example-subscriptions"
       },
       "devDependencies": {
-            "jsdom": "^14.1.0",
-            "parcel-bundler": "^1.12.4",
-            "ws": "^7.0.0"
+            "jsdom": "^16.5.3",
+            "parcel": "^2.0.0-beta.2"
       }
 }
