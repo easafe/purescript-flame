@@ -4,7 +4,7 @@ node_js:
   - 13
 install:
   - sudo ln -s /snap/google-cloud-sdk/128/lib/x86_64-linux-gnu/libtinfo.so.5 /usr/lib/x86_64-linux-gnu/libtinfo.so.5
-  - npm install -g purescript@0.14.1 spago parcel-bundler
+  - npm install -g purescript@0.14.1 spago@0.20.1 parcel-bundler
 script:
   - npm install
   - spago build

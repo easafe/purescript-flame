@@ -1,5 +1,6 @@
 let upstream =
-    https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20200822/packages.dhall sha256:b4f151f1af4c5cb6bf5437489f4231fbdd92792deaf32971e6bcb0047b3dd1f8
+    https://github.com/purescript/package-sets/releases/download/psc-0.14.1-20210427/packages.dhall sha256:edbb8f70232fb83895c7ce02f5d2b29f6ee1722f1a70fc58d3bc0ab0de18afe4
+
 
 let overrides = { = }
 
@@ -20,7 +21,7 @@ let additions = {
             , repo =
                 "https://github.com/easafe/purescript-flame.git"
             , version =
-                "v1.0.0"
+                "f566e620dd1b31f9e7b2bd48bf69552990954538"
         }
 }
 
