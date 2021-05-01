@@ -25,8 +25,8 @@
         "url": "https://github.com/krausest/js-framework-benchmark.git"
     },
     "devDependencies": {
-        "purescript": "0.13.8",
-        "spago": "0.18.0",
+        "purescript": "0.19.1",
+        "spago": "0.20.1",
         "webpack": "^4.44.1",
         "webpack-cli": "^3.3.12"
     }
