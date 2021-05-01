@@ -33,6 +33,7 @@ type PreApplication model message = {
 
 type ApplicationId = String
 
+newtype AppId :: forall k. Type -> k -> Type
 newtype AppId a b = AppId a
 
 type EventName = String

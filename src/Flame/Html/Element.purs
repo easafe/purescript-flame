@@ -15,6 +15,7 @@ import Web.DOM (Node)
 -- | * `tag "my-tag" []` becomes short for `tag [id "my-tag"] []`
 -- | * `tag [] "content"` becomes short for `tag [] [text "content"]`
 -- | * elements with a single attribute or children need not as well to use lists: `tag (enabled True) (tag attrs children)`
+class ToNode :: forall k. Type -> k -> (k -> Type) -> Constraint
 class ToNode a b c | a -> b where
       toNode :: a -> Array (c b)
 

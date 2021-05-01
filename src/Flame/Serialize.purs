@@ -12,9 +12,8 @@ import Data.Argonaut.Encode.Generic (class EncodeRep)
 import Data.Argonaut.Encode.Generic as DAEG
 import Data.Bifunctor as DB
 import Data.Either (Either(..))
-import Data.Either as DE
 import Data.Generic.Rep (class Generic)
-import Partial as Partial
+import Partial as P
 import Partial.Unsafe as PU
 import Prelude (bind, show, (<<<), ($))
 import Prim.RowList (class RowToList)
@@ -45,6 +44,6 @@ jsonStringError :: forall a. Either JsonDecodeError a -> Either String a
 jsonStringError = DB.lmap DAD.printJsonDecodeError
 
 unsafeUnserialize :: forall m. UnserializeState m => String -> m
-unsafeUnserialize str = PU.unsafePartial case unserialize str of 
-      Right m -> m 
-      Left err -> Partial.crashWith $ show err
+unsafeUnserialize str = PU.unsafePartial case unserialize str of
+      Right m -> m
+      Left err -> P.crashWith $ show err

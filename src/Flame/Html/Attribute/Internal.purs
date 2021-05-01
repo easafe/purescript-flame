@@ -15,8 +15,8 @@ import Data.Tuple (Tuple(..))
 import Flame.Types (NodeData, ToNodeData)
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Partial as Partial
-import Partial.Unsafe (unsafePartial)
+import Partial as P
+import Partial.Unsafe as PU
 import Prelude (const, flip, map, not, otherwise, show, ($), (<<<), (<>), (==))
 import Type.Row.Homogeneous (class Homogeneous)
 
@@ -95,11 +95,11 @@ caseify :: String -> String
 caseify name'
       | name' == DS.toUpper name' = DS.toLower name'
       | otherwise = DS.toLower (DS.singleton head) <> hyphenated
-      where {head, tail} = unsafePartial (DM.fromJust $ DS.uncons name')
+      where {head, tail} = PU.unsafePartial (DM.fromJust $ DS.uncons name')
 
-            regex = unsafePartial case DSR.regex "[A-Z]" global of
+            regex = PU.unsafePartial case DSR.regex "[A-Z]" global of
                   DE.Right rgx -> rgx
-                  DE.Left err -> Partial.crashWith $ show err
+                  DE.Left err -> P.crashWith $ show err
 
             replacer = const <<< ("-" <> _) <<< DS.toLower
 
