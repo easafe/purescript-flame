@@ -13,9 +13,6 @@
             "example-server-side-rendering-server": "parcel build examples/ServerSideRendering/Server/dist/server-side-rendering-server.js -d examples/ServerSideRendering/Server/dist -t node",
             "example-server-side-rendering-client": "parcel build examples/ServerSideRendering/Client/server-side-rendering-client.js -d examples/ServerSideRendering/Client/dist",
             "example-server-side-rendering": "npm run example-server-side-rendering-server && npm run example-server-side-rendering-client",
-            "example-webchat-server": "parcel build examples/Webchat/Server/webchat-server.js -d examples/Webchat/dist -t node",
-            "example-webchat-client": "parcel build examples/Webchat/Client/webchat-client.js -d examples/Webchat/dist",
-            "example-webchat": "npm run example-webchat-server && npm run example-webchat-client",
             "example-affjax": "parcel build examples/EffectfulAffjax/affjax.js -d examples/EffectfulAffjax/dist",
             "example-affjax-list": "parcel build examples/Affjax/affjax.js -d examples/Affjax/dist",
             "example-counter": "parcel build examples/Counter/counter.js -d examples/Counter/dist",
@@ -25,9 +22,8 @@
             "example-subscriptions": "parcel build examples/Subscriptions/subscriptions.js -d examples/Subscriptions/dist",
             "example-todo": "parcel build examples/Todo/todo.js -d examples/Todo/dist",
             "scratchpad": "parcel watch test/scratchpadloader.js -d test/dist",
-            "webchat": "npm run example-webchat && node examples/Webchat/dist/webchat-server.js",
             "server-side-rendering": "npm run example-server-side-rendering && node examples/ServerSideRendering/dist/server-side-rendering-server.js",
-            "build-examples": "npm run example-affjax-list && npm run example-webchat && npm run example-webchat && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
+            "build-examples": "npm run example-affjax-list && npm run example-affjax && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo",
             "test": "spago -x examples.dhall test && npm run build-examples && npm run example-special && npm run example-subscriptions"
       },
       "devDependencies": {
