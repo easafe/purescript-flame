@@ -1,16 +1,16 @@
-# Flame [![Build Status](https://travis-ci.com/easafe/purescript-flame.svg?branch=master)](https://travis-ci.com/easafe/purescript-flame)
+## Flame [![Build Status](https://travis-ci.com/easafe/purescript-flame.svg?branch=master)](https://travis-ci.com/easafe/purescript-flame)
 
 Flame is a fast & simple framework inspired by the Elm architecture for building web applications in PureScript
 
-## Documentation
+### Documentation
 
 See the [project page](https://flame.asafe.dev/) or [pursuit](https://pursuit.purescript.org/packages/purescript-flame)
 
-## Examples
+### Examples
 
 See the [examples folder](/examples)
 
-## Quick start
+### Quick start
 
 Install:
 
@@ -69,3 +69,7 @@ main = FAN.mount_ (QuerySelector "body") {
       subscribe
 }
 ```
+
+### Funding
+
+If this project is useful for you, consider [throwing a buck](https://asafe.dev/donate) to keep development possible
