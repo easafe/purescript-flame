@@ -24,10 +24,9 @@ h1, h2, h3, h4 {
       -webkit-margin-before: 0.0em;
       -webkit-margin-after: 0.0em;
       font-weight: bold;
-      color: #d72922;
+      color: #c53a34;
       font-family: "Catamaran";
 }
-
 
 a {
       text-decoration: none;
@@ -80,7 +79,7 @@ ul li {
 
 a.direction, .menu a:not(.project-name) {
       color: #212120;
-      background-color: #d72922;
+      background-color: #c53a34;
       padding: 3px 5px;
       font-family: "Catamaran";
       display: inline-block;
@@ -89,7 +88,7 @@ a.direction, .menu a:not(.project-name) {
 }
 
 .content a:not(.direction), .menu a.current, .menu a:hover {
-      color: #d72922;
+      color: #c53a34;
       background-color: #212120;
 }
 
@@ -99,7 +98,7 @@ a.direction, .menu a:not(.project-name) {
 }
 
 .project-name {
-      color: #d72922;
+      color: #c53a34;
       background-color: #212120;
       font-size: 1.3em;
       padding: 0;
@@ -112,7 +111,7 @@ a.direction, .menu a:not(.project-name) {
 }
 
 .current {
-      border-bottom: 3px solid #d72922;
+      border-bottom: 3px solid #c53a34;
 }
 
 @media (max-width:600px) {
