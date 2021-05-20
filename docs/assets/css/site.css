@@ -3,8 +3,8 @@
 html {
       height: 100%;
       box-sizing: border-box;
-      background-color: #191b1b;
-      color: white;
+      background-color: #212120;
+      color: rgb(238, 238, 238);
 }
 
 * {
@@ -79,7 +79,7 @@ ul li {
 }
 
 a.direction, .menu a:not(.project-name) {
-      color: #191b1b;
+      color: #212120;
       background-color: #d72922;
       padding: 3px 5px;
       font-family: "Catamaran";
@@ -90,7 +90,7 @@ a.direction, .menu a:not(.project-name) {
 
 .content a:not(.direction), .menu a.current, .menu a:hover {
       color: #d72922;
-      background-color: #191b1b;
+      background-color: #212120;
 }
 
 .content ul li {
@@ -100,7 +100,7 @@ a.direction, .menu a:not(.project-name) {
 
 .project-name {
       color: #d72922;
-      background-color: #191b1b;
+      background-color: #212120;
       font-size: 1.3em;
       padding: 0;
 }
