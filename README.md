@@ -15,7 +15,7 @@ See the [examples folder](/examples)
 Install:
 
 ```bash
-bower install purescript-flame
+spago install flame
 ```
 
 Example counter app:

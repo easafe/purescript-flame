@@ -20,7 +20,7 @@ Flame is a PureScript front-end framework inspired by the Elm architecture with 
 Install:
 
 ```bash
-bower install purescript-flame
+spago install flame
 ```
 
 Example counter app:
