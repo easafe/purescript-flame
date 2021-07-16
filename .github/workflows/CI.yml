@@ -33,7 +33,9 @@ jobs:
       - run: spago test --no-install
       - run: spago -x examples.dhall build
       - run: npm run build-examples
-      - run: cd benchmarks/js-framework-benchmark/keyed
-      - run: npm run build
-      - run: cd ../non-keyed
-      - run: npm run build
+      - name: keyed bench
+        working-directory: ./benchmarks/js-framework-benchmark/keyed
+        run: npm run build
+      - name: non-keyed bench
+        working-directory: ./benchmarks/js-framework-benchmark/non-keyed
+        run: npm run build
