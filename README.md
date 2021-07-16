@@ -1,4 +1,4 @@
-## Flame [![Build Status](https://travis-ci.com/easafe/purescript-flame.svg?branch=master)](https://travis-ci.com/easafe/purescript-flame)
+## Flame ![build status](https://github.com/easafe/purescript-flame/actions/workflows/CI.yml/badge.svg)
 
 Flame is a fast & simple framework inspired by the Elm architecture for building web applications in PureScript
 
