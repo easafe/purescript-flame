@@ -5,7 +5,7 @@ exports.messageMapper = function (mapper) {
 };
 
 function addMessageMapper(html, mapper) {
-    if (html.nodeData !== undefined && html.nodeData.events !== undefined)
+    if (html.nodeType !== 1 && html.nodeType !== 4)
         mapHtml(html, mapper);
 
     if (html.children !== undefined && html.children.length > 0)

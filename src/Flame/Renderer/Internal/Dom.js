@@ -127,7 +127,8 @@ function shallowCopy(origin) {
                 nodeData: origin.nodeData,
                 render: origin.render,
                 arg: origin.arg,
-                rendered: undefined
+                rendered: undefined,
+                messageMapper: origin.messageMapper
             };
         case managedNode:
             return {
@@ -162,6 +163,9 @@ F.prototype.createAllNodes = function (parent, html, referenceNode) {
         if (html.children !== undefined)
             this.createChildrenNodes(node, html.children);
         else if (html.rendered !== undefined) {
+            if (html.messageMapper !== undefined)
+                html.rendered.messageMapper = html.messageMapper;
+
             if (html.rendered.text !== undefined) {
                 node.textContent = html.rendered.text;
             }
@@ -196,8 +200,18 @@ F.prototype.createChildrenNodes = function (parent, children) {
         else {
             if (c.children !== undefined)
                 this.createChildrenNodes(node, c.children);
-            if (c.rendered !== undefined && c.rendered.children !== undefined)
-                this.createChildrenNodes(node, c.rendered.children);
+            if (c.rendered !== undefined) {
+                if (c.messageMapper !== undefined) {
+                    c.rendered.messageMapper = c.messageMapper;
+
+                    if (c.rendered.children !== undefined)
+                        for (let i = 0; i < c.rendered.children.length; ++i)
+                            c.rendered.children[i].messageMapper = c.rendered.messageMapper;
+                }
+
+                if (c.rendered.children !== undefined)
+                    this.createChildrenNodes(node, c.rendered.children);
+            }
         }
 
         parent.appendChild(node);
@@ -367,7 +381,6 @@ F.prototype.runHandlers = function (handlers, messageMapper, event) {
             maybeMessage = typeof h === "function" ? h(event)() : this.eventWrapper(h);
 
         //handler can be just a message or a function that takes an event
-        // a
         this.updater(messageMapper === undefined ? maybeMessage : messageMapper(maybeMessage))();
     }
     event.stopPropagation();
@@ -970,6 +983,7 @@ F.prototype.removeEvent = function (node, name) {
             this.applicationEvents.delete(name);
         }
     }
-
+    //functor mapping
+    node[eventKey + eventPostfix] = undefined;
     node[eventKey] = undefined;
 };
