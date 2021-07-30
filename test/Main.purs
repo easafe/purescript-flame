@@ -29,7 +29,8 @@ import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Partial.Unsafe (unsafePartial)
 import Test.Basic.EffectList as TBEL
 import Test.Basic.Effectful as TBE
-import Test.Basic.Functor as TBF
+import Test.Functor.Basic as TBF
+import Test.Functor.Lazy as TFL
 import Test.Basic.NoEffects as TBN
 import Test.Effectful.SlowEffects as TES
 import Test.ServerSideRendering.Effectful as TSE
@@ -740,7 +741,8 @@ main = TUM.runTest do
                   TUA.equal "-2" currentDecrement3
                   TUA.equal "2" currentLuckyNumber3
 
-            TU.test "functor" do
+      TU.suite "functor" do
+            TU.test "basic" do
                   liftEffect do
                         unsafeCreateEnviroment
                         TBF.mount
@@ -761,6 +763,23 @@ main = TUM.runTest do
                   dispatchEvent clickEvent "#increment-button-1"
                   current2 <- textContent "#text-output-1"
                   TUA.equal "2" current2
+
+            TU.test "lazy" do
+                  liftEffect do
+                        unsafeCreateEnviroment
+                        TFL.mount
+                  childrenLength <- childrenNodeLength
+                  --div
+                  TUA.equal 1 childrenLength
+
+                  dispatchEvent clickEvent "#add-button"
+                  initial <- textContent "#add-button"
+                  TUA.equal "Current Value: 1001" initial
+
+                  dispatchEvent clickEvent "#add-button"
+                  dispatchEvent clickEvent "#add-button"
+                  current2 <- textContent "#add-button"
+                  TUA.equal "Current Value: 3001" current2
 
       TU.suite "Effectful specific" do
             TU.test "slower effects" do

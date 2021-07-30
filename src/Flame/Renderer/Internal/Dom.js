@@ -164,7 +164,7 @@ F.prototype.createAllNodes = function (parent, html, referenceNode) {
             this.createChildrenNodes(node, html.children);
         else if (html.rendered !== undefined) {
             if (html.messageMapper !== undefined)
-                html.rendered.messageMapper = html.messageMapper;
+                lazyMessageMap(html.messageMapper, html.rendered);
 
             if (html.rendered.text !== undefined) {
                 node.textContent = html.rendered.text;
@@ -200,14 +200,9 @@ F.prototype.createChildrenNodes = function (parent, children) {
         else {
             if (c.children !== undefined)
                 this.createChildrenNodes(node, c.children);
-            if (c.rendered !== undefined) {
-                if (c.messageMapper !== undefined) {
-                    c.rendered.messageMapper = c.messageMapper;
-
-                    if (c.rendered.children !== undefined)
-                        for (let i = 0; i < c.rendered.children.length; ++i)
-                            c.rendered.children[i].messageMapper = c.rendered.messageMapper;
-                }
+            else if (c.rendered !== undefined) {
+                if (c.messageMapper !== undefined)
+                    lazyMessageMap(c.messageMapper, c.rendered);
 
                 if (c.rendered.children !== undefined)
                     this.createChildrenNodes(node, c.rendered.children);
@@ -408,6 +403,9 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             case lazyNode:
                 if (updatedHtml.arg !== currentHtml.arg) {
                     updatedHtml.rendered = updatedHtml.render(updatedHtml.arg);
+
+                    if (updatedHtml.messageMapper !== undefined)
+                        lazyMessageMap(updatedHtml.messageMapper, updatedHtml.rendered);
 
                     this.updateAllNodes(parent, currentHtml.rendered, updatedHtml.rendered);
                 }
@@ -987,3 +985,11 @@ F.prototype.removeEvent = function (node, name) {
     node[eventKey + eventPostfix] = undefined;
     node[eventKey] = undefined;
 };
+
+function lazyMessageMap(mapper, html) {
+    html.messageMapper = mapper;
+
+    if (html.children !== undefined && html.children.length > 0)
+        for (let i = 0; i < html.children.length; ++i)
+            lazyMessageMap(mapper, html.children[i]);
+}
