@@ -5,25 +5,7 @@ let upstream =
 let overrides = { = }
 
 let additions = {
-    flame =
-        { dependencies =
-            [ "prelude",
-              "console",
-              "effect",
-              "web-events",
-              "web-dom",
-              "web-html",
-              "nullable",
-              "aff",
-              "foreign-object",
-              "argonaut-generic"
-            ]
-            , repo =
-                "https://github.com/easafe/purescript-flame.git"
-            , version =
-                "b139dca847f32968aaca8958e24760729de79776"
-        }
+
 }
 
 in upstream // overrides // additions
-
