@@ -1,4 +1,4 @@
-module Test.Basic.Functor where
+module Test.Functor.Basic where
 
 import Prelude
 

@@ -127,7 +127,8 @@ function shallowCopy(origin) {
                 nodeData: origin.nodeData,
                 render: origin.render,
                 arg: origin.arg,
-                rendered: undefined
+                rendered: undefined,
+                messageMapper: origin.messageMapper
             };
         case managedNode:
             return {
@@ -162,6 +163,9 @@ F.prototype.createAllNodes = function (parent, html, referenceNode) {
         if (html.children !== undefined)
             this.createChildrenNodes(node, html.children);
         else if (html.rendered !== undefined) {
+            if (html.messageMapper !== undefined)
+                lazyMessageMap(html.messageMapper, html.rendered);
+
             if (html.rendered.text !== undefined) {
                 node.textContent = html.rendered.text;
             }
@@ -196,8 +200,13 @@ F.prototype.createChildrenNodes = function (parent, children) {
         else {
             if (c.children !== undefined)
                 this.createChildrenNodes(node, c.children);
-            if (c.rendered !== undefined && c.rendered.children !== undefined)
-                this.createChildrenNodes(node, c.rendered.children);
+            else if (c.rendered !== undefined) {
+                if (c.messageMapper !== undefined)
+                    lazyMessageMap(c.messageMapper, c.rendered);
+
+                if (c.rendered.children !== undefined)
+                    this.createChildrenNodes(node, c.rendered.children);
+            }
         }
 
         parent.appendChild(node);
@@ -367,7 +376,6 @@ F.prototype.runHandlers = function (handlers, messageMapper, event) {
             maybeMessage = typeof h === "function" ? h(event)() : this.eventWrapper(h);
 
         //handler can be just a message or a function that takes an event
-        // a
         this.updater(messageMapper === undefined ? maybeMessage : messageMapper(maybeMessage))();
     }
     event.stopPropagation();
@@ -395,6 +403,9 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
             case lazyNode:
                 if (updatedHtml.arg !== currentHtml.arg) {
                     updatedHtml.rendered = updatedHtml.render(updatedHtml.arg);
+
+                    if (updatedHtml.messageMapper !== undefined)
+                        lazyMessageMap(updatedHtml.messageMapper, updatedHtml.rendered);
 
                     this.updateAllNodes(parent, currentHtml.rendered, updatedHtml.rendered);
                 }
@@ -970,6 +981,15 @@ F.prototype.removeEvent = function (node, name) {
             this.applicationEvents.delete(name);
         }
     }
-
+    //functor mapping
+    node[eventKey + eventPostfix] = undefined;
     node[eventKey] = undefined;
 };
+
+function lazyMessageMap(mapper, html) {
+    html.messageMapper = mapper;
+
+    if (html.children !== undefined && html.children.length > 0)
+        for (let i = 0; i < html.children.length; ++i)
+            lazyMessageMap(mapper, html.children[i]);
+}
