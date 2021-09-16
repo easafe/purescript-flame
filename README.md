@@ -70,6 +70,10 @@ main = FAN.mount_ (QuerySelector "body") {
 }
 ```
 
+### Licensing
+
+Licenses for loadash, stage0 and snabbdom-to-html added under [licenses](licenses/) since parts of the rendering code was adapted from these projects
+
 ### Funding
 
 If this project is useful for you, consider [throwing a buck](https://asafe.dev/donate) to keep development possible
