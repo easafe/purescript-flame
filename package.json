@@ -28,6 +28,7 @@
       },
       "devDependencies": {
             "jsdom": "^16.5.3",
-            "parcel": "^2.0.0-beta.2"
+            "parcel": "^2.0.0-beta.2",
+            "react-native-cli": "^2.0.1"
       }
 }

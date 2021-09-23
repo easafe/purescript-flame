@@ -21,26 +21,28 @@ type Model = Int
 data Message = Increment | Decrement Event
 
 -- | `update` is called to handle events
-update :: AffUpdate Model Message
+update ∷ AffUpdate Model Message
 update { model, message } =
-      pure $ (case message of
-            Increment -> (_ + 1)
-            Decrement _ -> (_ - 1))
+      pure $
+            ( case message of
+                    Increment → (_ + 1)
+                    Decrement _ → (_ - 1)
+            )
 
 -- | `view` is called whenever the model is updated
-view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.span "text-output" $ show model,
-      HE.br,
-      HE.button (HA.onClick Increment) "+"
-]
+view ∷ Model → Html Message
+view model = HE.main "main"
+      [ HE.span "text-output" $ show model
+      , HE.br
+      , HE.button (HA.onClick Increment) "+"
+      ]
 
 -- | Mount the application on the given selector
-mount :: Effect Unit
+mount ∷ Effect Unit
 mount = do
-      FAE.mount_ (QuerySelector "#mount-point") {
-            init : 5 :> Nothing,
-            subscribe: [FEW.onError' Decrement, FEW.onOffline Increment],
-            update,
-            view
-      }
+      FAE.mount_ (QuerySelector "#mount-point")
+            { init: 5 :> Nothing
+            , subscribe: [ FEW.onError' Decrement, FEW.onOffline Increment ]
+            , update
+            , view
+            }

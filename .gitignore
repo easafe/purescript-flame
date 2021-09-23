@@ -16,6 +16,7 @@ npm-debug.log
 .sass-cache/
 _site/
 
+test/native/test/
 .jekyll-metadata
 
 scratchpad.*

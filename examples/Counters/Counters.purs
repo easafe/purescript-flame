@@ -17,32 +17,33 @@ type Model = Array ECM.Model
 
 data Message = Add | Remove Int | CounterMessage Int ECM.Message
 
-init :: Model
+init ∷ Model
 init = []
 
-update :: Model -> Message -> Model
+update ∷ Model → Message → Model
 update model = case _ of
-      Add -> DA.snoc model ECM.init
-      Remove index -> DM.fromMaybe model $ DA.deleteAt index model
-      CounterMessage index message ->
+      Add → DA.snoc model ECM.init
+      Remove index → DM.fromMaybe model $ DA.deleteAt index model
+      CounterMessage index message →
             case model !! index of
-                  Nothing -> model
-                  Just model' -> DM.fromMaybe model $ DA.updateAt index (ECM.update model' message) model
+                  Nothing → model
+                  Just model' → DM.fromMaybe model $ DA.updateAt index (ECM.update model' message) model
 
-view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.button [HA.onClick Add] "Add",
-      HE.div_ $ DA.mapWithIndex viewCounter model
-]
-      where viewCounter index model' = HE.div [HA.style { display: "flex" }] [
-                  CounterMessage index <$> ECM.view model',
-                  HE.button [HA.onClick $ Remove index] "Remove"
+view ∷ Model → Html Message
+view model = HE.main "main"
+      [ HE.button [ HA.onClick Add ] "Add"
+      , HE.div_ $ DA.mapWithIndex viewCounter model
+      ]
+      where
+      viewCounter index model' = HE.div [ HA.style { display: "flex" } ]
+            [ CounterMessage index <$> ECM.view model'
+            , HE.button [ HA.onClick $ Remove index ] "Remove"
             ]
 
-main :: Effect Unit
-main = FAN.mount_ (QuerySelector "body") {
-      init,
-      subscribe: [],
-      update,
-      view
-}
+main ∷ Effect Unit
+main = FAN.mount_ (QuerySelector "body")
+      { init
+      , subscribe: []
+      , update
+      , view
+      }

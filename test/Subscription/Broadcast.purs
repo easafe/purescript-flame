@@ -22,23 +22,23 @@ type Model = Int
 data TSBMessage = TEELIncrement | TEELDecrement (Maybe Int)
 
 -- | `update` is called to handle events
-update :: Model -> TSBMessage -> Tuple Model (Array (Aff (Maybe TSBMessage)))
+update ∷ Model → TSBMessage → Tuple Model (Array (Aff (Maybe TSBMessage)))
 update model = case _ of
-      TEELIncrement -> (model + 1) :> []
-      TEELDecrement amount -> (model - (DM.fromMaybe 1 amount)) :> []
+      TEELIncrement → (model + 1) :> []
+      TEELDecrement amount → (model - (DM.fromMaybe 1 amount)) :> []
 
 -- | `view` is called whenever the model is updated
-view :: Model -> Html TSBMessage
-view model = HE.main "main" [
-      HE.span "text-output" $ show model
-]
+view ∷ Model → Html TSBMessage
+view model = HE.main "main"
+      [ HE.span "text-output" $ show model
+      ]
 
 -- | Mount the application on the given selector
-mount :: Effect Unit
+mount ∷ Effect Unit
 mount = do
-      FAE.mount_ (QuerySelector "#mount-point") {
-            init : 0 :> [],
-            subscribe: [FS.onCustomEvent' (EventType "increment-event") TEELIncrement, FS.onCustomEvent (EventType "decrement-event") TEELDecrement],
-            update,
-            view
-      }
+      FAE.mount_ (QuerySelector "#mount-point")
+            { init: 0 :> []
+            , subscribe: [ FS.onCustomEvent' (EventType "increment-event") TEELIncrement, FS.onCustomEvent (EventType "decrement-event") TEELDecrement ]
+            , update
+            , view
+            }
