@@ -11,6 +11,7 @@ module Flame.Application.EffectList
       , resumeMount
       , resumeMount_
       , mountNative
+      , mountNative_
       ) where
 
 import Data.Either (Either(..))
@@ -47,6 +48,12 @@ type ListUpdate model message = model → message → Tuple model (Array (Aff (M
 type Application model message = App model message
       ( init ∷ Tuple model (Array (Aff (Maybe message)))
       , update ∷ ListUpdate model message
+      )
+
+type NativeApplication model message =  App model message
+      ( init ∷ Tuple model (Array (Aff (Maybe message)))
+      , update ∷ ListUpdate model message
+      , name :: String
       )
 
 -- | `ResumedApplication` contains
@@ -105,12 +112,15 @@ mountWith (QuerySelector selector) appId application = do
             Just parent → run parent false (map showId appId) application
             Nothing → EE.throw $ "Error mounting application"
 
-mountNative ∷ ∀ id model message. Show id ⇒ AppId id message → Application model message → Effect Unit
+mountNative_ ∷ ∀ model message. NativeApplication model message → Effect Unit
+mountNative_ = runNative Nothing
+
+mountNative ∷ ∀ id model message. Show id ⇒ AppId id message → NativeApplication model message → Effect Unit
 mountNative appId = runNative (Just $ showId appId)
 
 -- | Keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
-runNative ∷ ∀ model message. Maybe ApplicationId → Application model message → Effect Unit
-runNative appId { update, view, init: Tuple initialModel initialAffs, subscribe } = do
+runNative ∷ ∀ model message. Maybe ApplicationId → NativeApplication model message → Effect Unit
+runNative appId { name, update, view, init: Tuple initialModel initialAffs, subscribe } = do
       modelState ← ER.new initialModel
       renderingState ← ER.new (UC.unsafeCoerce 21 ∷ NativeRenderingState)
 
@@ -136,7 +146,7 @@ runNative appId { update, view, init: Tuple initialModel initialAffs, subscribe 
             --       FRIN.resume rendering $ view model
             --       ER.write model modelState
 
-      rendering ← FRIN.start runUpdate $ view initialModel
+      rendering ← FRIN.start runUpdate name $ view initialModel
       ER.write rendering renderingState
 
       runMessages initialAffs

@@ -18,6 +18,7 @@
             "example-counter": "parcel build examples/Counter/counter.js --dist-dir examples/Counter/dist",
             "example-counters": "parcel build examples/Counters/counters.js --dist-dir examples/Counters/dist",
             "example-dice": "parcel build examples/Dice/dice.js --dist-dir examples/Dice/dist",
+            "example-native": "spago bundle-app -m Examples.Native.Main --to examples/Native/index.js",
             "example-special": "parcel build examples/SpecialElements/special.js --dist-dir examples/SpecialElements/dist",
             "example-subscriptions": "parcel build examples/Subscriptions/subscriptions.js --dist-dir examples/Subscriptions/dist",
             "example-todo": "parcel build examples/Todo/todo.js --dist-dir examples/Todo/dist",
