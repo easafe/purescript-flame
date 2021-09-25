@@ -1,9 +1,9 @@
 -- | Definition of HTML attributes
-module Flame.Html.Attribute.Internal (class ToClassList, class ToStyleList, ToBooleanAttribute, ToIntAttribute, ToNumberAttribute, ToStringAttribute, accentHeight, accept, acceptCharset, accessKey, accumulate, action, additive, align, alignmentBaseline, alt, ascent, autocomplete, autofocus, autoplay, azimuth, baseFrequency, baseProfile, baselineShift, begin, bias, calcMode, charset, checked, class', clipPathAttr, clipPathUnits, clipRule, color, colorInterpolation, colorInterpolationFilters, colorProfileAttr, colorRendering, cols, colspan, content, contentEditable, contentScriptType, contentStyleType, contextmenu, controls, coords, createAttribute, createAttributeName, createAttributeType, createProperty, cursorAttr, cx, cy, d, datetime, default, diffuseConstant, dir, direction, disabled, display, divisor, dominantBaseline, download, downloadAs, draggable, dropzone, dur, dx, dy, edgeMode, elevation, enctype, end, externalResourcesRequired, fill, fillOpacity, fillRule, filterAttr, filterUnits, floodColor, floodOpacity, fontFamily, fontSize, fontSizeAdjust, fontStretch, fontStyle, fontVariant, fontWeight, for, fr, from, fx, fy, gradientTransform, gradientUnits, headers, height, hidden, href, hreflang, id, imageRendering, in', in2, isMap, itemprop, k1, k2, k3, k4, kernelMatrix, kernelUnitLength, kerning, key, keySplines, keyTimes, kind, lang, lengthAdjust, letterSpacing, lightingColor, limitingConeAngle, list, local, loop, manifest, markerEnd, markerHeight, markerMid, markerStart, markerUnits, markerWidth, maskAttr, maskContentUnits, maskUnits, max, maxlength, media, method, min, minlength, mode, multiple, name, noValidate, numOctaves, opacity, operator, order, overflow, overlinePosition, overlineThickness, paintOrder, pathLength, pattern, patternContentUnits, patternTransform, patternUnits, ping, placeholder, pointerEvents, points, pointsAtX, pointsAtY, pointsAtZ, poster, preload, preserveAlpha, preserveAspectRatio, primitiveUnits, pubdate, r, radius, readOnly, refX, refY, rel, repeatCount, repeatDur, required, requiredFeatures, restart, result, reversed, rows, rowspan, rx, ry, sandbox, scale, scope, seed, selected, shape, shapeRendering, size, specularConstant, specularExponent, spellcheck, src, srcdoc, srclang, start, stdDeviation, step, stitchTiles, stopColor, stopOpacity, strikethroughPosition, strikethroughThickness, stroke, strokeDasharray, strokeDashoffset, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeOpacity, strokeWidth, style, style1, styleAttr, surfaceScale, tabindex, target, targetX, targetY, textAnchor, textDecoration, textLength, textRendering, title, to, toStyleList, transform, type', underlinePosition, underlineThickness, useMap, value, values, vectorEffect, version, viewBox, visibility, width, wordSpacing, wrap, writingMode, x, x1, x2, xChannelSelector, y, y1, y2, yChannelSelector, innerHtml) where
+module Flame.Html.Attribute.Internal (class ToClassList, class ToNativeStyleList, toNativeStyleList, class ToStyleList, ToBooleanAttribute, ToIntAttribute, ToNumberAttribute, ToStringAttribute, accentHeight, accept, acceptCharset, accessKey, accumulate, action, additive, align, alignmentBaseline, alt, ascent, autocomplete, autofocus, autoplay, azimuth, baseFrequency, baseProfile, baselineShift, begin, bias, calcMode, charset, checked, class', clipPathAttr, clipPathUnits, clipRule, color, colorInterpolation, colorInterpolationFilters, colorProfileAttr, colorRendering, cols, colspan, content, contentEditable, contentScriptType, contentStyleType, contextmenu, controls, coords, createAttribute, createAttributeName, createAttributeType, createProperty, cursorAttr, cx, cy, d, datetime, default, diffuseConstant, dir, direction, disabled, display, divisor, dominantBaseline, download, downloadAs, draggable, dropzone, dur, dx, dy, edgeMode, elevation, enctype, end, externalResourcesRequired, fill, fillOpacity, fillRule, filterAttr, filterUnits, floodColor, floodOpacity, fontFamily, fontSize, fontSizeAdjust, fontStretch, fontStyle, fontVariant, fontWeight, for, fr, from, fx, fy, gradientTransform, gradientUnits, headers, height, hidden, href, hreflang, id, imageRendering, in', in2, isMap, itemprop, k1, k2, k3, k4, kernelMatrix, kernelUnitLength, kerning, key, keySplines, keyTimes, kind, lang, lengthAdjust, letterSpacing, lightingColor, limitingConeAngle, list, local, loop, manifest, markerEnd, markerHeight, markerMid, markerStart, markerUnits, markerWidth, maskAttr, maskContentUnits, maskUnits, max, maxlength, media, method, min, minlength, mode, multiple, name, noValidate, numOctaves, opacity, operator, order, overflow, overlinePosition, overlineThickness, paintOrder, pathLength, pattern, patternContentUnits, patternTransform, patternUnits, ping, placeholder, pointerEvents, points, pointsAtX, pointsAtY, pointsAtZ, poster, preload, preserveAlpha, preserveAspectRatio, primitiveUnits, pubdate, r, radius, readOnly, refX, refY, rel, repeatCount, repeatDur, required, requiredFeatures, restart, result, reversed, rows, rowspan, rx, ry, sandbox, scale, scope, seed, selected, shape, shapeRendering, size, specularConstant, specularExponent, spellcheck, src, srcdoc, srclang, start, stdDeviation, step, stitchTiles, stopColor, stopOpacity, strikethroughPosition, strikethroughThickness, stroke, strokeDasharray, strokeDashoffset, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeOpacity, strokeWidth, style, style1, styleAttr, surfaceScale, tabindex, target, targetX, targetY, textAnchor, textDecoration, textLength, textRendering, title, to, toStyleList, transform, type', underlinePosition, underlineThickness, useMap, value, values, vectorEffect, version, viewBox, visibility, width, wordSpacing, wrap, writingMode, x, x1, x2, xChannelSelector, y, y1, y2, yChannelSelector, innerHtml, nativeStyle) where
 
 import Data.Array as DA
 import Data.Either as DE
-import Data.Foldable as DF
+import Data.Foldable (class Foldable)
 import Data.Function.Uncurried (Fn2)
 import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
@@ -13,6 +13,8 @@ import Data.String.Regex as DSR
 import Data.String.Regex.Flags (global)
 import Data.Tuple (Tuple(..))
 import Flame.Types (NodeData, ToNodeData)
+import Foreign (Foreign)
+import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
 import Partial as P
@@ -45,22 +47,31 @@ instance recordClassList ∷ Homogeneous r Boolean ⇒ ToClassList { | r } where
 class ToStyleList a where
       toStyleList ∷ a → Object String
 
-instance tupleStyleList ∷ ToStyleList (Tuple String String) where
+instance ToStyleList (Tuple String String) where
       toStyleList (Tuple a b) = FO.singleton a b
-else instance recordStyleList ∷ Homogeneous r String ⇒ ToStyleList { | r } where
-      toStyleList = FO.fromFoldable <<< map go <<< toArray
-            where
-            go (Tuple name' value') = Tuple (caseify name') value'
-            toArray ∷ _ → Array (Tuple String String)
-            toArray = FO.toUnfoldable <<< FO.fromHomogeneous
-else instance foldableStyleList ∷ DF.Foldable f ⇒ ToStyleList (f (Tuple String String)) where
+
+instance Homogeneous r String ⇒ ToStyleList { | r } where
+      toStyleList = recordToStyle
+
+else instance Foldable f ⇒ ToStyleList (f (Tuple String String)) where
       toStyleList = FO.fromFoldable
+
+-- | Enables either record tuples or records be used as an argument to React Native `style`
+class ToNativeStyleList a where
+      toNativeStyleList ∷ a → Array Foreign
+
+instance (ToNativeStyleList sty, ToNativeStyleList les) => ToNativeStyleList (Tuple sty les) where
+      toNativeStyleList (Tuple a b) = toNativeStyleList a <> toNativeStyleList b
+
+instance Homogeneous r String ⇒ ToNativeStyleList { | r } where
+      toNativeStyleList = DA.singleton <<< F.unsafeToForeign <<< recordToStyle
 
 --these functions cheat by only creating the necessary key on NodeData
 foreign import createProperty_ ∷ ∀ message. Fn2 Name Value (NodeData message)
 foreign import createAttribute_ ∷ ∀ message. Fn2 Name Value (NodeData message)
 foreign import createClass ∷ ∀ message. Array String → NodeData message
 foreign import createStyle ∷ ∀ message. Object String → NodeData message
+foreign import createNativeStyle ∷ ∀ st message. st → NodeData message
 foreign import createKey ∷ ∀ message. String → NodeData message
 
 -- | Sets a DOM property
@@ -84,10 +95,21 @@ class' = createClass <<< map caseify <<< to
 -- |
 -- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
 style ∷ ∀ a r. ToStyleList r ⇒ r → NodeData a
-style record = createStyle $ toStyleList record
+style st = createStyle $ toStyleList st
 
 style1 ∷ ∀ a. String → String → NodeData a
 style1 a b = createStyle $ FO.singleton a b
+
+-- | Sets style for React Native elements
+nativeStyle :: ∀ a st. ToNativeStyleList st ⇒ st → NodeData a
+nativeStyle = createNativeStyle <<< toNativeStyleList
+
+recordToStyle :: forall r. Homogeneous r String ⇒ { | r } -> Object String
+recordToStyle = FO.fromFoldable <<< map go <<< toArray
+      where
+      go (Tuple name' value') = Tuple (caseify name') value'
+      toArray ∷ _ → Array (Tuple String String)
+      toArray = FO.toUnfoldable <<< FO.fromHomogeneous
 
 -- | Transforms its input into a proper html attribute/tag name, i.e. lower case and hyphenated
 caseify ∷ String → String

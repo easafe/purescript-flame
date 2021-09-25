@@ -8,7 +8,8 @@ let styleData = 1,
     classData = 2,
     propertyData = 3,
     attributeData = 4,
-    keyData = 7;
+    keyData = 7,
+    nativeStyleData = 8;
 
 exports.createElementNode = function (tag) {
     return function (nodeData) {
@@ -209,6 +210,12 @@ function fromNodeData(allData) {
                     break;
                 case keyData:
                     nodeData.key = dataOne;
+                    break;
+                case nativeStyleData:
+                    if (nodeData.nativeStyles === undefined)
+                        nodeData.nativeStyles = [];
+
+                    nodeData.nativeStyles = nodeData.nativeStyles.concat(dataOne);
                     break;
                 default:
                     if (nodeData.events === undefined)

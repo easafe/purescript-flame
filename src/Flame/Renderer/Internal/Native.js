@@ -24,7 +24,7 @@ function N(eventWrapper, updater, name, html) {
 
     native.AppRegistry.registerComponent(name, function () {
         return function () {
-            return n.render(html)
+            return n.render(html, [])
         }
     });
 }
@@ -38,106 +38,69 @@ function N(eventWrapper, updater, name, html) {
  *  - CSS styles cascade
  *  - React Native only styles are applied
 */
-N.prototype.render = function (html) {
+N.prototype.render = function (html, parentStyles) {
     switch (html.nodeType) {
         case textNode:
-            return react.createElement(native.Text, {}, html.text);
+            return createTextElement(html.text);
         case elementNode:
-            break;
+            let props = createProps();
+
+            if (html.children !== undefined && html.children.length > 0) {
+                let children = [];
+
+
+                for (let i = 0; i < html.children.length; i++)
+                    children.push(this.render(html.children[i], props.style));
+
+                return react.createElement(native.View, props, children);
+            }
+            else if (html.text !== undefined)
+                return react.createElement(native.View, props, createTextElement(html.text));
+
+            return react.createElement(native.View);
         case svgNode:
-            break;
+            //check https://github.com/react-native-svg/react-native-svg
+            throw 'SVG not implemented yet';
         case fragmentNode:
-            break;
+            let children = [];
+
+            for (let i = 0; i < html.children.length; i++)
+                children.push(this.render(html.children[i], undefined));
+
+            return react.createElement(react.Fragment, undefined, children);
         case lazyNode:
-            break;
+            throw 'lazy node not implemented yet';
         case managedNode:
-            break;
+            throw 'managed node not implemented yet';
     }
-}
 
+    //spago bundle-app removes non exported functions......
+    function createTextElement(text) {
+        return react.createElement(native.Text, createProps(), text);
+    }
 
+    function createProps() {
+        let props = {},
+            style = styles();
 
-// if (node.type === 'tag') {
-//     if (node.name === 'img') {
-//         return <Img key={index} attribs={node.attribs} />;
-//     }
+        if (style !== undefined)
+            props.style = style;
 
-//     let linkPressHandler = null;
-//     let linkLongPressHandler = null;
-//     if (node.name === 'a' && node.attribs && node.attribs.href) {
-//         linkPressHandler = () =>
-//             opts.linkHandler(entities.decodeHTML(node.attribs.href));
-//         if (opts.linkLongPressHandler) {
-//             linkLongPressHandler = () =>
-//                 opts.linkLongPressHandler(entities.decodeHTML(node.attribs.href));
-//         }
-//     }
+        return props;
+    }
 
-//     let linebreakBefore = null;
-//     let linebreakAfter = null;
-//     if (opts.addLineBreaks) {
-//         switch (node.name) {
-//             case 'pre':
-//                 linebreakBefore = opts.lineBreak;
-//                 break;
-//             case 'p':
-//                 if (index < list.length - 1) {
-//                     linebreakAfter = opts.paragraphBreak;
-//                 }
-//                 break;
-//             case 'br':
-//             case 'h1':
-//             case 'h2':
-//             case 'h3':
-//             case 'h4':
-//             case 'h5':
-//                 linebreakAfter = opts.lineBreak;
-//                 break;
-//         }
-//     }
+    function styles() {
+        if (html.nodeData === undefined || html.nodeData.nativeStyles === undefined) {
+            if (parentStyles === undefined)
+                return undefined;
 
-//     let listItemPrefix = null;
-//     if (node.name === 'li') {
-//         const defaultStyle = opts.textProps ? opts.textProps.style : null;
-//         const customStyle = inheritedStyle(parent);
+            return parentStyles;
+        }
+        else {
+            if (parentStyles === undefined)
+                return html.nodeData.nativeStyles;
 
-//         if (!parent) {
-//             listItemPrefix = null;
-//         } else if (parent.name === 'ol') {
-//             listItemPrefix = (<Text style={[defaultStyle, customStyle]}>
-//                 {`${orderedListCounter++}. `}
-//             </Text>);
-//         } else if (parent.name === 'ul') {
-//             listItemPrefix = (<Text style={[defaultStyle, customStyle]}>
-//                 {opts.bullet}
-//             </Text>);
-//         }
-//         if (opts.addLineBreaks && index < list.length - 1) {
-//             linebreakAfter = opts.lineBreak;
-//         }
-//     }
-
-//     const { NodeComponent, styles } = opts;
-
-//     return (
-//         <NodeComponent
-//             {...opts.nodeComponentProps}
-//             key={index}
-//             onPress={linkPressHandler}
-//             style={!node.parent ? styles[node.name] : null}
-//             onLongPress={linkLongPressHandler}
-//         >
-//             {linebreakBefore}
-//             {listItemPrefix}
-//             {domToElement(node.children, node)}
-//             {linebreakAfter}
-//         </NodeComponent>
-//     );
-// }
-
-function inheritedStyle(parent) {
-    // if (!parent) return null;
-    // const style = StyleSheet.flatten(opts.styles[parent.name]) || {};
-    // const parentStyle = inheritedStyle(parent.parent) || {};
-    // return { ...parentStyle, ...style };
+            return parentStyles.concat(html.nodeData.nativeStyles);
+        }
+    }
 }
