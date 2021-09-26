@@ -11,7 +11,11 @@ import Flame.Html.Element as HE
 main :: Effect Unit
 main = mountNative_ {
     init : "hello" :> []
-    ,view : \m -> HE.fragment [HE.div [HA.nativeStyle {color: "red"}] [HE.text m]]
+    ,view : \m -> HE.fragment [
+        HE.div [HA.nativeStyle {color: "red"}] m,
+        HE.br,
+        HE.b_ "OLA"
+    ]
     , update : \m _ -> noMessages m
     , subscribe: []
     , name : "test"

@@ -2887,6 +2887,34 @@ var PS = {};
       lazyNode = 5,
       managedNode = 6;
 
+  let boldStyle = { fontWeight: 'bold' },
+      italicStyle = { fontStyle: 'italic' },
+      underlineStyle = { textDecorationLine: 'underline' },
+      strikethroughStyle = { textDecorationLine: 'line-through' },
+      codeStyle = { fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' };
+
+  let defaultStyles = native.StyleSheet.create({
+      b: boldStyle,
+      strong: boldStyle,
+      i: italicStyle,
+      em: italicStyle,
+      u: underlineStyle,
+      s: strikethroughStyle,
+      strike: strikethroughStyle,
+      pre: codeStyle,
+      code: codeStyle,
+      a: {
+          fontWeight: 'bold',
+          color: '#007AFF',
+      },
+      h1: { fontWeight: 'bold', fontSize: 36 },
+      h2: { fontWeight: 'bold', fontSize: 30 },
+      h3: { fontWeight: 'bold', fontSize: 24 },
+      h4: { fontWeight: 'bold', fontSize: 18 },
+      h5: { fontWeight: 'bold', fontSize: 14 },
+      h6: { fontWeight: 'bold', fontSize: 12 },
+  });
+
   exports.start_ = function (eventWrapper, updater, name, html) {
       return new N(eventWrapper, updater, name, html);
   };
@@ -2910,9 +2938,8 @@ var PS = {};
  *
  *  - Elements have a base style that matches their function (e.g. <b> is bold)
  *  - CSS styles are converted to React Native styles
- *  - CSS styles cascade
- *  - React Native only styles are applied
-*/  
+ *  - Styles cascade
+ * */  
   N.prototype.render = function (html, parentStyles) {
       switch (html.nodeType) {
           case textNode:
@@ -2923,7 +2950,6 @@ var PS = {};
               if (html.children !== undefined && html.children.length > 0) {
                   let children = [];
 
-
                   for (let i = 0; i < html.children.length; i++)
                       children.push(this.render(html.children[i], props.style));
 
@@ -2931,6 +2957,8 @@ var PS = {};
               }
               else if (html.text !== undefined)
                   return react.createElement(native.View, props, createTextElement(html.text));
+              else if (html.tag === 'br')
+                  return react.createElement(native.Text); //creates an empty line
 
               return react.createElement(native.View);
           case svgNode:
@@ -2955,28 +2983,36 @@ var PS = {};
       }
 
       function createProps() {
-          let props = {},
-              style = styles();
-
-          if (style !== undefined)
-              props.style = style;
+          let props = {
+              style: styles()
+          };
 
           return props;
       }
 
       function styles() {
-          if (html.nodeData === undefined || html.nodeData.nativeStyles === undefined) {
-              if (parentStyles === undefined)
-                  return undefined;
+          let defaultStyle = defaultStyles[html.tag];
+          let htmlStyle;
 
-              return parentStyles;
+          if (html.nodeData === undefined || html.nodeData.nativeStyles === undefined) {
+              if (parentStyles !== undefined)
+                  htmlStyle = parentStyles;
           }
           else {
               if (parentStyles === undefined)
-                  return html.nodeData.nativeStyles;
+                  htmlStyle = html.nodeData.nativeStyles;
 
-              return parentStyles.concat(html.nodeData.nativeStyles);
+              else
+                  htmlStyle = parentStyles.concat(html.nodeData.nativeStyles);
           }
+
+          if (defaultStyle === undefined)
+              return htmlStyle;
+
+          if (htmlStyle === undefined)
+              return defaultStyle;
+
+          return defaultStyle.concat(htmlStyle);
       }
   }
 })(PS["Flame.Renderer.Internal.Native"] = PS["Flame.Renderer.Internal.Native"] || {});
@@ -3321,6 +3357,36 @@ var PS = {};
       };
   };
 
+  exports.createDatalessElementNode = function (tag) {
+      return function (potentialChildren) {
+          let children = potentialChildren,
+              text = undefined;
+
+          if (potentialChildren.length === 1 && potentialChildren[0].nodeType == textNode) {
+              children = undefined;
+              text = potentialChildren[0].text;
+          }
+
+          return {
+              nodeType: elementNode,
+              node: undefined,
+              tag: tag,
+              nodeData: {},
+              children: children,
+              text: text
+          };
+      };
+  };
+
+  exports.createEmptyElement = function (tag) {
+      return {
+          nodeType: tag.trim().toLowerCase() === 'svg' ? svgNode : elementNode,
+          node: undefined,
+          tag: tag,
+          nodeData: {}
+      };
+  };
+
   exports.createFragmentNode = function (children) {
       return {
           nodeType: fragmentNode,
@@ -3403,6 +3469,11 @@ var PS = {};
   var toNode = function (dict) {
       return dict.toNode;
   };
+  var stringToHtml = {
+      toNode: function ($756) {
+          return Data_Array.singleton($foreign.text($756));
+      }
+  };
   var nodeDataToNodedata = {
       toNode: Data_Array.singleton
   };
@@ -3412,6 +3483,13 @@ var PS = {};
   var fragment = function (dictToNode) {
       return function (children) {
           return $foreign.createFragmentNode(toNode(dictToNode)(children));
+      };
+  };
+  var createElement_ = function (tag) {
+      return function (dictToNode) {
+          return function (children) {
+              return $foreign.createDatalessElementNode(tag)(toNode(dictToNode)(children));
+          };
       };
   };
   var createElement = function (tag) {
@@ -3430,17 +3508,23 @@ var PS = {};
           return createElement("div")(dictToNode)(dictToNode1);
       };
   };
+  var br = $foreign.createEmptyElement("br");
+  var b_ = function (dictToNode) {
+      return createElement_("b")(dictToNode);
+  };
   var arrayToNodeData = function (dictToNode) {
       return {
           toNode: Data_Array.concatMap(toNode(dictToNode))
       };
   };
   exports["fragment"] = fragment;
+  exports["br"] = br;
+  exports["b_"] = b_;
   exports["div"] = div;
+  exports["stringToHtml"] = stringToHtml;
   exports["arrayToNodeData"] = arrayToNodeData;
   exports["htmlToHtml"] = htmlToHtml;
   exports["nodeDataToNodedata"] = nodeDataToNodedata;
-  exports["text"] = $foreign.text;
 })(PS);
 (function($PS) {
   "use strict";
@@ -3453,9 +3537,9 @@ var PS = {};
   var main = Flame_Application_EffectList.mountNative_({
       init: new Data_Tuple.Tuple("hello", [  ]),
       view: function (m) {
-          return Flame_Html_Element.fragment(Flame_Html_Element.arrayToNodeData(Flame_Html_Element.htmlToHtml))([ Flame_Html_Element.div(Flame_Html_Element.arrayToNodeData(Flame_Html_Element.nodeDataToNodedata))(Flame_Html_Element.arrayToNodeData(Flame_Html_Element.htmlToHtml))([ Flame_Html_Attribute_Internal.nativeStyle(Flame_Html_Attribute_Internal.toNativeStyleListRecord())({
+          return Flame_Html_Element.fragment(Flame_Html_Element.arrayToNodeData(Flame_Html_Element.htmlToHtml))([ Flame_Html_Element.div(Flame_Html_Element.arrayToNodeData(Flame_Html_Element.nodeDataToNodedata))(Flame_Html_Element.stringToHtml)([ Flame_Html_Attribute_Internal.nativeStyle(Flame_Html_Attribute_Internal.toNativeStyleListRecord())({
               color: "red"
-          }) ])([ Flame_Html_Element.text(m) ]) ]);
+          }) ])(m), Flame_Html_Element.br, Flame_Html_Element.b_(Flame_Html_Element.stringToHtml)("OLA") ]);
       },
       update: function (m) {
           return function (v) {

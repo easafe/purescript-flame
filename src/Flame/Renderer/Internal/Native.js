@@ -12,6 +12,34 @@ let textNode = 1,
     lazyNode = 5,
     managedNode = 6;
 
+let boldStyle = { fontWeight: 'bold' },
+    italicStyle = { fontStyle: 'italic' },
+    underlineStyle = { textDecorationLine: 'underline' },
+    strikethroughStyle = { textDecorationLine: 'line-through' },
+    codeStyle = { fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' };
+
+let defaultStyles = native.StyleSheet.create({
+    b: boldStyle,
+    strong: boldStyle,
+    i: italicStyle,
+    em: italicStyle,
+    u: underlineStyle,
+    s: strikethroughStyle,
+    strike: strikethroughStyle,
+    pre: codeStyle,
+    code: codeStyle,
+    a: {
+        fontWeight: 'bold',
+        color: '#007AFF',
+    },
+    h1: { fontWeight: 'bold', fontSize: 36 },
+    h2: { fontWeight: 'bold', fontSize: 30 },
+    h3: { fontWeight: 'bold', fontSize: 24 },
+    h4: { fontWeight: 'bold', fontSize: 18 },
+    h5: { fontWeight: 'bold', fontSize: 14 },
+    h6: { fontWeight: 'bold', fontSize: 12 },
+});
+
 exports.start_ = function (eventWrapper, updater, name, html) {
     return new N(eventWrapper, updater, name, html);
 };
@@ -35,9 +63,8 @@ function N(eventWrapper, updater, name, html) {
  *
  *  - Elements have a base style that matches their function (e.g. <b> is bold)
  *  - CSS styles are converted to React Native styles
- *  - CSS styles cascade
- *  - React Native only styles are applied
-*/
+ *  - Styles cascade
+ * */
 N.prototype.render = function (html, parentStyles) {
     switch (html.nodeType) {
         case textNode:
@@ -48,7 +75,6 @@ N.prototype.render = function (html, parentStyles) {
             if (html.children !== undefined && html.children.length > 0) {
                 let children = [];
 
-
                 for (let i = 0; i < html.children.length; i++)
                     children.push(this.render(html.children[i], props.style));
 
@@ -56,6 +82,8 @@ N.prototype.render = function (html, parentStyles) {
             }
             else if (html.text !== undefined)
                 return react.createElement(native.View, props, createTextElement(html.text));
+            else if (html.tag === 'br')
+                return react.createElement(native.Text); //creates an empty line
 
             return react.createElement(native.View);
         case svgNode:
@@ -80,27 +108,35 @@ N.prototype.render = function (html, parentStyles) {
     }
 
     function createProps() {
-        let props = {},
-            style = styles();
-
-        if (style !== undefined)
-            props.style = style;
+        let props = {
+            style: styles()
+        };
 
         return props;
     }
 
     function styles() {
-        if (html.nodeData === undefined || html.nodeData.nativeStyles === undefined) {
-            if (parentStyles === undefined)
-                return undefined;
+        let defaultStyle = defaultStyles[html.tag];
+        let htmlStyle;
 
-            return parentStyles;
+        if (html.nodeData === undefined || html.nodeData.nativeStyles === undefined) {
+            if (parentStyles !== undefined)
+                htmlStyle = parentStyles;
         }
         else {
             if (parentStyles === undefined)
-                return html.nodeData.nativeStyles;
+                htmlStyle = html.nodeData.nativeStyles;
 
-            return parentStyles.concat(html.nodeData.nativeStyles);
+            else
+                htmlStyle = parentStyles.concat(html.nodeData.nativeStyles);
         }
+
+        if (defaultStyle === undefined)
+            return htmlStyle;
+
+        if (htmlStyle === undefined)
+            return defaultStyle;
+
+        return defaultStyle.concat(htmlStyle);
     }
 }

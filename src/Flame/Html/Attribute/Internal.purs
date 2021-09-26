@@ -60,7 +60,7 @@ else instance Foldable f ⇒ ToStyleList (f (Tuple String String)) where
 class ToNativeStyleList a where
       toNativeStyleList ∷ a → Array Foreign
 
-instance (ToNativeStyleList sty, ToNativeStyleList les) => ToNativeStyleList (Tuple sty les) where
+instance (ToNativeStyleList sty, ToNativeStyleList les) ⇒ ToNativeStyleList (Tuple sty les) where
       toNativeStyleList (Tuple a b) = toNativeStyleList a <> toNativeStyleList b
 
 instance Homogeneous r String ⇒ ToNativeStyleList { | r } where
@@ -101,10 +101,10 @@ style1 ∷ ∀ a. String → String → NodeData a
 style1 a b = createStyle $ FO.singleton a b
 
 -- | Sets style for React Native elements
-nativeStyle :: ∀ a st. ToNativeStyleList st ⇒ st → NodeData a
+nativeStyle ∷ ∀ a st. ToNativeStyleList st ⇒ st → NodeData a
 nativeStyle = createNativeStyle <<< toNativeStyleList
 
-recordToStyle :: forall r. Homogeneous r String ⇒ { | r } -> Object String
+recordToStyle ∷ ∀ r. Homogeneous r String ⇒ { | r } → Object String
 recordToStyle = FO.fromFoldable <<< map go <<< toArray
       where
       go (Tuple name' value') = Tuple (caseify name') value'
