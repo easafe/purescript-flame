@@ -70,6 +70,10 @@ main = FAN.mount_ (QuerySelector "body") {
 }
 ```
 
+### Tools
+
+[breeze](https://github.com/easafe/haskell-breeze) can be used to generate Flame markup from HTML
+
 ### Licensing
 
 Licenses for loadash, stage0 and snabbdom-to-html added under [licenses](licenses/) since parts of the rendering code was adapted from these projects

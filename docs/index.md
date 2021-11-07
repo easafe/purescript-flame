@@ -15,6 +15,8 @@ Flame is a PureScript front-end framework inspired by the Elm architecture with 
 
 * Performance comparable to native JavaScript frameworks -- see [benchmarks](benchmarks)
 
+* Parse HTML into Flame markup with [breeze](https://github.com/easafe/haskell-breeze)
+
 ## Quick start
 
 Install:

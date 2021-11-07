@@ -19,7 +19,9 @@ type Application model message = {
 
 `view` maps the current state to markup. Whenever the model is updated, Flame patches the DOM by calling the `view` function with the new state.
 
-A custom DSL, defined by the type `Html`, is used to write markup. You will likely need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes and events
+A custom DSL, defined by the type `Html`, is used to write markup. Alternatively, [breeze](https://github.com/easafe/haskell-breeze) can generate Flame views from HTML.
+
+You will likely need to qualify imports, e.g., prefix HE for HTML elements and HA for HTML attributes and events
 
 ```haskell
 import Flame.Html.Element as HE
