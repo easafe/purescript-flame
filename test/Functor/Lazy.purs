@@ -11,39 +11,39 @@ import Flame.Html.Event as E
 
 data CounterMsg = Increment Int
 
-type CounterModel = { count :: Int }
+type CounterModel = { count ∷ Int }
 
-initCounter :: CounterModel
+initCounter ∷ CounterModel
 initCounter = { count: 1 }
 
-updateCounter :: CounterModel -> CounterMsg -> CounterModel
+updateCounter ∷ CounterModel → CounterMsg → CounterModel
 updateCounter model (Increment val) = model { count = model.count + val }
 
-counterView :: CounterModel -> Html CounterMsg
+counterView ∷ CounterModel → Html CounterMsg
 counterView = lazy Nothing counterView_
 
-counterView_ :: CounterModel -> Html CounterMsg
-counterView_ model = H.main "main" [
-      H.button [ HA.id "add-button", E.onClick $ Increment 1000 ] [ H.text $ "Current Value: " <> show model.count ]
-]
+counterView_ ∷ CounterModel → Html CounterMsg
+counterView_ model = H.main "main"
+      [ H.button [ HA.id "add-button", E.onClick $ Increment 1000 ] [ H.text $ "Current Value: " <> show model.count ]
+      ]
 
 data Msg = PageMsg PageMsg
 
 data PageMsg = CounterMsg CounterMsg
 
-type Model = { counter :: CounterModel }
+type Model = { counter ∷ CounterModel }
 
 init = { counter: initCounter } :> []
 
 update model (PageMsg (CounterMsg msg)) = model { counter = updateCounter model.counter msg } :> []
 
-view :: Model -> Html Msg
-view model =  H.div_ [ PageMsg <$> CounterMsg <$> counterView model.counter ]
+view ∷ Model → Html Msg
+view model = H.div_ [ PageMsg <$> CounterMsg <$> counterView model.counter ]
 
-mount :: Effect Unit
-mount = mount_ (QuerySelector "#mount-point") {
-      subscribe: []
+mount ∷ Effect Unit
+mount = mount_ (QuerySelector "#mount-point")
+      { subscribe: []
       , init
       , update
       , view
-}
+      }

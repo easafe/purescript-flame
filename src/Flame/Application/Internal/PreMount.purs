@@ -17,44 +17,47 @@ import Flame.Types (Html, PreApplication)
 import Prelude (bind, discard, pure, ($), (<>))
 import Web.DOM.ParentNode (QuerySelector(..))
 
-foreign import injectState :: forall message. Html message -> Html message -> Html message
+foreign import injectState ∷ ∀ message. Html message → Html message → Html message
 
-tagSerializedState :: String
+tagSerializedState ∷ String
 tagSerializedState = "template-state"
 
-idSerializedState :: String -> String
+idSerializedState ∷ String → String
 idSerializedState = ("pre-mount-" <> _)
 
-attributeSerializedState :: String -> String
+attributeSerializedState ∷ String → String
 attributeSerializedState = ("__pre-mount-" <> _)
 
-onlyLetters :: String -> String
+onlyLetters ∷ String → String
 onlyLetters = DSR.replace (DSRU.unsafeRegex "[^aA-zZ]" global) ""
 
-selectorSerializedState :: String -> String
+selectorSerializedState ∷ String → String
 selectorSerializedState selector = tagSerializedState <> "#" <> idSerializedState selector <> "[" <> attributeSerializedState selector <> "=" <> selector <> "]"
 
-serializedState :: forall model. UnserializeState model => String -> Effect model
+serializedState ∷ ∀ model. UnserializeState model ⇒ String → Effect model
 serializedState selector = do
-      maybeElement <- FAD.querySelector stateSelector
+      maybeElement ← FAD.querySelector stateSelector
       case maybeElement of
-            Just el -> do
-                  contents <- FAD.textContent el
+            Just el → do
+                  contents ← FAD.textContent el
                   case FS.unserialize contents of
-                        Right model -> do
+                        Right model → do
                               FAD.removeElement stateSelector
                               pure model
-                        Left message -> EE.throw $ "Error resuming application mount: serialized state is invalid! " <> message
-            Nothing -> EE.throw $ "Error resuming application mount: serialized state ("<> stateSelector <>") not found!"
-      where stateSelector = selectorSerializedState $ onlyLetters selector
+                        Left message → EE.throw $ "Error resuming application mount: serialized state is invalid! " <> message
+            Nothing → EE.throw $ "Error resuming application mount: serialized state (" <> stateSelector <> ") not found!"
+      where
+      stateSelector = selectorSerializedState $ onlyLetters selector
 
-preMount :: forall model message. SerializeState model => QuerySelector -> PreApplication model message -> Effect String
+preMount ∷ ∀ model message. SerializeState model ⇒ QuerySelector → PreApplication model message → Effect String
 preMount (QuerySelector selector) application = do
       let html = injectState state $ application.view application.init
       FRS.render html
-      where sanitizedSelector = onlyLetters selector
-            state = HE.createElement tagSerializedState [
-                  HA.style { display: "none" },
-                  HA.id $ idSerializedState sanitizedSelector,
-                  HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
-            ] $ FS.serialize application.init
+      where
+      sanitizedSelector = onlyLetters selector
+      state =
+            HE.createElement tagSerializedState
+                  [ HA.style { display: "none" }
+                  , HA.id $ idSerializedState sanitizedSelector
+                  , HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
+                  ] $ FS.serialize application.init

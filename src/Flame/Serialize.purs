@@ -19,31 +19,29 @@ import Prelude (bind, show, (<<<), ($))
 import Prim.RowList (class RowToList)
 
 class UnserializeState m where
-      unserialize :: String -> Either String m
+      unserialize ∷ String → Either String m
 
-instance recordUnserializeState :: (GDecodeJson m list, RowToList m list) => UnserializeState (Record m) where
+instance recordUnserializeState ∷ (GDecodeJson m list, RowToList m list) ⇒ UnserializeState (Record m) where
       unserialize model = jsonStringError do
-            json <- DAD.parseJson model
+            json ← DAD.parseJson model
             DAD.decodeJson json
-else
-instance genericUnserializeState :: (Generic m r, DecodeRep r) => UnserializeState m where
+else instance genericUnserializeState ∷ (Generic m r, DecodeRep r) ⇒ UnserializeState m where
       unserialize model = jsonStringError do
-            json <- DAD.parseJson model
+            json ← DAD.parseJson model
             DADEG.genericDecodeJson json
 
 class SerializeState m where
-      serialize :: m -> String
+      serialize ∷ m → String
 
-instance encodeJsonSerializeState :: (GEncodeJson m list, RowToList m list) => SerializeState (Record m) where
+instance encodeJsonSerializeState ∷ (GEncodeJson m list, RowToList m list) ⇒ SerializeState (Record m) where
       serialize = DAC.stringify <<< DAE.encodeJson
-else
-instance genericSerializeState :: (Generic m r, EncodeRep r) => SerializeState m where
+else instance genericSerializeState ∷ (Generic m r, EncodeRep r) ⇒ SerializeState m where
       serialize = DAC.stringify <<< DAEG.genericEncodeJson
 
-jsonStringError :: forall a. Either JsonDecodeError a -> Either String a
+jsonStringError ∷ ∀ a. Either JsonDecodeError a → Either String a
 jsonStringError = DB.lmap DAD.printJsonDecodeError
 
-unsafeUnserialize :: forall m. UnserializeState m => String -> m
+unsafeUnserialize ∷ ∀ m. UnserializeState m ⇒ String → m
 unsafeUnserialize str = PU.unsafePartial case unserialize str of
-      Right m -> m
-      Left err -> P.crashWith $ show err
+      Right m → m
+      Left err → P.crashWith $ show err

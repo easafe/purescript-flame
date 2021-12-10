@@ -1,39 +1,41 @@
 -- | Renders changes to the DOM
-module Flame.Renderer.Internal.Dom(
-      start,
-      startFrom,
-      resume
-) where
+module Flame.Renderer.Internal.Dom
+      ( start
+      , startFrom
+      , resume
+      , DomRenderingState
+      ) where
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2, EffectFn4)
 import Effect.Uncurried as EU
-import Flame.Types (DomNode, DomRenderingState, Html)
+import Flame.Types (DomNode, Html)
 import Prelude (Unit, pure, unit)
+import Renderer.Internal.Types (MessageWrapper)
 
--- | Events that are messages rather than callbacks need to be wrapped from the FFI
-type MessageWrapper message = message -> Maybe message
+-- | FFI class that keeps track of DOM rendering
+foreign import data DomRenderingState ∷ Type
 
-foreign import start_ :: forall message. EffectFn4 (MessageWrapper message) DomNode (Maybe message -> Effect Unit) (Html message) DomRenderingState
-foreign import startFrom_ :: forall message. EffectFn4 (MessageWrapper message) DomNode (Maybe message -> Effect Unit) (Html message) DomRenderingState
-foreign import resume_ :: forall message. EffectFn2 DomRenderingState (Html message) Unit
+foreign import start_ ∷ ∀ message. EffectFn4 (MessageWrapper message) DomNode (Maybe message → Effect Unit) (Html message) DomRenderingState
+foreign import startFrom_ ∷ ∀ message. EffectFn4 (MessageWrapper message) DomNode (Maybe message → Effect Unit) (Html message) DomRenderingState
+foreign import resume_ ∷ ∀ message. EffectFn2 DomRenderingState (Html message) Unit
 
 -- | Mounts the application on a DOM node
 -- |
 -- | The node will be set as the parent and otherwise unmodified
-start :: forall message. DomNode -> (message -> Effect Unit) -> Html message -> Effect DomRenderingState
+start ∷ ∀ message. DomNode → (message → Effect Unit) → Html message → Effect DomRenderingState
 start parent updater = EU.runEffectFn4 start_ Just parent (maybeUpdater updater)
 
 -- | Hydrates a server-side rendered application
-startFrom :: forall message. DomNode -> (message -> Effect Unit) -> Html message -> Effect DomRenderingState
+startFrom ∷ ∀ message. DomNode → (message → Effect Unit) → Html message → Effect DomRenderingState
 startFrom parent updater = EU.runEffectFn4 startFrom_ Just parent (maybeUpdater updater)
 
-maybeUpdater :: forall message. (message -> Effect Unit) -> (Maybe message -> Effect Unit)
+maybeUpdater ∷ ∀ message. (message → Effect Unit) → (Maybe message → Effect Unit)
 maybeUpdater updater = case _ of
-      Just message -> updater message
-      _ -> pure unit
+      Just message → updater message
+      _ → pure unit
 
 -- | Patches the application
-resume :: forall message. DomRenderingState -> Html message -> Effect Unit
+resume ∷ ∀ message. DomRenderingState → Html message → Effect Unit
 resume = EU.runEffectFn2 resume_

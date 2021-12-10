@@ -4,7 +4,8 @@ let styleData = 1,
     classData = 2,
     propertyData = 3,
     attributeData = 4,
-    keyData = 7;
+    keyData = 7,
+    nativeStyleData = 8;
 
 exports.createProperty_ = function (name, value) {
     return [propertyData, name, value];
@@ -20,6 +21,10 @@ exports.createClass = function (array) {
 
 exports.createStyle = function (object) {
     return [styleData, object];
+};
+
+exports.createNativeStyle = function (array) {
+    return [nativeStyleData, array];
 };
 
 exports.createKey = function (value) {

@@ -13,7 +13,6 @@ import Flame.Application.EffectList as FAE
 import Flame.Html.Element as HE
 import Flame.Types (AppId(..))
 
-
 -- | The model represents the state of the app
 type Model = Int
 
@@ -21,25 +20,25 @@ type Model = Int
 data TEELMessage = TEELIncrement | TEELDecrement
 
 -- | `update` is called to handle events
-update :: Model -> TEELMessage -> Tuple Model (Array (Aff (Maybe TEELMessage)))
+update ∷ Model → TEELMessage → Tuple Model (Array (Aff (Maybe TEELMessage)))
 update model = case _ of
-      TEELIncrement -> (model + 1) :> []
-      TEELDecrement -> (model - 1) :> []
+      TEELIncrement → (model + 1) :> []
+      TEELDecrement → (model - 1) :> []
 
 -- | `view` is called whenever the model is updated
-view :: Model -> Html TEELMessage
-view model = HE.main "main" [
-      HE.span "text-output" $ show model
-]
+view ∷ Model → Html TEELMessage
+view model = HE.main "main"
+      [ HE.span "text-output" $ show model
+      ]
 
 -- | Mount the application on the given selector
-mount :: Effect (AppId String TEELMessage)
+mount ∷ Effect (AppId String TEELMessage)
 mount = do
       let id = AppId "teel"
-      FAE.mount (QuerySelector "#mount-point") id {
-            init : 0 :> [],
-            subscribe: [],
-            update,
-            view
-      }
+      FAE.mount (QuerySelector "#mount-point") id
+            { init: 0 :> []
+            , subscribe: []
+            , update
+            , view
+            }
       pure id

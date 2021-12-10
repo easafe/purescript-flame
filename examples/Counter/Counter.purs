@@ -16,28 +16,28 @@ type Model = Int
 data Message = Increment | Decrement
 
 -- | Initial state of the app
-init :: Model
+init ∷ Model
 init = 0
 
 -- | `update` is called to handle events
-update :: Model -> Message -> Model
+update ∷ Model → Message → Model
 update model = case _ of
-      Increment -> model + 1
-      Decrement -> model - 1
+      Increment → model + 1
+      Decrement → model - 1
 
 -- | `view` updates the app markup whenever the model is updated
-view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.button [HA.onClick Decrement] "-",
-      HE.text $ show model,
-      HE.button [HA.onClick Increment] "+"
-]
+view ∷ Model → Html Message
+view model = HE.main "main"
+      [ HE.button [ HA.onClick Decrement ] "-"
+      , HE.text $ show model
+      , HE.button [ HA.onClick Increment ] "+"
+      ]
 
 -- | Mount the application on the given selector
-main :: Effect Unit
-main = FAN.mount_ (QuerySelector "body") {
-      init,
-      subscribe: [],
-      update,
-      view
-}
+main ∷ Effect Unit
+main = FAN.mount_ (QuerySelector "body")
+      { init
+      , subscribe: []
+      , update
+      , view
+      }

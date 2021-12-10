@@ -14,24 +14,24 @@ import Flame.Html.Element as HE
 
 type Model = Maybe Int
 
-init :: Model
+init ∷ Model
 init = Nothing
 
 data Message = Roll
 
-update :: AffUpdate Model Message
+update ∷ AffUpdate Model Message
 update { model } = map (const <<< Just) $ liftEffect $ ER.randomInt 1 6
 
-view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.text (show model),
-      HE.button [HA.onClick Roll] "Roll"
-]
+view ∷ Model → Html Message
+view model = HE.main "main"
+      [ HE.text (show model)
+      , HE.button [ HA.onClick Roll ] "Roll"
+      ]
 
-main :: Effect Unit
-main = FAE.mount_ (QuerySelector "body") {
-      init: init :> Nothing,
-      subscribe: [],
-      update,
-      view
-}
+main ∷ Effect Unit
+main = FAE.mount_ (QuerySelector "body")
+      { init: init :> Nothing
+      , subscribe: []
+      , update
+      , view
+      }
