@@ -1,3 +1,5 @@
-exports.compareReference_ = function(a, b) {
-      return a === b;
-}
+exports.compareReference_ = function (a) {
+      return function (b) {
+            return a === b;
+      };
+};

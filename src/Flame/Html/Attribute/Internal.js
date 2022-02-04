@@ -6,12 +6,16 @@ let styleData = 1,
     attributeData = 4,
     keyData = 7;
 
-exports.createProperty_ = function (name, value) {
-    return [propertyData, name, value];
+exports.createProperty_ = function (name) {
+    return function (value) {
+        return [propertyData, name, value];
+    };
 };
 
-exports.createAttribute_ = function (name, value) {
-    return [attributeData, name, value];
+exports.createAttribute_ = function (name) {
+    return function (value) {
+        return [attributeData, name, value];
+    };
 };
 
 exports.createClass = function (array) {

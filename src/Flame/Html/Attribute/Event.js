@@ -3,12 +3,16 @@
 let messageEventData = 5,
     rawEventData = 6;
 
-exports.createEvent_ = function (name, message) {
-    return [messageEventData, name, message];
+exports.createEvent_ = function (name) {
+    return function (message) {
+        return [messageEventData, name, message];
+    };
 };
 
-exports.createRawEvent_ = function (name, handler) {
-    return [rawEventData, name, handler];
+exports.createRawEvent_ = function (name) {
+    return function (handler) {
+        return [rawEventData, name, handler];
+    };
 };
 
 exports.nodeValue_ = function (event) {
@@ -42,5 +46,3 @@ exports.selection_ = function (event) {
 
     return "";
 };
-
-
