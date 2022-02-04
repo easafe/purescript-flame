@@ -167,9 +167,12 @@ exports.createSingleSvgNode = function (nodeData) {
 };
 
 function asSvg(elements) {
-    for (let e of elements)
+    for (let e of elements) {
         if (e.nodeType === elementNode)
             e.nodeType = svgNode;
+        if (typeof e.children !== 'undefined')
+            e.children = asSvg(e.children);
+    }
 
     return elements;
 }
