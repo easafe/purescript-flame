@@ -170,7 +170,7 @@ function asSvg(elements) {
     for (let e of elements) {
         if (e.nodeType === elementNode)
             e.nodeType = svgNode;
-        if (typeof e.children !== 'undefined')
+        if (e.children !== null && typeof e.children !== 'undefined')
             e.children = asSvg(e.children);
     }
 
