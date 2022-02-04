@@ -22,6 +22,7 @@ scratchpad.*
 scratchpadloader.*
 vendor
 .cache
+.vscode/
 .bundle
 
 .spago
