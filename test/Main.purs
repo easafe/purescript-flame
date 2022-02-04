@@ -387,6 +387,23 @@ main = TUM.runTest do
                   text <- textContent "#mount-point"
                   TUA.equal "oi" text
 
+            TU.test "nested svg elements have correct namespace" do
+                  let html = HE.svg
+                        [ HA.viewBox "0 0 100 100"
+                        , HA.createAttribute "xmlns" "http://www.w3.org/2000/svg"
+                        ]
+                        [ HE.g [ HA.fill "white", HA.stroke "green", HA.strokeWidth "5" ]
+                            [ HE.circle' [ HA.cx "40", HA.cy "40", HA.r "25" ], HE.circle' [ HA.cx "60", HA.cy "60", HA.r "25" ] ]
+                        ]
+                  void $ mountHtml html
+                  let verifyNodeAndChildren node = do
+                        TUA.equal (Just "http://www.w3.org/2000/svg") (WDE.namespaceURI node)
+                        children <- liftEffect $ childrenNode' node
+                        DT.for_ children verifyNodeAndChildren
+                  svg <- liftEffect $ unsafeQuerySelector "svg"
+                  verifyNodeAndChildren svg
+
+
       TU.suite "dom node update" do
             TU.test "update text nodes" do
                   let html = HE.text "oi"
@@ -984,6 +1001,10 @@ main = TUM.runTest do
             childrenNode selector = do
                   mountPoint <- unsafeQuerySelector selector
                   children <- WDP.children $ WDE.toParentNode mountPoint
+                  WDHC.toArray children
+
+            childrenNode' parent = do
+                  children <- WDP.children $ WDE.toParentNode parent
                   WDHC.toArray children
 
             textContent selector = liftEffect do
