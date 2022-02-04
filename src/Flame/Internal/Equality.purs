@@ -2,13 +2,10 @@ module Flame.Internal.Equality where
 
 import Prelude (not, ($))
 
-import Data.Function.Uncurried (Fn2)
-import Data.Function.Uncurried as DFU
-
-foreign import compareReference_ :: forall a. Fn2 a a Boolean
+foreign import compareReference_ :: forall a. a -> a -> Boolean
 
 compareReference :: forall a. a -> a -> Boolean
-compareReference = DFU.runFn2 compareReference_
+compareReference a a2 = compareReference_ a a2
 
 modelHasChanged :: forall model. model -> model -> Boolean
 modelHasChanged old new = not $ compareReference old new

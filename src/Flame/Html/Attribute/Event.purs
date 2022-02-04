@@ -3,8 +3,6 @@ module Flame.Html.Event (EventName, ToEvent, ToRawEvent, ToMaybeEvent, ToSpecial
 
 import Prelude
 
-import Data.Function.Uncurried (Fn2)
-import Data.Function.Uncurried as DFU
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -29,8 +27,8 @@ foreign import checkedValue_ :: EffectFn1 Event Boolean
 foreign import preventDefault_ :: EffectFn1 Event Unit
 foreign import key_ :: EffectFn1 Event Key
 foreign import selection_ :: EffectFn1 Event String
-foreign import createEvent_ :: forall message. Fn2 EventName message (NodeData message)
-foreign import createRawEvent_ :: forall message. Fn2 EventName (Event -> Effect (Maybe message)) (NodeData message)
+foreign import createEvent_ :: forall message. EventName -> message -> (NodeData message)
+foreign import createRawEvent_ :: forall message. EventName -> (Event -> Effect (Maybe message)) -> (NodeData message)
 
 nodeValue :: Event -> Effect String
 nodeValue = FU.runEffectFn1 nodeValue_
@@ -49,11 +47,11 @@ selection = FU.runEffectFn1 selection_
 
 -- | Raises the given `message` for the event
 createEvent :: forall message. EventName -> message -> NodeData message
-createEvent name = DFU.runFn2 createEvent_ name
+createEvent name message = createEvent_ name message
 
 -- | Raises the given `message` for the given event, but also supplies the event itself
 createRawEvent :: forall message. EventName -> (Event -> Effect (Maybe message)) -> NodeData message
-createRawEvent = DFU.runFn2 createRawEvent_
+createRawEvent name handler = createRawEvent_ name handler
 
 -- | Helper for `message`s that expect an event
 createEventMessage :: forall message. EventName -> (Event -> message) -> NodeData message

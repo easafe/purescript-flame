@@ -4,8 +4,6 @@ module Flame.Html.Attribute.Internal (class ToClassList, class ToStyleList, ToBo
 import Data.Array as DA
 import Data.Either as DE
 import Data.Foldable as DF
-import Data.Function.Uncurried (Fn2)
-import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
@@ -58,19 +56,19 @@ instance foldableStyleList :: DF.Foldable f => ToStyleList (f (Tuple String Stri
       toStyleList = FO.fromFoldable
 
 --these functions cheat by only creating the necessary key on NodeData
-foreign import createProperty_ :: forall message. Fn2 Name Value (NodeData message)
-foreign import createAttribute_ :: forall message. Fn2 Name Value (NodeData message)
+foreign import createProperty_ :: forall message.  Name -> Value -> (NodeData message)
+foreign import createAttribute_ :: forall message. Name -> Value -> (NodeData message)
 foreign import createClass :: forall message. Array String -> NodeData message
 foreign import createStyle :: forall message. Object String -> NodeData message
 foreign import createKey :: forall message. String -> NodeData message
 
 -- | Sets a DOM property
 createProperty :: forall message. String -> String -> NodeData message
-createProperty = DFU.runFn2 createProperty_
+createProperty name value = createProperty_ name value
 
 -- | Creates a HTML attribute
 createAttribute :: forall message. String -> String -> NodeData message
-createAttribute = DFU.runFn2 createAttribute_
+createAttribute name value = createAttribute_ name value
 
 booleanToFalsyString :: Boolean -> String
 booleanToFalsyString =
