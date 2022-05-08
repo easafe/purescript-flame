@@ -1,3 +1,3 @@
-exports.setInnerHTML = function(selector, html) {
+export function setInnerHTML(selector, html) {
         document.querySelector(selector).innerHTML = html;
 }

@@ -10,7 +10,7 @@ let styleData = 1,
     attributeData = 4,
     keyData = 7;
 
-exports.createElementNode = function (tag) {
+export function createElementNode(tag) {
     return function (nodeData) {
         return function (potentialChildren) {
             let children = potentialChildren,
@@ -31,9 +31,9 @@ exports.createElementNode = function (tag) {
             };
         };
     };
-};
+}
 
-exports.createDatalessElementNode = function (tag) {
+export function createDatalessElementNode(tag) {
     return function (potentialChildren) {
         let children = potentialChildren,
             text = undefined;
@@ -52,9 +52,9 @@ exports.createDatalessElementNode = function (tag) {
             text: text
         };
     };
-};
+}
 
-exports.createSingleElementNode = function (tag) {
+export function createSingleElementNode(tag) {
     return function (nodeData) {
         return {
             nodeType: elementNode,
@@ -63,34 +63,34 @@ exports.createSingleElementNode = function (tag) {
             nodeData: fromNodeData(nodeData)
         };
     };
-};
+}
 
-exports.createEmptyElement = function (tag) {
+export function createEmptyElement(tag) {
     return {
         nodeType: tag.trim().toLowerCase() === 'svg' ? svgNode : elementNode,
         node: undefined,
         tag: tag,
         nodeData: {}
     };
-};
+}
 
-exports.createFragmentNode = function (children) {
+export function createFragmentNode(children) {
     return {
         nodeType: fragmentNode,
         node: undefined,
         children: children
     };
-};
+}
 
-exports.text = function (value) {
+export function text(value) {
     return {
         nodeType: textNode,
         node: undefined,
         text: value
     };
-};
+}
 
-exports.createLazyNode = function (nodeData) {
+export function createLazyNode(nodeData) {
     return function (render) {
         return function (arg) {
             let key = nodeData[0];
@@ -105,9 +105,9 @@ exports.createLazyNode = function (nodeData) {
             };
         };
     };
-};
+}
 
-exports.createManagedNode = function (render) {
+export function createManagedNode(render) {
     return function (nodeData) {
         return function (arg) {
             return {
@@ -120,9 +120,9 @@ exports.createManagedNode = function (render) {
             };
         };
     };
-};
+}
 
-exports.createDatalessManagedNode = function (render) {
+export function createDatalessManagedNode(render) {
     return function (arg) {
         return {
             nodeType: managedNode,
@@ -133,9 +133,9 @@ exports.createDatalessManagedNode = function (render) {
             arg: arg
         };
     };
-};
+}
 
-exports.createSvgNode = function (nodeData) {
+export function createSvgNode(nodeData) {
     return function (children) {
         return {
             nodeType: svgNode,
@@ -145,9 +145,9 @@ exports.createSvgNode = function (nodeData) {
             children: asSvg(children)
         };
     };
-};
+}
 
-exports.createDatalessSvgNode = function (children) {
+export function createDatalessSvgNode(children) {
     return {
         nodeType: svgNode,
         node: undefined,
@@ -155,16 +155,16 @@ exports.createDatalessSvgNode = function (children) {
         nodeData: {},
         children: asSvg(children)
     };
-};
+}
 
-exports.createSingleSvgNode = function (nodeData) {
+export function createSingleSvgNode(nodeData) {
     return {
         nodeType: svgNode,
         node: undefined,
         tag: 'svg',
         nodeData: fromNodeData(nodeData)
     };
-};
+}
 
 function asSvg(elements) {
     for (let e of elements) {

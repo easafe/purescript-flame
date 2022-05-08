@@ -21,7 +21,7 @@ import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (Tuple3)
 import Foreign (Foreign)
-import Prelude (class Functor, map)
+import Prelude (class Functor, map, class Show)
 
 -- | `PreApplication` contains
 -- | * `init` – the initial model
@@ -63,6 +63,9 @@ foreign import data DomRenderingState :: Type
 
 -- | A make believe type for DOM nodes
 foreign import data DomNode :: Type
+
+instance Show DomNode where
+      show _ = "dom node"
 
 -- | Attributes and properties of virtual nodes
 foreign import data NodeData :: Type -> Type

@@ -1,8 +1,8 @@
-exports.messageMapper = function (mapper) {
+export function messageMapper(mapper) {
     return function (html) {
         return addMessageMapper(html, mapper);
     };
-};
+}
 
 function addMessageMapper(html, mapper) {
     if (html.nodeType !== 1 && html.nodeType !== 4)
@@ -13,7 +13,7 @@ function addMessageMapper(html, mapper) {
             addMessageMapper(html.children[i], mapper);
 
     return html;
-};
+}
 
 function mapHtml(html, mapper) {
     if (html.messageMapper) {

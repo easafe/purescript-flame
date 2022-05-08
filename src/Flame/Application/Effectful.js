@@ -1,4 +1,4 @@
-exports.unsafeMergeFields = function (model) {
+export function unsafeMergeFields(model) {
       return function (subset) {
             let copy = {};
 

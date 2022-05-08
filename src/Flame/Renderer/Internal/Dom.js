@@ -12,17 +12,17 @@ let textNode = 1,
 //these events cannot be synthetic
 let nonBubblingEvents = ["focus", "blur", "scroll"];
 
-exports.start_ = function (eventWrapper, root, updater, html) {
+export function start_(eventWrapper, root, updater, html) {
     return new F(eventWrapper, root, updater, html, false);
-};
+}
 
-exports.startFrom_ = function (eventWrapper, root, updater, html) {
+export function startFrom_(eventWrapper, root, updater, html) {
     return new F(eventWrapper, root, updater, html, true);
-};
+}
 
-exports.resume_ = function (f, html) {
+export function resume_(f, html) {
     f.resume(html);
-};
+}
 
 /** Class to scope application data since a document can have many mount points */
 function F(eventWrapper, root, updater, html, isDry) {

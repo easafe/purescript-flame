@@ -4,11 +4,11 @@ let textNode = 1,
     fragmentNode = 4,
     lazyNode = 5;
 
-exports.injectState = function (stateHtml) {
+export function injectState(stateHtml) {
     return function (html) {
         return injectTo(stateHtml, html);
     };
-};
+}
 
 function injectTo(stateHtml, html) {
     switch (html.nodeType) {
@@ -43,5 +43,5 @@ function injectTo(stateHtml, html) {
 
             return html;
     }
-};
+}
 

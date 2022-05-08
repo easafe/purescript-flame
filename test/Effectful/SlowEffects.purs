@@ -27,7 +27,7 @@ update :: Environment Model Message -> Aff (Model -> Model)
 update { message } = case message of
       Bump -> pure $ \m@{current} -> m { current = current + 1 }
       BumpAndSnoc -> do
-            EA.delay $ Milliseconds 3000.0
+            EA.delay $ Milliseconds 500.0
             pure $ \m@{current, numbers} -> m { current = current + 1, numbers = DA.snoc numbers 0}
 
 view :: Model -> Html Message

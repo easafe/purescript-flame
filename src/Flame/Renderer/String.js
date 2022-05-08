@@ -110,7 +110,7 @@ let booleanAttributes = new Set([
 ]);
 
 /** String rendering adapted from https://github.com/snabbdom/snabbdom-to-html */
-exports.render_ = stringify;
+export {stringify as render_};
 
 function stringify(html) {
     switch (html.nodeType) {
@@ -156,7 +156,7 @@ function stringify(html) {
 
             return markup.join('');
     }
-};
+}
 
 function stringifyNodeData(nodeData) {
     let result = [],

@@ -1,34 +1,34 @@
 
-exports.querySelector_ = function (selector) {
+export function querySelector_(selector) {
     return document.querySelector(selector);
-};
+}
 
-exports.textContent_ = function (element) {
+export function textContent_(element) {
     return element.textContent || '';
-};
+}
 
-exports.removeElement_ = function (selector) {
+export function removeElement_(selector) {
     document.querySelector(selector).remove();
-};
+}
 
-exports.createWindowListener_ = function (eventName, updater) {
+export function createWindowListener_(eventName, updater) {
     window.addEventListener(eventName, function(event) {
         updater(event)();
     });
-};
+}
 
-exports.createDocumentListener_ = function (eventName, updater) {
+export function createDocumentListener_(eventName, updater) {
     document.addEventListener(eventName, function(event) {
         updater(event)();
     });
-};
+}
 
-exports.createCustomListener_ = function (eventName, updater) {
+export function createCustomListener_(eventName, updater) {
     document.addEventListener(eventName, function (event) {
         updater(event.detail)();
     });
-};
+}
 
-exports.dispatchCustomEvent_ = function(eventName, payload) {
+export function dispatchCustomEvent_(eventName, payload) {
     document.dispatchEvent(new CustomEvent(eventName, { detail: payload } ));
 }

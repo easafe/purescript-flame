@@ -1,7 +1,7 @@
-exports.setInnerHTML = function(selector, html) {
+export function setInnerHTML(selector, html) {
     document.querySelector(selector).innerHTML = html;
 }
 
-exports.setElementInnerHTML = function(element, html) {
+export function setElementInnerHTML(element, html) {
     element.innerHTML = html;
 }

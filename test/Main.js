@@ -1,4 +1,4 @@
-const jsdom = require("jsdom");
+import jsdom from "jsdom";
 const enviroment = (new jsdom.JSDOM('', { runScripts: "outside-only" }));
 
 global.window = enviroment.window;
@@ -6,50 +6,50 @@ global.document = enviroment.window.document;
 global.SVGElement = enviroment.window.SVGElement;
 global.CustomEvent = enviroment.window.CustomEvent;
 
-exports.unsafeCreateEnviroment = function () {
+export function unsafeCreateEnviroment() {
     //removes event listeners and child nodes
     document.body = document.body.cloneNode(false);
     document.body.innerHTML = '<div id=mount-point></div>';
-};
+}
 
-exports.clickEvent = function () {
+export function clickEvent() {
     return new window.Event('click', { bubbles: true });
-};
+}
 
-exports.inputEvent = function () {
+export function inputEvent() {
     return new window.Event('input', { bubbles: true });
-};
+}
 
-exports.keydownEvent = function () {
+export function keydownEvent() {
     return new window.KeyboardEvent('keydown', { key: 'q', bubbles: true });
-};
+}
 
-exports.enterPressedEvent = function () {
+export function enterPressedEvent() {
     return new window.KeyboardEvent('keypress', { key: 'Enter', bubbles: true });
-};
+}
 
-exports.errorEvent = function () {
+export function errorEvent() {
     return new window.Event('error', { bubbles: true });
-};
+}
 
-exports.offlineEvent = function () {
+export function offlineEvent() {
     return new window.Event('offline', { bubbles: true });
-};
+}
 
-exports.getCssText = function (node) {
+export function getCssText(node) {
     return node.style.cssText;
-};
+}
 
-exports.getAllAttributes = function (node) {
+export function getAllAttributes(node) {
     let attributes = [];
 
     for (let i = 0; i < node.attributes.length; i++)
         attributes.push(node.attributes[i].name + ':' + node.attributes[i].value);
 
     return attributes.join(' ');
-};
+}
 
-exports.getAllProperties = function (node) {
+export function getAllProperties(node) {
     return function (list) {
         let properties = [];
 
@@ -59,16 +59,16 @@ exports.getAllProperties = function (node) {
 
         return properties;
     };
-};
+}
 
-exports.innerHtml_ = function (node, html) {
+export function innerHtml_(node, html) {
     node.innerHTML = html;
-};
+}
 
-exports.createSvg = function () {
+export function createSvg() {
     return document.createElementNS('http://www.w3.org/1999/xhtml', 'svg');
-};
+}
 
-exports.createDiv = function () {
+export function createDiv() {
     return document.createElement('div');
-};
+}
