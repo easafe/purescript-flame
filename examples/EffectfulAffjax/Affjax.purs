@@ -2,7 +2,7 @@ module Examples.Effectful.Affjax.Main where
 
 import Prelude
 
-import Affjax as A
+import Affjax.Web as A
 import Affjax.ResponseFormat as AR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
