@@ -58,7 +58,7 @@ var adjectives = [
         "keyboard"
 ];
 
-exports.createRandomNRows_ = function(count, lastId) {
+export function createRandomNRows_(count, lastId) {
     var data = [];
 
     for (var i = 0; i < count; i++)
