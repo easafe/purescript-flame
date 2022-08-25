@@ -562,6 +562,15 @@ ins_ = createElement_ "ins"
 ins' :: forall a h. ToHtml' a h
 ins' = createElement' "ins"
 
+kbd :: forall a b h. ToHtml a b h
+kbd = createElement "kbd"
+
+kbd_ :: forall b h. ToHtml_ b h
+kbd_ = createElement_ "kbd"
+
+kbd' :: forall a h. ToHtml' a h
+kbd' = createElement' "kbd"
+
 keygen :: forall a b h. ToHtml a b h
 keygen = createElement "keygen"
 

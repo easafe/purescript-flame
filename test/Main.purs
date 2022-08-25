@@ -89,9 +89,9 @@ main = AF.launchAff_ $ TSR.runSpec [consoleReporter] do
                   html2' <- liftEffect $ FRS.render html2
                   TSA.shouldEqual """<a id="test">TEST</a>""" html2'
 
-                  let html3 = HE.a "test" [HE.text "TEST"]
+                  let html3 = HE.kbd "test" [HE.text "TEST"]
                   html3' <- liftEffect $ FRS.render html3
-                  TSA.shouldEqual """<a id="test">TEST</a>""" html3'
+                  TSA.shouldEqual """<kbd id="test">TEST</kbd>""" html3'
 
                   let html4 = HE.a "test" $ HE.text "TEST"
                   html4' <- liftEffect $ FRS.render html4
