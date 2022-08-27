@@ -37,7 +37,7 @@ function F(eventWrapper, root, updater, html, isDry) {
     /** The current virtual nodes to be diff'd when the view updates */
     this.cachedHtml = html.node === undefined ? html : shallowCopy(html); //if node is already defined, then this object has been reused in views
 
-    //a "dry" application means that it was server side rendered
+    //"dry" application means that it was server side rendered
     if (isDry)
         this.hydrate(this.root, this.cachedHtml);
     else
@@ -192,24 +192,9 @@ F.prototype.createChildrenNodes = function (parent, children) {
     let childrenLength = children.length;
 
     for (let i = 0; i < childrenLength; ++i) {
-        let c = children[i] = (children[i].node === undefined ? children[i] : shallowCopy(children[i])),
-            node = this.createNode(c);
+        let html = children[i] = (children[i].node === undefined ? children[i] : shallowCopy(children[i]));
 
-        if (c.text !== undefined)
-            node.textContent = c.text;
-        else {
-            if (c.children !== undefined)
-                this.createChildrenNodes(node, c.children);
-            else if (c.rendered !== undefined) {
-                if (c.messageMapper !== undefined)
-                    lazyMessageMap(c.messageMapper, c.rendered);
-
-                if (c.rendered.children !== undefined)
-                    this.createChildrenNodes(node, c.rendered.children);
-            }
-        }
-
-        parent.appendChild(node);
+        this.checkCreateAllNodes(parent, html, null);
     }
 };
 
@@ -303,7 +288,7 @@ function createAttributes(node, attributes) {
         node.setAttribute(key, attributes[key]);
 }
 
-/** Creates synthethic events
+/** Creates synthetic events
  *
  *  If the event bubbles, a single listener for its type is added to the root, and fired at the nearest node from the target that contains a handler. Otherwise the event is added to the node */
 F.prototype.createAllEvents = function (node, html) {
@@ -328,9 +313,9 @@ F.prototype.createEvent = function (node, name, html) {
         if (html.messageMapper !== undefined)
             node[eventKey + eventPostfix] = html.messageMapper;
 
-        let synthethic = this.applicationEvents.get(name);
+        let synthetic = this.applicationEvents.get(name);
 
-        if (synthethic === undefined) {
+        if (synthetic === undefined) {
             let runEvent = this.runEvent.bind(this);
 
             this.root.addEventListener(name, runEvent, false);
@@ -340,7 +325,7 @@ F.prototype.createEvent = function (node, name, html) {
             });
         }
         else
-            synthethic.count++;
+            synthetic.count++;
     }
 };
 

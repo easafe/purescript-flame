@@ -6,13 +6,13 @@ let styleData = 1,
     attributeData = 4,
     keyData = 7;
 
-export function createProperty_(name) {
+export function createProperty(name) {
     return function (value) {
         return [propertyData, name, value];
     };
 }
 
-export function createAttribute_(name) {
+export function createAttribute(name) {
     return function (value) {
         return [attributeData, name, value];
     };

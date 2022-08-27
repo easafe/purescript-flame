@@ -20,8 +20,9 @@ module Flame.Types (
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (Tuple3)
+import Flame.Internal.Fragment as FIF
 import Foreign (Foreign)
-import Prelude (class Functor, map, class Show)
+import Prelude (class Functor, map, class Monoid, class Show, class Semigroup)
 
 -- | `PreApplication` contains
 -- | * `init` – the initial model
@@ -77,5 +78,11 @@ foreign import data Html :: Type -> Type
 --we support events that are not fired if the message is Nothing
 foreign import messageMapper :: forall message mapped. (Maybe message -> Maybe mapped) -> Html message -> Html mapped
 
-instance functorHtml :: Functor Html where
+instance Functor Html where
       map f html = messageMapper (map f) html
+
+instance Semigroup (Html a) where
+      append html otherHtml = FIF.createFragmentNode [html, otherHtml]
+
+instance Monoid (Html a) where
+      mempty = FIF.createFragmentNode []

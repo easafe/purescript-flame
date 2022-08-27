@@ -9,6 +9,7 @@ import Data.Maybe as DM
 import Effect (Effect)
 import Flame.Html.Attribute.Internal as FHAI
 import Flame.Types (Html, NodeData, Tag, Key)
+import Flame.Internal.Fragment as FIF
 import Web.DOM (Node)
 
 -- | `ToNode` simplifies element creation by automating common tag operations
@@ -19,19 +20,19 @@ class ToNode :: forall k. Type -> k -> (k -> Type) -> Constraint
 class ToNode a b c | a -> b where
       toNode :: a -> Array (c b)
 
-instance stringToHtml :: ToNode String b Html where
+instance ToNode String b Html where
       toNode = DA.singleton <<< text
 
-instance arrayToNodeData :: (ToNode a b c) => ToNode (Array a) b c where
+instance (ToNode a b c) => ToNode (Array a) b c where
       toNode = DA.concatMap toNode
 
-instance htmlToHtml :: ToNode (Html a) a Html where
+instance ToNode (Html a) a Html where
       toNode = DA.singleton
 
-instance stringToNodeData :: ToNode String b NodeData where
+instance ToNode String b NodeData where
       toNode = DA.singleton <<< FHAI.id
 
-instance nodeDataToNodedata :: ToNode (NodeData a) a NodeData where
+instance ToNode (NodeData a) a NodeData where
       toNode = DA.singleton
 
 type ToHtml a b h = ToNode a h NodeData => ToNode b h Html => a -> b -> Html h
@@ -51,7 +52,6 @@ type NodeRenderer arg = {
 foreign import createElementNode :: forall message. Tag -> Array (NodeData message) -> Array (Html message) -> Html message
 foreign import createDatalessElementNode :: forall message. Tag -> Array (Html message) -> Html message
 foreign import createSingleElementNode :: forall message. Tag -> Array (NodeData message) -> Html message
-foreign import createFragmentNode ::  forall message. Array (Html message) -> Html message
 
 --separate functions as svg are special babies
 foreign import createSvgNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
@@ -85,7 +85,7 @@ createElement' tag nodeData = createSingleElementNode tag $ toNode nodeData
 -- |
 -- | Fragments act as wrappers: only children nodes are rendered
 fragment :: forall b h. ToHtml_ b h
-fragment children = createFragmentNode $ toNode children
+fragment children = FIF.createFragmentNode $ toNode children
 
 -- | Creates a lazy node
 -- |

@@ -1,7 +1,6 @@
 let textNode = 1,
     elementNode = 2,
     svgNode = 3,
-    fragmentNode = 4,
     lazyNode = 5,
     managedNode = 6;
 let styleData = 1,
@@ -74,13 +73,6 @@ export function createEmptyElement(tag) {
     };
 }
 
-export function createFragmentNode(children) {
-    return {
-        nodeType: fragmentNode,
-        node: undefined,
-        children: children
-    };
-}
 
 export function text(value) {
     return {

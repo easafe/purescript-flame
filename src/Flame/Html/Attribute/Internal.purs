@@ -18,8 +18,6 @@ import Partial.Unsafe as PU
 import Prelude (const, flip, map, not, otherwise, show, ($), (<<<), (<>), (==))
 import Type.Row.Homogeneous (class Homogeneous)
 
-type Name = String
-type Value = String
 
 type ToStringAttribute = ToNodeData String
 
@@ -33,42 +31,36 @@ type ToNumberAttribute = ToNodeData Number
 class ToClassList a where
       to :: a -> Array String
 
-instance stringClassList :: ToClassList String where
+instance ToClassList String where
       to = DA.filter (not <<< DS.null) <<< DS.split (Pattern " ")
 
-instance recordClassList :: Homogeneous r Boolean => ToClassList { | r } where
+instance Homogeneous r Boolean => ToClassList { | r } where
       to = FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
 
 -- | Enables either tuples, arrays or records be used as an argument to `style`
 class ToStyleList a where
       toStyleList :: a -> Object String
 
-instance tupleStyleList :: ToStyleList (Tuple String String) where
+instance ToStyleList (Tuple String String) where
       toStyleList (Tuple a b) = FO.singleton a b
 else
-instance recordStyleList :: Homogeneous r String => ToStyleList { | r } where
+instance Homogeneous r String => ToStyleList { | r } where
       toStyleList = FO.fromFoldable <<< map go <<< toArray
             where go (Tuple name' value') = Tuple (caseify name') value'
                   toArray :: _ -> Array (Tuple String String)
                   toArray = FO.toUnfoldable <<< FO.fromHomogeneous
 else
-instance foldableStyleList :: DF.Foldable f => ToStyleList (f (Tuple String String)) where
+instance DF.Foldable f => ToStyleList (f (Tuple String String)) where
       toStyleList = FO.fromFoldable
 
 --these functions cheat by only creating the necessary key on NodeData
-foreign import createProperty_ :: forall message.  Name -> Value -> (NodeData message)
-foreign import createAttribute_ :: forall message. Name -> Value -> (NodeData message)
+-- | Sets a DOM property
+foreign import createProperty :: forall message. String -> String -> NodeData message
+-- | Creates a HTML attribute
+foreign import createAttribute :: forall message. String -> String -> NodeData message
 foreign import createClass :: forall message. Array String -> NodeData message
 foreign import createStyle :: forall message. Object String -> NodeData message
 foreign import createKey :: forall message. String -> NodeData message
-
--- | Sets a DOM property
-createProperty :: forall message. String -> String -> NodeData message
-createProperty name value = createProperty_ name value
-
--- | Creates a HTML attribute
-createAttribute :: forall message. String -> String -> NodeData message
-createAttribute name value = createAttribute_ name value
 
 booleanToFalsyString :: Boolean -> String
 booleanToFalsyString =
