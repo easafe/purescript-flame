@@ -213,7 +213,7 @@ main = AF.launchAff_ $ TSR.runSpec [consoleReporter] do
                         ]
                   ]
                   html' <- liftEffect $ FRS.render html
-                  TSA.shouldEqual """<html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><svg viewBox="0 0 23 0"><path d="234" /></svg><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
+                  TSA.shouldEqual """<!DOCTYPE html><html><head><title>title</title></head><body><main><button>-</button><br>Test<button>+</button><svg viewBox="0 0 23 0"><path d="234" /></svg><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
             TS.it "nested nodes with attributes" do
                   let html = HE.html [HA.lang "en"] [
@@ -232,7 +232,7 @@ main = AF.launchAff_ $ TSR.runSpec [consoleReporter] do
                         ]
                   ]
                   html' <- liftEffect $ FRS.render html
-                  TSA.shouldEqual """<html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
+                  TSA.shouldEqual """<!DOCTYPE html><html lang="en"><head><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue"><div><div><span><a>here</a></span></div></div></main></body></html>""" html'
 
             TS.it "nested nodes with properties and attributes" do
                   let html = HE.html [HA.lang "en"] [
@@ -252,13 +252,13 @@ main = AF.launchAff_ $ TSR.runSpec [consoleReporter] do
                         ]
                   ]
                   html' <- liftEffect $ FRS.render html
-                  TSA.shouldEqual """<html lang="en"><head disabled="disabled"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="autofocus">here</a></span></div></div></main></body></html>""" html'
+                  TSA.shouldEqual """<!DOCTYPE html><html lang="en"><head disabled="disabled"><title>title</title></head><body id="content"><main><button style="display: block; width: 20px">-</button><br>Test<button my-attribute="myValue">+</button><hr style="border: 200px solid blue" autocomplete="off"><div><div><span><a autofocus="autofocus">here</a></span></div></div></main></body></html>""" html'
 
       TS.describe "root node" do
             TS.it "root node is unchanged" do
                   liftEffect unsafeCreateEnviroment
                   let html = HE.div "test-div" $ HE.input [HA.id "t", HA.value "a"]
-                  state <- mountHtml' html
+                  void $ mountHtml' html
                   rootNode <- liftEffect $ FAD.querySelector "#mount-point"
                   TSA.shouldSatisfy rootNode DM.isJust
 

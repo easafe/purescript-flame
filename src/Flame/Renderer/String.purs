@@ -8,5 +8,7 @@ import Flame.Types (Html)
 foreign import render_ :: forall message. EffectFn1 (Html message) String
 
 -- | Render markup into a string, useful for server-side rendering
+-- |
+-- | If the root tag is `html`, doctype is automatically added
 render :: forall message. Html message -> Effect String
 render = EU.runEffectFn1 render_

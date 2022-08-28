@@ -1,6 +1,5 @@
-'use strict';
-
 let textNode = 1,
+    elementNode = 2,
     svgNode = 3,
     fragmentNode = 4,
     lazyNode = 5,
@@ -110,7 +109,15 @@ let booleanAttributes = new Set([
 ]);
 
 /** String rendering adapted from https://github.com/snabbdom/snabbdom-to-html */
-export {stringify as render_};
+export function render_(html) {
+    let docType = '<!DOCTYPE html>',
+        rendered = stringify(html);
+
+    if (html.nodeType === elementNode && html.tag === 'html')
+        rendered = docType + rendered;
+
+    return rendered;
+}
 
 function stringify(html) {
     switch (html.nodeType) {

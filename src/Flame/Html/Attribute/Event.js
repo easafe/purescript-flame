@@ -1,5 +1,3 @@
-'use strict';
-
 let messageEventData = 5,
     rawEventData = 6;
 

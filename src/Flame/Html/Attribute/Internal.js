@@ -1,5 +1,3 @@
-'use strict';
-
 let styleData = 1,
     classData = 2,
     propertyData = 3,
