@@ -22,7 +22,7 @@ update m@(Model model) = case _ of
       Update int → Model (Just int) :> []
 
 main ∷ Effect Unit
-main = F.resumeMount_ (QuerySelector "body")
+main = F.resumeMount_ (QuerySelector "#main")
       { init: []
       , subscribe: []
       , update

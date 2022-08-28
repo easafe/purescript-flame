@@ -1,1 +1,2 @@
-require('../../output/Examples.EffectList.Special.Main').main();
+import { main } from '../../output/Examples.EffectList.Special.Main';
+main();

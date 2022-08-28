@@ -1,1 +1,2 @@
-require('../../output/Examples.Effectful.Dice.Main').main();
+import { main } from '../../output/Examples.Effectful.Dice.Main';
+main();

@@ -1,1 +1,2 @@
-require('../../output/Examples.EffectList.Subscriptions.Main').main();
+import { main } from '../../output/Examples.EffectList.Subscriptions.Main';
+main();

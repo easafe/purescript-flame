@@ -34,7 +34,7 @@ serveJavaScript = do
 
 serveHTML ∷ ResponseM
 serveHTML = do
-      stringContents ← liftEffect $ F.preMount (QuerySelector "body") { init: Model Nothing, view: markup }
+      stringContents ← liftEffect $ F.preMount (QuerySelector "#main") { init: Model Nothing, view: markup }
       H.ok' htmlContentType stringContents
       where
       htmlContentType = H.header "Content-Type" "text/html"

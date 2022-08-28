@@ -1,1 +1,2 @@
-require('../../output/Examples.EffectList.Affjax.Main').main();
+import { main } from '../../output/Examples.EffectList.Affjax.Main';
+main();

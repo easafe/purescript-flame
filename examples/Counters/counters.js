@@ -1,1 +1,2 @@
-require('../../output/Examples.NoEffects.Counters.Main').main();
+import { main } from '../../output/Examples.NoEffects.Counters.Main';
+main();

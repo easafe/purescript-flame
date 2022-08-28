@@ -1,1 +1,2 @@
-require('../../output/Examples.EffectList.Dice.Main').main();
+import { main } from '../../output/Examples.EffectList.Dice.Main';
+main();
