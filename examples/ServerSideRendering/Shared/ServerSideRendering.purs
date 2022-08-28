@@ -13,12 +13,12 @@ import Flame.Html.Element as HE
 
 newtype Model = Model (Maybe Int)
 
-derive instance modelGeneric :: Generic Model _
+derive instance modelGeneric ∷ Generic Model _
 
 data Message = Roll | Update Int
 
-view :: Model -> Html Message
-view (Model model) = HE.main "main" [
-            HE.text (show model),
-            HE.button [HA.onClick Roll] "Roll"
+view ∷ Model → Html Message
+view (Model model) = HE.main "main"
+      [ HE.text (show model)
+      , HE.button [ HA.onClick Roll ] "Roll"
       ]

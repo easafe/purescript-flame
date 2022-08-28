@@ -18,7 +18,6 @@ import Partial.Unsafe as PU
 import Prelude (const, flip, map, not, otherwise, show, ($), (<<<), (<>), (==))
 import Type.Row.Homogeneous (class Homogeneous)
 
-
 type ToStringAttribute = ToNodeData String
 
 type ToIntAttribute = ToNodeData Int
@@ -29,809 +28,810 @@ type ToNumberAttribute = ToNodeData Number
 
 -- | Enables either strings or records be used as an argument to `class'`
 class ToClassList a where
-      to :: a -> Array String
+      to ∷ a → Array String
 
 instance ToClassList String where
       to = DA.filter (not <<< DS.null) <<< DS.split (Pattern " ")
 
-instance Homogeneous r Boolean => ToClassList { | r } where
+instance Homogeneous r Boolean ⇒ ToClassList { | r } where
       to = FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
 
 -- | Enables either tuples, arrays or records be used as an argument to `style`
 class ToStyleList a where
-      toStyleList :: a -> Object String
+      toStyleList ∷ a → Object String
 
 instance ToStyleList (Tuple String String) where
       toStyleList (Tuple a b) = FO.singleton a b
-else
-instance Homogeneous r String => ToStyleList { | r } where
+else instance Homogeneous r String ⇒ ToStyleList { | r } where
       toStyleList = FO.fromFoldable <<< map go <<< toArray
-            where go (Tuple name' value') = Tuple (caseify name') value'
-                  toArray :: _ -> Array (Tuple String String)
-                  toArray = FO.toUnfoldable <<< FO.fromHomogeneous
-else
-instance DF.Foldable f => ToStyleList (f (Tuple String String)) where
+            where
+            go (Tuple name' value') = Tuple (caseify name') value'
+
+            toArray ∷ _ → Array (Tuple String String)
+            toArray = FO.toUnfoldable <<< FO.fromHomogeneous
+else instance DF.Foldable f ⇒ ToStyleList (f (Tuple String String)) where
       toStyleList = FO.fromFoldable
 
 --these functions cheat by only creating the necessary key on NodeData
 -- | Sets a DOM property
-foreign import createProperty :: forall message. String -> String -> NodeData message
+foreign import createProperty ∷ ∀ message. String → String → NodeData message
 -- | Creates a HTML attribute
-foreign import createAttribute :: forall message. String -> String -> NodeData message
-foreign import createClass :: forall message. Array String -> NodeData message
-foreign import createStyle :: forall message. Object String -> NodeData message
-foreign import createKey :: forall message. String -> NodeData message
+foreign import createAttribute ∷ ∀ message. String → String → NodeData message
+foreign import createClass ∷ ∀ message. Array String → NodeData message
+foreign import createStyle ∷ ∀ message. Object String → NodeData message
+foreign import createKey ∷ ∀ message. String → NodeData message
 
-booleanToFalsyString :: Boolean -> String
+booleanToFalsyString ∷ Boolean → String
 booleanToFalsyString =
       case _ of
-            true -> "true"
-            false -> ""
+            true → "true"
+            false → ""
 
-class' :: forall a b. ToClassList b => b -> NodeData a
+class' ∷ ∀ a b. ToClassList b ⇒ b → NodeData a
 class' = createClass <<< map caseify <<< to
 
 -- | Sets the node style
 -- |
 -- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
-style :: forall a r. ToStyleList r => r -> NodeData a
+style ∷ ∀ a r. ToStyleList r ⇒ r → NodeData a
 style record = createStyle $ toStyleList record
 
-style1 :: forall a. String -> String -> NodeData a
+style1 ∷ ∀ a. String → String → NodeData a
 style1 a b = createStyle $ FO.singleton a b
 
 -- | Transforms its input into a proper html attribute/tag name, i.e. lower case and hyphenated
-caseify :: String -> String
+caseify ∷ String → String
 caseify name'
       | name' == DS.toUpper name' = DS.toLower name'
       | otherwise = DS.toLower (DS.singleton head) <> hyphenated
-      where {head, tail} = PU.unsafePartial (DM.fromJust $ DS.uncons name')
+              where
+              { head, tail } = PU.unsafePartial (DM.fromJust $ DS.uncons name')
 
-            regex = PU.unsafePartial case DSR.regex "[A-Z]" global of
-                  DE.Right rgx -> rgx
-                  DE.Left err -> P.crashWith $ show err
+              regex = PU.unsafePartial case DSR.regex "[A-Z]" global of
+                    DE.Right rgx → rgx
+                    DE.Left err → P.crashWith $ show err
 
-            replacer = const <<< ("-" <> _) <<< DS.toLower
+              replacer = const <<< ("-" <> _) <<< DS.toLower
 
-            hyphenated = DSR.replace' regex replacer tail
+              hyphenated = DSR.replace' regex replacer tail
 
 -- | Set the key attribute for "keyed" rendering
-key :: ToStringAttribute
+key ∷ ToStringAttribute
 key = createKey
 
 --script generated
 
-id :: ToStringAttribute
+id ∷ ToStringAttribute
 id = createProperty "id"
 
-innerHtml :: ToStringAttribute
+innerHtml ∷ ToStringAttribute
 innerHtml = createProperty "innerHTML"
 
-content :: ToStringAttribute
+content ∷ ToStringAttribute
 content = createProperty "content"
 
-accept :: ToStringAttribute
+accept ∷ ToStringAttribute
 accept = createProperty "accept"
 
-acceptCharset :: ToStringAttribute
+acceptCharset ∷ ToStringAttribute
 acceptCharset = createProperty "acceptCharset"
 
-accessKey :: ToStringAttribute
+accessKey ∷ ToStringAttribute
 accessKey = createProperty "accessKey"
 
-action :: ToStringAttribute
+action ∷ ToStringAttribute
 action = createProperty "action"
 
-align :: ToStringAttribute
+align ∷ ToStringAttribute
 align = createProperty "align"
 
-alt :: ToStringAttribute
+alt ∷ ToStringAttribute
 alt = createProperty "alt"
 
-charset :: ToStringAttribute
+charset ∷ ToStringAttribute
 charset = createProperty "charset"
 
-coords :: ToStringAttribute
+coords ∷ ToStringAttribute
 coords = createProperty "coords"
 
-dir :: ToStringAttribute
+dir ∷ ToStringAttribute
 dir = createProperty "dir"
 
-download :: ToStringAttribute
+download ∷ ToStringAttribute
 download = createProperty "download"
 
-downloadAs :: ToStringAttribute
+downloadAs ∷ ToStringAttribute
 downloadAs = createProperty "downloadAs"
 
-dropzone :: ToStringAttribute
+dropzone ∷ ToStringAttribute
 dropzone = createProperty "dropzone"
 
-enctype :: ToStringAttribute
+enctype ∷ ToStringAttribute
 enctype = createProperty "enctype"
 
-for :: ToStringAttribute
+for ∷ ToStringAttribute
 for = createAttribute "for"
 
-headers :: ToStringAttribute
+headers ∷ ToStringAttribute
 headers = createProperty "headers"
 
-href :: ToStringAttribute
+href ∷ ToStringAttribute
 href = createAttribute "href"
 
-hreflang :: ToStringAttribute
+hreflang ∷ ToStringAttribute
 hreflang = createAttribute "hreflang"
 
-kind :: ToStringAttribute
+kind ∷ ToStringAttribute
 kind = createProperty "kind"
 
-lang :: ToStringAttribute
+lang ∷ ToStringAttribute
 lang = createProperty "lang"
 
-max :: ToStringAttribute
+max ∷ ToStringAttribute
 max = createAttribute "max"
 
-method :: ToStringAttribute
+method ∷ ToStringAttribute
 method = createAttribute "method"
 
-min :: ToStringAttribute
+min ∷ ToStringAttribute
 min = createAttribute "min"
 
-name :: ToStringAttribute
+name ∷ ToStringAttribute
 name = createProperty "name"
 
-pattern :: ToStringAttribute
+pattern ∷ ToStringAttribute
 pattern = createProperty "pattern"
 
-ping :: ToStringAttribute
+ping ∷ ToStringAttribute
 ping = createAttribute "ping"
 
-placeholder :: ToStringAttribute
+placeholder ∷ ToStringAttribute
 placeholder = createProperty "placeholder"
 
-poster :: ToStringAttribute
+poster ∷ ToStringAttribute
 poster = createProperty "poster"
 
-preload :: ToStringAttribute
+preload ∷ ToStringAttribute
 preload = createProperty "preload"
 
-sandbox :: ToStringAttribute
+sandbox ∷ ToStringAttribute
 sandbox = createProperty "sandbox"
 
-scope :: ToStringAttribute
+scope ∷ ToStringAttribute
 scope = createProperty "scope"
 
-shape :: ToStringAttribute
+shape ∷ ToStringAttribute
 shape = createProperty "shape"
 
-src :: ToStringAttribute
+src ∷ ToStringAttribute
 src = createProperty "src"
 
-srcdoc :: ToStringAttribute
+srcdoc ∷ ToStringAttribute
 srcdoc = createProperty "srcdoc"
 
-srclang :: ToStringAttribute
+srclang ∷ ToStringAttribute
 srclang = createProperty "srclang"
 
-step :: ToStringAttribute
+step ∷ ToStringAttribute
 step = createProperty "step"
 
-target :: ToStringAttribute
+target ∷ ToStringAttribute
 target = createProperty "target"
 
-title :: ToStringAttribute
+title ∷ ToStringAttribute
 title = createProperty "title"
 
-type' :: ToStringAttribute
+type' ∷ ToStringAttribute
 type' = createProperty "type"
 
-useMap :: ToStringAttribute
+useMap ∷ ToStringAttribute
 useMap = createProperty "useMap"
 
-value :: ToStringAttribute
+value ∷ ToStringAttribute
 value = createProperty "value"
 
-wrap :: ToStringAttribute
+wrap ∷ ToStringAttribute
 wrap = createProperty "wrap"
 
-cols :: ToIntAttribute
+cols ∷ ToIntAttribute
 cols = createProperty "cols" <<< show
 
-colspan :: ToIntAttribute
+colspan ∷ ToIntAttribute
 colspan = createProperty "colspan" <<< show
 
-height :: ToStringAttribute
+height ∷ ToStringAttribute
 height = createAttribute "height"
 
-maxlength :: ToIntAttribute
+maxlength ∷ ToIntAttribute
 maxlength = createAttribute "maxlength" <<< show
 
-minlength :: ToIntAttribute
+minlength ∷ ToIntAttribute
 minlength = createProperty "minlength" <<< show
 
-rows :: ToIntAttribute
+rows ∷ ToIntAttribute
 rows = createProperty "rows" <<< show
 
-rowspan :: ToIntAttribute
+rowspan ∷ ToIntAttribute
 rowspan = createProperty "rowspan" <<< show
 
-size :: ToIntAttribute
+size ∷ ToIntAttribute
 size = createProperty "size" <<< show
 
-start :: ToIntAttribute
+start ∷ ToIntAttribute
 start = createProperty "start" <<< show
 
-tabindex :: ToIntAttribute
+tabindex ∷ ToIntAttribute
 tabindex = createProperty "tabindex" <<< show
 
-width :: ToStringAttribute
+width ∷ ToStringAttribute
 width = createAttribute "width"
 
-contextmenu :: ToStringAttribute
+contextmenu ∷ ToStringAttribute
 contextmenu = createProperty "contextmenu"
 
-datetime :: ToStringAttribute
+datetime ∷ ToStringAttribute
 datetime = createProperty "datetime"
 
-draggable :: ToStringAttribute
+draggable ∷ ToStringAttribute
 draggable = createProperty "draggable"
 
-itemprop :: ToStringAttribute
+itemprop ∷ ToStringAttribute
 itemprop = createProperty "itemprop"
 
-list :: ToStringAttribute
+list ∷ ToStringAttribute
 list = createAttribute "list"
 
-manifest :: ToStringAttribute
+manifest ∷ ToStringAttribute
 manifest = createProperty "manifest"
 
-media :: ToStringAttribute
+media ∷ ToStringAttribute
 media = createAttribute "media"
 
-pubdate :: ToStringAttribute
+pubdate ∷ ToStringAttribute
 pubdate = createProperty "pubdate"
 
-rel :: ToStringAttribute
+rel ∷ ToStringAttribute
 rel = createProperty "rel"
 
-cx :: ToStringAttribute
+cx ∷ ToStringAttribute
 cx = createAttribute "cx"
 
-cy :: ToStringAttribute
+cy ∷ ToStringAttribute
 cy = createAttribute "cy"
 
-fillOpacity :: ToStringAttribute
+fillOpacity ∷ ToStringAttribute
 fillOpacity = createProperty "fill-opacity"
 
-fx :: ToStringAttribute
+fx ∷ ToStringAttribute
 fx = createAttribute "fx"
 
-fy :: ToStringAttribute
+fy ∷ ToStringAttribute
 fy = createAttribute "fy"
 
-markerHeight :: ToStringAttribute
+markerHeight ∷ ToStringAttribute
 markerHeight = createAttribute "markerHeight"
 
-markerWidth :: ToStringAttribute
+markerWidth ∷ ToStringAttribute
 markerWidth = createAttribute "markerWidth"
 
-r :: ToStringAttribute
+r ∷ ToStringAttribute
 r = createAttribute "r"
 
-strokeDashoffset :: ToStringAttribute
+strokeDashoffset ∷ ToStringAttribute
 strokeDashoffset = createAttribute "stroke-dashoffset"
 
-strokeOpacity :: ToStringAttribute
+strokeOpacity ∷ ToStringAttribute
 strokeOpacity = createAttribute "stroke-opacity"
 
-strokeWidth :: ToStringAttribute
+strokeWidth ∷ ToStringAttribute
 strokeWidth = createAttribute "stroke-width"
 
-textLength :: ToStringAttribute
+textLength ∷ ToStringAttribute
 textLength = createAttribute "textLength"
 
-x :: ToStringAttribute
+x ∷ ToStringAttribute
 x = createAttribute "x"
 
-x1 :: ToStringAttribute
+x1 ∷ ToStringAttribute
 x1 = createAttribute "x1"
 
-x2 :: ToStringAttribute
+x2 ∷ ToStringAttribute
 x2 = createAttribute "x2"
 
-y :: ToStringAttribute
+y ∷ ToStringAttribute
 y = createAttribute "y"
 
-y1 :: ToStringAttribute
+y1 ∷ ToStringAttribute
 y1 = createAttribute "y1"
 
-y2 :: ToStringAttribute
+y2 ∷ ToStringAttribute
 y2 = createAttribute "y2"
 
-accumulate :: ToStringAttribute
+accumulate ∷ ToStringAttribute
 accumulate = createAttribute "accumulate"
 
-additive :: ToStringAttribute
+additive ∷ ToStringAttribute
 additive = createAttribute "additive"
 
-alignmentBaseline :: ToStringAttribute
+alignmentBaseline ∷ ToStringAttribute
 alignmentBaseline = createAttribute "alignment-baseline"
 
-createAttributeName :: ToStringAttribute
+createAttributeName ∷ ToStringAttribute
 createAttributeName = createAttribute "createAttributeName"
 
-createAttributeType :: ToStringAttribute
+createAttributeType ∷ ToStringAttribute
 createAttributeType = createAttribute "createAttributeType"
 
-baseFrequency :: ToStringAttribute
+baseFrequency ∷ ToStringAttribute
 baseFrequency = createAttribute "baseFrequency"
 
-baselineShift :: ToStringAttribute
+baselineShift ∷ ToStringAttribute
 baselineShift = createAttribute "baseline-shift"
 
-baseProfile :: ToStringAttribute
+baseProfile ∷ ToStringAttribute
 baseProfile = createAttribute "baseProfile"
 
-begin :: ToStringAttribute
+begin ∷ ToStringAttribute
 begin = createAttribute "begin"
 
-calcMode :: ToStringAttribute
+calcMode ∷ ToStringAttribute
 calcMode = createAttribute "calcMode"
 
-clipPathUnits :: ToStringAttribute
+clipPathUnits ∷ ToStringAttribute
 clipPathUnits = createAttribute "clipPathUnits"
 
-clipPathAttr :: ToStringAttribute
+clipPathAttr ∷ ToStringAttribute
 clipPathAttr = createAttribute "clip-path"
 
-clipRule :: ToStringAttribute
+clipRule ∷ ToStringAttribute
 clipRule = createAttribute "clip-rule"
 
-color :: ToStringAttribute
+color ∷ ToStringAttribute
 color = createAttribute "color"
 
-colorInterpolation :: ToStringAttribute
+colorInterpolation ∷ ToStringAttribute
 colorInterpolation = createAttribute "color-interpolation"
 
-colorInterpolationFilters :: ToStringAttribute
+colorInterpolationFilters ∷ ToStringAttribute
 colorInterpolationFilters = createAttribute "color-interpolation-filters"
 
-colorProfileAttr :: ToStringAttribute
+colorProfileAttr ∷ ToStringAttribute
 colorProfileAttr = createAttribute "color-profile"
 
-colorRendering :: ToStringAttribute
+colorRendering ∷ ToStringAttribute
 colorRendering = createAttribute "color-rendering"
 
-contentScriptType :: ToStringAttribute
+contentScriptType ∷ ToStringAttribute
 contentScriptType = createAttribute "contentScriptType"
 
-contentStyleType :: ToStringAttribute
+contentStyleType ∷ ToStringAttribute
 contentStyleType = createAttribute "contentStyleType"
 
-cursorAttr :: ToStringAttribute
+cursorAttr ∷ ToStringAttribute
 cursorAttr = createAttribute "cursor"
 
-d :: ToStringAttribute
+d ∷ ToStringAttribute
 d = createAttribute "d"
 
-direction :: ToStringAttribute
+direction ∷ ToStringAttribute
 direction = createAttribute "direction"
 
-display :: ToStringAttribute
+display ∷ ToStringAttribute
 display = createAttribute "display"
 
-dominantBaseline :: ToStringAttribute
+dominantBaseline ∷ ToStringAttribute
 dominantBaseline = createAttribute "dominant-baseline"
 
-dur :: ToStringAttribute
+dur ∷ ToStringAttribute
 dur = createAttribute "dur"
 
-dx :: ToStringAttribute
+dx ∷ ToStringAttribute
 dx = createAttribute "dx"
 
-dy :: ToStringAttribute
+dy ∷ ToStringAttribute
 dy = createAttribute "dy"
 
-edgeMode :: ToStringAttribute
+edgeMode ∷ ToStringAttribute
 edgeMode = createAttribute "edgeMode"
 
-end :: ToStringAttribute
+end ∷ ToStringAttribute
 end = createAttribute "end"
 
-fill :: ToStringAttribute
+fill ∷ ToStringAttribute
 fill = createAttribute "fill"
 
-fillRule :: ToStringAttribute
+fillRule ∷ ToStringAttribute
 fillRule = createAttribute "fill-rule"
 
-filterAttr :: ToStringAttribute
+filterAttr ∷ ToStringAttribute
 filterAttr = createAttribute "filter"
 
-filterUnits :: ToStringAttribute
+filterUnits ∷ ToStringAttribute
 filterUnits = createAttribute "filterUnits"
 
-floodColor :: ToStringAttribute
+floodColor ∷ ToStringAttribute
 floodColor = createAttribute "flood-color"
 
-floodOpacity :: ToStringAttribute
+floodOpacity ∷ ToStringAttribute
 floodOpacity = createAttribute "flood-opacity"
 
-fontFamily :: ToStringAttribute
+fontFamily ∷ ToStringAttribute
 fontFamily = createAttribute "font-family"
 
-fontSize :: ToStringAttribute
+fontSize ∷ ToStringAttribute
 fontSize = createAttribute "font-size"
 
-fontSizeAdjust :: ToStringAttribute
+fontSizeAdjust ∷ ToStringAttribute
 fontSizeAdjust = createAttribute "font-size-adjust"
 
-fontStretch :: ToStringAttribute
+fontStretch ∷ ToStringAttribute
 fontStretch = createAttribute "font-stretch"
 
-fontStyle :: ToStringAttribute
+fontStyle ∷ ToStringAttribute
 fontStyle = createAttribute "font-style"
 
-fontVariant :: ToStringAttribute
+fontVariant ∷ ToStringAttribute
 fontVariant = createAttribute "font-variant"
 
-fontWeight :: ToStringAttribute
+fontWeight ∷ ToStringAttribute
 fontWeight = createAttribute "font-weight"
 
-from :: ToStringAttribute
+from ∷ ToStringAttribute
 from = createAttribute "from"
 
-gradientTransform :: ToStringAttribute
+gradientTransform ∷ ToStringAttribute
 gradientTransform = createAttribute "gradientTransform"
 
-gradientUnits :: ToStringAttribute
+gradientUnits ∷ ToStringAttribute
 gradientUnits = createAttribute "gradientUnits"
 
-imageRendering :: ToStringAttribute
+imageRendering ∷ ToStringAttribute
 imageRendering = createAttribute "image-rendering"
 
-in' :: ToStringAttribute
+in' ∷ ToStringAttribute
 in' = createAttribute "in"
 
-in2 :: ToStringAttribute
+in2 ∷ ToStringAttribute
 in2 = createAttribute "in2"
 
-kernelMatrix :: ToStringAttribute
+kernelMatrix ∷ ToStringAttribute
 kernelMatrix = createAttribute "kernelMatrix"
 
-kernelUnitLength :: ToStringAttribute
+kernelUnitLength ∷ ToStringAttribute
 kernelUnitLength = createAttribute "kernelUnitLength"
 
-kerning :: ToStringAttribute
+kerning ∷ ToStringAttribute
 kerning = createAttribute "kerning"
 
-keySplines :: ToStringAttribute
+keySplines ∷ ToStringAttribute
 keySplines = createAttribute "keySplines"
 
-keyTimes :: ToStringAttribute
+keyTimes ∷ ToStringAttribute
 keyTimes = createAttribute "keyTimes"
 
-lengthAdjust :: ToStringAttribute
+lengthAdjust ∷ ToStringAttribute
 lengthAdjust = createAttribute "lengthAdjust"
 
-letterSpacing :: ToStringAttribute
+letterSpacing ∷ ToStringAttribute
 letterSpacing = createAttribute "letter-spacing"
 
-lightingColor :: ToStringAttribute
+lightingColor ∷ ToStringAttribute
 lightingColor = createAttribute "lighting-color"
 
-local :: ToStringAttribute
+local ∷ ToStringAttribute
 local = createAttribute "local"
 
-markerEnd :: ToStringAttribute
+markerEnd ∷ ToStringAttribute
 markerEnd = createAttribute "marker-end"
 
-markerMid :: ToStringAttribute
+markerMid ∷ ToStringAttribute
 markerMid = createAttribute "marker-mid"
 
-markerStart :: ToStringAttribute
+markerStart ∷ ToStringAttribute
 markerStart = createAttribute "marker-start"
 
-markerUnits :: ToStringAttribute
+markerUnits ∷ ToStringAttribute
 markerUnits = createAttribute "markerUnits"
 
-maskAttr :: ToStringAttribute
+maskAttr ∷ ToStringAttribute
 maskAttr = createAttribute "mask"
 
-maskContentUnits :: ToStringAttribute
+maskContentUnits ∷ ToStringAttribute
 maskContentUnits = createAttribute "maskContentUnits"
 
-maskUnits :: ToStringAttribute
+maskUnits ∷ ToStringAttribute
 maskUnits = createAttribute "maskUnits"
 
-mode :: ToStringAttribute
+mode ∷ ToStringAttribute
 mode = createAttribute "mode"
 
-opacity :: ToStringAttribute
+opacity ∷ ToStringAttribute
 opacity = createAttribute "opacity"
 
-operator :: ToStringAttribute
+operator ∷ ToStringAttribute
 operator = createAttribute "operator"
 
-order :: ToStringAttribute
+order ∷ ToStringAttribute
 order = createAttribute "order"
 
-overflow :: ToStringAttribute
+overflow ∷ ToStringAttribute
 overflow = createAttribute "overflow"
 
-paintOrder :: ToStringAttribute
+paintOrder ∷ ToStringAttribute
 paintOrder = createAttribute "paint-order"
 
-patternContentUnits :: ToStringAttribute
+patternContentUnits ∷ ToStringAttribute
 patternContentUnits = createAttribute "patternContentUnits"
 
-patternTransform :: ToStringAttribute
+patternTransform ∷ ToStringAttribute
 patternTransform = createAttribute "patternTransform"
 
-patternUnits :: ToStringAttribute
+patternUnits ∷ ToStringAttribute
 patternUnits = createAttribute "patternUnits"
 
-pointerEvents :: ToStringAttribute
+pointerEvents ∷ ToStringAttribute
 pointerEvents = createAttribute "pointer-events"
 
-points :: ToStringAttribute
+points ∷ ToStringAttribute
 points = createAttribute "points"
 
-preserveAspectRatio :: ToStringAttribute
+preserveAspectRatio ∷ ToStringAttribute
 preserveAspectRatio = createAttribute "preserveAspectRatio"
 
-primitiveUnits :: ToStringAttribute
+primitiveUnits ∷ ToStringAttribute
 primitiveUnits = createAttribute "primitiveUnits"
 
-radius :: ToStringAttribute
+radius ∷ ToStringAttribute
 radius = createAttribute "radius"
 
-repeatCount :: ToStringAttribute
+repeatCount ∷ ToStringAttribute
 repeatCount = createAttribute "repeatCount"
 
-repeatDur :: ToStringAttribute
+repeatDur ∷ ToStringAttribute
 repeatDur = createAttribute "repeatDur"
 
-requiredFeatures :: ToStringAttribute
+requiredFeatures ∷ ToStringAttribute
 requiredFeatures = createAttribute "requiredFeatures"
 
-restart :: ToStringAttribute
+restart ∷ ToStringAttribute
 restart = createAttribute "restart"
 
-result :: ToStringAttribute
+result ∷ ToStringAttribute
 result = createAttribute "result"
 
-rx :: ToStringAttribute
+rx ∷ ToStringAttribute
 rx = createAttribute "rx"
 
-ry :: ToStringAttribute
+ry ∷ ToStringAttribute
 ry = createAttribute "ry"
 
-shapeRendering :: ToStringAttribute
+shapeRendering ∷ ToStringAttribute
 shapeRendering = createAttribute "shape-rendering"
 
-stdDeviation :: ToStringAttribute
+stdDeviation ∷ ToStringAttribute
 stdDeviation = createAttribute "stdDeviation"
 
-stitchTiles :: ToStringAttribute
+stitchTiles ∷ ToStringAttribute
 stitchTiles = createAttribute "stitchTiles"
 
-stopColor :: ToStringAttribute
+stopColor ∷ ToStringAttribute
 stopColor = createAttribute "stop-color"
 
-stopOpacity :: ToStringAttribute
+stopOpacity ∷ ToStringAttribute
 stopOpacity = createAttribute "stop-opacity"
 
-stroke :: ToStringAttribute
+stroke ∷ ToStringAttribute
 stroke = createAttribute "stroke"
 
-strokeDasharray :: ToStringAttribute
+strokeDasharray ∷ ToStringAttribute
 strokeDasharray = createAttribute "stroke-dasharray"
 
-strokeLinecap :: ToStringAttribute
+strokeLinecap ∷ ToStringAttribute
 strokeLinecap = createAttribute "stroke-linecap"
 
-strokeLinejoin :: ToStringAttribute
+strokeLinejoin ∷ ToStringAttribute
 strokeLinejoin = createAttribute "stroke-linejoin"
 
-styleAttr :: ToStringAttribute
+styleAttr ∷ ToStringAttribute
 styleAttr = createAttribute "style"
 
-textAnchor :: ToStringAttribute
+textAnchor ∷ ToStringAttribute
 textAnchor = createAttribute "text-anchor"
 
-textDecoration :: ToStringAttribute
+textDecoration ∷ ToStringAttribute
 textDecoration = createAttribute "text-decoration"
 
-textRendering :: ToStringAttribute
+textRendering ∷ ToStringAttribute
 textRendering = createAttribute "text-rendering"
 
-transform :: ToStringAttribute
+transform ∷ ToStringAttribute
 transform = createAttribute "transform"
 
-values :: ToStringAttribute
+values ∷ ToStringAttribute
 values = createAttribute "values"
 
-vectorEffect :: ToStringAttribute
+vectorEffect ∷ ToStringAttribute
 vectorEffect = createAttribute "vector-effect"
 
-viewBox :: ToStringAttribute
+viewBox ∷ ToStringAttribute
 viewBox = createAttribute "viewBox"
 
-visibility :: ToStringAttribute
+visibility ∷ ToStringAttribute
 visibility = createAttribute "visibility"
 
-wordSpacing :: ToStringAttribute
+wordSpacing ∷ ToStringAttribute
 wordSpacing = createAttribute "word-spacing"
 
-writingMode :: ToStringAttribute
+writingMode ∷ ToStringAttribute
 writingMode = createAttribute "writing-mode"
 
-xChannelSelector :: ToStringAttribute
+xChannelSelector ∷ ToStringAttribute
 xChannelSelector = createAttribute "xChannelSelector"
 
-yChannelSelector :: ToStringAttribute
+yChannelSelector ∷ ToStringAttribute
 yChannelSelector = createAttribute "yChannelSelector"
 
-accentHeight :: ToNumberAttribute
+accentHeight ∷ ToNumberAttribute
 accentHeight = createAttribute "accent-height" <<< show
 
-ascent :: ToNumberAttribute
+ascent ∷ ToNumberAttribute
 ascent = createAttribute "ascent" <<< show
 
-azimuth :: ToNumberAttribute
+azimuth ∷ ToNumberAttribute
 azimuth = createAttribute "azimuth" <<< show
 
-bias :: ToNumberAttribute
+bias ∷ ToNumberAttribute
 bias = createAttribute "bias" <<< show
 
-diffuseConstant :: ToNumberAttribute
+diffuseConstant ∷ ToNumberAttribute
 diffuseConstant = createProperty "diffuseConstant" <<< show
 
-divisor :: ToNumberAttribute
+divisor ∷ ToNumberAttribute
 divisor = createAttribute "divisor" <<< show
 
-elevation :: ToNumberAttribute
+elevation ∷ ToNumberAttribute
 elevation = createProperty "elevation" <<< show
 
-fr :: ToNumberAttribute
+fr ∷ ToNumberAttribute
 fr = createAttribute "fr" <<< show
 
-k1 :: ToNumberAttribute
+k1 ∷ ToNumberAttribute
 k1 = createAttribute "k1" <<< show
 
-k2 :: ToNumberAttribute
+k2 ∷ ToNumberAttribute
 k2 = createAttribute "k2" <<< show
 
-k3 :: ToNumberAttribute
+k3 ∷ ToNumberAttribute
 k3 = createAttribute "k3" <<< show
 
-k4 :: ToNumberAttribute
+k4 ∷ ToNumberAttribute
 k4 = createAttribute "k4" <<< show
 
-limitingConeAngle :: ToNumberAttribute
+limitingConeAngle ∷ ToNumberAttribute
 limitingConeAngle = createAttribute "limitingConeAngle" <<< show
 
-overlinePosition :: ToNumberAttribute
+overlinePosition ∷ ToNumberAttribute
 overlinePosition = createAttribute "overline-position" <<< show
 
-overlineThickness :: ToNumberAttribute
+overlineThickness ∷ ToNumberAttribute
 overlineThickness = createAttribute "overline-thickness" <<< show
 
-pathLength :: ToNumberAttribute
+pathLength ∷ ToNumberAttribute
 pathLength = createAttribute "pathLength" <<< show
 
-pointsAtX :: ToNumberAttribute
+pointsAtX ∷ ToNumberAttribute
 pointsAtX = createAttribute "pointsAtX" <<< show
 
-pointsAtY :: ToNumberAttribute
+pointsAtY ∷ ToNumberAttribute
 pointsAtY = createAttribute "pointsAtY" <<< show
 
-pointsAtZ :: ToNumberAttribute
+pointsAtZ ∷ ToNumberAttribute
 pointsAtZ = createAttribute "pointsAtZ" <<< show
 
-refX :: ToNumberAttribute
+refX ∷ ToNumberAttribute
 refX = createAttribute "refX" <<< show
 
-refY :: ToNumberAttribute
+refY ∷ ToNumberAttribute
 refY = createAttribute "refY" <<< show
 
-scale :: ToNumberAttribute
+scale ∷ ToNumberAttribute
 scale = createAttribute "scale" <<< show
 
-seed :: ToNumberAttribute
+seed ∷ ToNumberAttribute
 seed = createAttribute "seed" <<< show
 
-specularConstant :: ToNumberAttribute
+specularConstant ∷ ToNumberAttribute
 specularConstant = createAttribute "specularConstant" <<< show
 
-specularExponent :: ToNumberAttribute
+specularExponent ∷ ToNumberAttribute
 specularExponent = createAttribute "specularExponent" <<< show
 
-strikethroughPosition :: ToNumberAttribute
+strikethroughPosition ∷ ToNumberAttribute
 strikethroughPosition = createAttribute "strikethrough-position" <<< show
 
-strikethroughThickness :: ToNumberAttribute
+strikethroughThickness ∷ ToNumberAttribute
 strikethroughThickness = createAttribute "strikethrough-thickness" <<< show
 
-strokeMiterlimit :: ToNumberAttribute
+strokeMiterlimit ∷ ToNumberAttribute
 strokeMiterlimit = createAttribute "stroke-miterlimit" <<< show
 
-surfaceScale :: ToNumberAttribute
+surfaceScale ∷ ToNumberAttribute
 surfaceScale = createAttribute "surfaceScale" <<< show
 
-targetX :: ToNumberAttribute
+targetX ∷ ToNumberAttribute
 targetX = createAttribute "targetX" <<< show
 
-targetY :: ToNumberAttribute
+targetY ∷ ToNumberAttribute
 targetY = createAttribute "targetY" <<< show
 
-underlinePosition :: ToNumberAttribute
+underlinePosition ∷ ToNumberAttribute
 underlinePosition = createAttribute "underline-position" <<< show
 
-underlineThickness :: ToNumberAttribute
+underlineThickness ∷ ToNumberAttribute
 underlineThickness = createAttribute "underline-thickness" <<< show
 
-version :: ToNumberAttribute
+version ∷ ToNumberAttribute
 version = createAttribute "version" <<< show
 
-numOctaves :: ToIntAttribute
+numOctaves ∷ ToIntAttribute
 numOctaves = createAttribute "numOctaves" <<< show
 
-autocomplete :: ToStringAttribute
+autocomplete ∷ ToStringAttribute
 autocomplete = createProperty "autocomplete"
 
-autofocus :: ToBooleanAttribute
+autofocus ∷ ToBooleanAttribute
 autofocus = createProperty "autofocus" <<< booleanToFalsyString
 
-autoplay :: ToBooleanAttribute
+autoplay ∷ ToBooleanAttribute
 autoplay = createProperty "autoplay" <<< booleanToFalsyString
 
-checked :: ToBooleanAttribute
+checked ∷ ToBooleanAttribute
 checked = createProperty "checked" <<< booleanToFalsyString
 
-contentEditable :: ToBooleanAttribute
+contentEditable ∷ ToBooleanAttribute
 contentEditable = createProperty "contentEditable" <<< booleanToFalsyString
 
-controls :: ToBooleanAttribute
+controls ∷ ToBooleanAttribute
 controls = createProperty "controls" <<< booleanToFalsyString
 
-default :: ToBooleanAttribute
+default ∷ ToBooleanAttribute
 default = createProperty "default" <<< booleanToFalsyString
 
-disabled :: ToBooleanAttribute
+disabled ∷ ToBooleanAttribute
 disabled = createProperty "disabled" <<< booleanToFalsyString
 
-hidden :: ToBooleanAttribute
+hidden ∷ ToBooleanAttribute
 hidden = createProperty "hidden" <<< booleanToFalsyString
 
-isMap :: ToBooleanAttribute
+isMap ∷ ToBooleanAttribute
 isMap = createProperty "isMap" <<< booleanToFalsyString
 
-loop :: ToBooleanAttribute
+loop ∷ ToBooleanAttribute
 loop = createProperty "loop" <<< booleanToFalsyString
 
-multiple :: ToBooleanAttribute
+multiple ∷ ToBooleanAttribute
 multiple = createProperty "multiple" <<< booleanToFalsyString
 
-noValidate :: ToBooleanAttribute
+noValidate ∷ ToBooleanAttribute
 noValidate = createProperty "noValidate" <<< booleanToFalsyString
 
-readOnly :: ToBooleanAttribute
+readOnly ∷ ToBooleanAttribute
 readOnly = createProperty "readOnly" <<< booleanToFalsyString
 
-required :: ToBooleanAttribute
+required ∷ ToBooleanAttribute
 required = createProperty "required" <<< booleanToFalsyString
 
-reversed :: ToBooleanAttribute
+reversed ∷ ToBooleanAttribute
 reversed = createProperty "reversed" <<< booleanToFalsyString
 
-selected :: ToBooleanAttribute
+selected ∷ ToBooleanAttribute
 selected = createProperty "selected" <<< booleanToFalsyString
 
-spellcheck :: ToBooleanAttribute
+spellcheck ∷ ToBooleanAttribute
 spellcheck = createProperty "spellcheck" <<< booleanToFalsyString
 
-externalResourcesRequired :: ToBooleanAttribute
+externalResourcesRequired ∷ ToBooleanAttribute
 externalResourcesRequired = createProperty "externalResourcesRequired" <<< booleanToFalsyString
 
-preserveAlpha :: ToBooleanAttribute
+preserveAlpha ∷ ToBooleanAttribute
 preserveAlpha = createProperty "preserveAlpha" <<< booleanToFalsyString

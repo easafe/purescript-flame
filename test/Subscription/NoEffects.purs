@@ -18,23 +18,23 @@ type Model = Int
 data Message = Increment String | Decrement Event
 
 -- | `update` is called to handle events
-update :: Model -> Message -> Model
+update ∷ Model → Message → Model
 update model = case _ of
-      Increment _ -> model + 1
-      Decrement _ -> model - 1
+      Increment _ → model + 1
+      Decrement _ → model - 1
 
 -- | `view` is called whenever the model is updated
-view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.span "text-output" $ show model
-]
+view ∷ Model → Html Message
+view model = HE.main "main"
+      [ HE.span "text-output" $ show model
+      ]
 
 -- | Mount the application on the given selector
-mount :: Effect Unit
+mount ∷ Effect Unit
 mount = do
-      FAN.mount_ (QuerySelector "#mount-point") {
-            init: 0,
-            subscribe: [FED.onClick' Decrement, FED.onKeydown Increment],
-            update,
-            view
-      }
+      FAN.mount_ (QuerySelector "#mount-point")
+            { init: 0
+            , subscribe: [ FED.onClick' Decrement, FED.onKeydown Increment ]
+            , update
+            , view
+            }
