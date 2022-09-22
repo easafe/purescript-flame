@@ -365,7 +365,7 @@ F.prototype.runHandlers = function (handlers, messageMapper, event) {
 };
 
 F.prototype.resume = function (updatedHtml) {
-    this.cachedHtml = this.updateAllNodes(this.root, this.cachedHtml, updatedHtml);;
+    this.cachedHtml = this.updateAllNodes(this.root, this.cachedHtml, updatedHtml);
 };
 
 /** Patches over the parent element*/
@@ -449,6 +449,8 @@ function firstFragmentChildNode(children) {
 
         return children[i].node;
     }
+
+    return undefined;
 }
 
 /** fragments are not child of any nodes, so we must recursively remove the actual child nodes  */
