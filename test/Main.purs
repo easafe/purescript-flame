@@ -420,10 +420,10 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
             TS.it "update text nodes" do
                   let html = HE.text "oi"
                   state ← mountHtml html
-                  let updatedHtml = HE.text "ola"
                   text ← textContent "#mount-point"
                   TSA.shouldEqual "oi" text
 
+                  let updatedHtml = HE.text "ola"
                   liftEffect $ FRID.resume state updatedHtml
                   updatedText ← textContent "#mount-point"
                   TSA.shouldEqual "ola" updatedText
@@ -488,6 +488,17 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldSatisfy oldElement DM.isNothing
                   nodeAttributes ← getAttributes "svg"
                   TSA.shouldEqual "viewBox:0 0 0 0" nodeAttributes
+
+            TS.it "update fragment to node" do
+                  let html = HE.div "test-div" [ HE.fragment [HE.input [ HA.id "t", HA.value "a" ], HE.br], HE.span_ "ss"]
+                  state ← mountHtml html
+                  childrenCount ← childrenNodeLengthOf "#test-div"
+                  TSA.shouldEqual 3 childrenCount
+
+                  let updatedHtml = HE.div "test-div" [ HE.div_ "aa", HE.span_ "ss"]
+                  liftEffect $ FRID.resume state updatedHtml
+                  childrenCount2 ← childrenNodeLengthOf "#test-div"
+                  TSA.shouldEqual 2 childrenCount2
 
             TS.it "inserting children" do
                   let html = HE.div' "test-div"
