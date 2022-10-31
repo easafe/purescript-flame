@@ -365,7 +365,7 @@ F.prototype.runHandlers = function (handlers, messageMapper, event) {
 };
 
 F.prototype.resume = function (updatedHtml) {
-    this.cachedHtml = this.updateAllNodes(this.root, this.cachedHtml, updatedHtml);;
+    this.cachedHtml = this.updateAllNodes(this.root, this.cachedHtml, updatedHtml);
 };
 
 /** Patches over the parent element*/
@@ -375,9 +375,14 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
         updatedHtml = shallowCopy(updatedHtml);
     //recreate node if it has changed tag or node type
     if (currentHtml.tag !== updatedHtml.tag || currentHtml.nodeType !== updatedHtml.nodeType) {
-        //moving the node instead of using clearNode allows us to reuse nodes
-        this.createAllNodes(parent, updatedHtml, currentHtml.node);
-        parent.removeChild(currentHtml.node);
+        if (currentHtml.nodeType === fragmentNode) {
+            this.createAllNodes(parent, updatedHtml, firstFragmentChildNode(currentHtml.children));
+            removeFragmentChildren(parent, currentHtml.children);
+        } else {
+            //moving the node instead of using clearNode allows us to reuse nodes
+            this.createAllNodes(parent, updatedHtml, currentHtml.node);
+            parent.removeChild(currentHtml.node);
+        }
     }
     else {
         updatedHtml.node = currentHtml.node;
@@ -433,6 +438,31 @@ F.prototype.updateAllNodes = function (parent, currentHtml, updatedHtml) {
 
     return updatedHtml;
 };
+
+/** Fragments are not child of any nodes, so we must find the first actual node */
+function firstFragmentChildNode(children) {
+    let childrenLength = children.length;
+
+    for (let i = 0; i < childrenLength; ++i) {
+        if (children[i].nodeType === fragmentNode)
+            return firstFragmentChildNode(children[i].children);
+
+        return children[i].node;
+    }
+
+    return undefined;
+}
+
+/** fragments are not child of any nodes, so we must recursively remove the actual child nodes  */
+function removeFragmentChildren(parent, children) {
+    let childrenLength = children.length;
+
+    for (let i = 0; i < childrenLength; ++i)
+        if (children[i].nodeType === fragmentNode)
+            removeFragmentChildren(children[i].children)
+        else
+            parent.removeChild(children[i].node);
+}
 
 function clearNode(node) {
     node.textContent = '';
