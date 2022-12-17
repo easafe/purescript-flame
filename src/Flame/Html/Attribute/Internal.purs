@@ -261,7 +261,7 @@ start ∷ ToIntAttribute
 start = createProperty "start" <<< show
 
 tabindex ∷ ToIntAttribute
-tabindex = createProperty "tabindex" <<< show
+tabindex = createProperty "tabIndex" <<< show
 
 width ∷ ToStringAttribute
 width = createAttribute "width"
