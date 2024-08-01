@@ -3,13 +3,19 @@ import { AppRegistry } from 'react-native';
 
 //as far as I can tell we need this because for class based components react expects a class type and not an instance
 let reactWrapper = { app : undefined },
-    flameEventWrapper, flameGlobalUpdater, initialMarkup, initialState;
+    initialMarkup,
+    initialState;
+
+//needed so we can run events as it is
+global.globalFlameEventWrapper = undefined;
+global.globalFlameUpdater = undefined;
 
 export function start_(eventWrapper, updater, name, markup, state) {
     initialMarkup = markup;
     initialState = state;
-    flameGlobalUpdater = updater;
-    flameEventWrapper = eventWrapper;
+
+    global.globalFlameEventWrapper = eventWrapper;
+    global.globalFlameUpdater = updater;
 
     AppRegistry.registerComponent(name, function () {
         return N;
@@ -23,8 +29,6 @@ export function resume_(wrapper, view, model) {
 };
 
 class N extends Component {
-    eventWrapper;
-    flameUpdater;
     flameMarkup;
 
     constructor() {
@@ -32,8 +36,6 @@ class N extends Component {
 
         this.flameMarkup = initialMarkup;
         this.state = initialState;
-        this.flameUpdater = flameGlobalUpdater;
-        this.eventWrapper = flameEventWrapper;
 
         reactWrapper.app = this;
     }

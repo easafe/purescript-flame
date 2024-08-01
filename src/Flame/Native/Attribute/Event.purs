@@ -64,7 +64,7 @@ onScroll' ∷ ∀ message. ToRawEvent message
 onScroll' = createEventMessage "scroll"
 
 onClick ∷ ∀ message. ToEvent message
-onClick = createEvent "click"
+onClick = createEvent "onPress"
 
 onClick' ∷ ∀ message. ToRawEvent message
 onClick' = createEventMessage "click"

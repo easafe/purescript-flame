@@ -1,5 +1,5 @@
 import React, {createElement } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Button } from 'react-native';
 
 let textNode = 1,
     elementNode = 2,
@@ -41,6 +41,14 @@ export function createViewNode(nodeData) {
 
         return createElement(View, undefined, ...children);
     };
+}
+
+export function createButtonNode(nodeData) {
+    return function(text) {
+        let props = fromNodeData(nodeData)
+
+        return createElement(Button, { title: text, ...props });
+    }
 }
 
 export function createDatalessElementNode(tag) {
@@ -176,51 +184,48 @@ function asSvg(elements) {
 }
 
 function fromNodeData(allData) {
-    let nodeData = {};
+    let nodeData;
 
-    if (allData !== undefined)
+    if (allData !== undefined) {
+        nodeData = {};
+
         for (let data of allData) {
             let dataOne = data[1];
             //[0] also always contain the data type
             switch (data[0]) {
-                case styleData:
-                    if (nodeData.styles === undefined)
-                        nodeData.styles = {};
+    //             case styleData:
+    //                 if (nodeData.styles === undefined)
+    //                     nodeData.styles = {};
 
-                    for (let key in dataOne)
-                        nodeData.styles[key] = dataOne[key];
-                    break;
-                case classData:
-                    if (nodeData.classes === undefined)
-                        nodeData.classes = [];
+    //                 for (let key in dataOne)
+    //                     nodeData.styles[key] = dataOne[key];
+    //                 break;
+    //             case classData:
+    //                 if (nodeData.classes === undefined)
+    //                     nodeData.classes = [];
 
-                    nodeData.classes = nodeData.classes.concat(dataOne);
-                    break;
-                case propertyData:
-                    if (nodeData.properties === undefined)
-                        nodeData.properties = {};
+    //                 nodeData.classes = nodeData.classes.concat(dataOne);
+    //                 break;
+    //             case propertyData:
+    //                 if (nodeData.properties === undefined)
+    //                     nodeData.properties = {};
 
-                    nodeData.properties[dataOne] = data[2];
-                    break;
-                case attributeData:
-                    if (nodeData.attributes === undefined)
-                        nodeData.attributes = {};
+    //                 nodeData.properties[dataOne] = data[2];
+    //                 break;
+    //             case attributeData:
+    //                 if (nodeData.attributes === undefined)
+    //                     nodeData.attributes = {};
 
-                    nodeData.attributes[dataOne] = data[2];
-                    break;
-                case keyData:
-                    nodeData.key = dataOne;
-                    break;
+    //                 nodeData.attributes[dataOne] = data[2];
+    //                 break;
+    //             case keyData:
+    //                 nodeData.key = dataOne;
+    //                 break;
                 default:
-                    if (nodeData.events === undefined)
-                        nodeData.events = {};
-
-                    if (nodeData.events[dataOne] === undefined)
-                        nodeData.events[dataOne] = [];
-
-                    nodeData.events[dataOne].push(data[2]);
+                    nodeData[dataOne] = data[2];
             }
         }
+    }
 
     return nodeData;
 }

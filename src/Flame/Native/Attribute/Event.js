@@ -1,15 +1,28 @@
 let messageEventData = 5,
     rawEventData = 6;
 
+//the global functions will be set at the native renderer
+function messageHandler(message) {
+    return function() {
+        return global.globalFlameUpdater(global.globalFlameEventWrapper(message))();
+    }
+}
+
+function rawMessageHandler(handler) {
+    return function(event) {
+        return global.globalFlameUpdater(handler(event)())();
+    }
+}
+
 export function createEvent_(name) {
     return function (message) {
-        return [messageEventData, name, message];
+        return [messageEventData, name, messageHandler(message)];
     };
 }
 
 export function createRawEvent_(name) {
     return function (handler) {
-        return [rawEventData, name, handler];
+        return [rawEventData, name, rawMessageHandler(handler)];
     };
 }
 

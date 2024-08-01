@@ -28,12 +28,12 @@ update model = case _ of
       Update int → Just int :> []
 
 view ∷ Model → Html Message
-view model = HE.text (show model)
-
--- HE.div "main"
---       [ HE.text (show model)
---    --   , HE.button [ HA.onClick Roll ] "Roll"
---       ]
+view model =
+      HE.div "main"
+            [ HE.text "Dice roll:",
+              HE.text (show model)
+            , HE.button [ HA.onClick Roll ] "Roll"
+            ]
 
 main ∷ Effect Unit
 main = FAN.mount "App"

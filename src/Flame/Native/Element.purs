@@ -51,6 +51,7 @@ type NodeRenderer arg =
 
 foreign import createElementNode ∷ ∀ message. Tag → Array (NodeData message) → Array (Html message) → Html message
 foreign import createViewNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
+foreign import createButtonNode ∷ ∀ message. Array (NodeData message) → String -> Html message
 foreign import createDatalessElementNode ∷ ∀ message. Tag → Array (Html message) → Html message
 foreign import createSingleElementNode ∷ ∀ message. Tag → Array (NodeData message) → Html message
 
@@ -245,8 +246,8 @@ body_ = createElement_ "body"
 body' ∷ ∀ a h. ToHtml' a h
 body' = createElement' "body"
 
-button ∷ ∀ a b h. ToHtml a b h
-button = createElement "button"
+
+button = createButtonNode
 
 button_ ∷ ∀ b h. ToHtml_ b h
 button_ = createElement_ "button"

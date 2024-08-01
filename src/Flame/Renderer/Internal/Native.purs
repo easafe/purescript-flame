@@ -8,6 +8,7 @@ import Effect (Effect)
 import Effect.Uncurried (EffectFn3, EffectFn5)
 import Effect.Uncurried as EU
 import Flame.Types (Html)
+import Debug
 
 -- | Events that are messages rather than callbacks need to be wrapped from the FFI
 type MessageWrapper message = message → Maybe message
