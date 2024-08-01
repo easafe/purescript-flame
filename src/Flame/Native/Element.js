@@ -1,3 +1,6 @@
+import React, {createElement } from 'react';
+import { View, Text } from 'react-native';
+
 let textNode = 1,
     elementNode = 2,
     svgNode = 3,
@@ -29,6 +32,14 @@ export function createElementNode(tag) {
                 text: text
             };
         };
+    };
+}
+
+export function createViewNode(nodeData) {
+    return function (children) {
+        let props = fromNodeData(nodeData)
+
+        return createElement(View, undefined, ...children);
     };
 }
 
@@ -74,11 +85,7 @@ export function createEmptyElement(tag) {
 }
 
 export function text(value) {
-    return {
-        nodeType: textNode,
-        node: undefined,
-        text: value
-    };
+    return createElement(Text, undefined, value);
 }
 
 export function createLazyNode(nodeData) {
@@ -216,4 +223,8 @@ function fromNodeData(allData) {
         }
 
     return nodeData;
+}
+
+function cascade(nodes, styles) {
+    return nodes;
 }

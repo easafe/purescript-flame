@@ -28,10 +28,16 @@
             "test": "spago -x examples.dhall test && npm run build-examples"
       },
       "devDependencies": {
+            "@react-native-community/cli": "^14.0.0",
             "jsdom": "^16.5.3",
-            "parcel": "^2.7.0"
+            "parcel": "^2.7.0",
+            "react-native-cli": "^2.0.1"
       },
       "alias": {
             "xhr2": false
+      },
+      "dependencies": {
+            "react": "^18.2.0",
+            "react-native": "^0.74.4"
       }
 }
