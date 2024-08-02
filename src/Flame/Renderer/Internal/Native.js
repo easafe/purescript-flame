@@ -57,7 +57,7 @@ class N extends Component {
 //     lazyNode = 5,
 //     managedNode = 6;
 
-// let boldStyle = { fontWeight: 'bold' },
+// let boldStyle = ,
 //     italicStyle = { fontStyle: 'italic' },
 //     underlineStyle = { textDecorationLine: 'underline' },
 //     strikethroughStyle = { textDecorationLine: 'line-through' },

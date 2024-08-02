@@ -1,5 +1,5 @@
 import React, {createElement } from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, txtInput, StyleSheet } from 'react-native';
 
 let textNode = 1,
     elementNode = 2,
@@ -12,84 +12,92 @@ let styleData = 1,
     attributeData = 4,
     keyData = 7;
 
-export function createElementNode(tag) {
-    return function (nodeData) {
-        return function (potentialChildren) {
-            let children = potentialChildren,
-                text = undefined;
-
-            if (potentialChildren.length === 1 && potentialChildren[0].nodeType == textNode) {
-                children = undefined;
-                text = potentialChildren[0].text;
-            }
-
-            return {
-                nodeType: elementNode,
-                node: undefined,
-                tag: tag,
-                nodeData: fromNodeData(nodeData),
-                children: children,
-                text: text
-            };
-        };
-    };
-}
 
 export function createViewNode(nodeData) {
     return function (children) {
         let props = fromNodeData(nodeData)
 
-        return createElement(View, undefined, ...children);
+        return createElement(View, props, ...children);
     };
 }
 
 export function createButtonNode(nodeData) {
-    return function(text) {
+    return function(children) {
         let props = fromNodeData(nodeData)
 
-        return createElement(Button, { title: text, ...props });
+        return createElement(Button, { title: children[0], ...props });
     }
 }
 
-export function createDatalessElementNode(tag) {
-    return function (potentialChildren) {
-        let children = potentialChildren,
-            text = undefined;
+let initialHrStyle = {
+    borderBottomColor: 'black',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+};
 
-        if (potentialChildren.length === 1 && potentialChildren[0].nodeType == textNode) {
-            children = undefined;
-            text = potentialChildren[0].text;
+export function createHrNode(nodeData) {
+    let props = fromNodeData(nodeData);
+
+    if (props.style === undefined)
+        props.style = { ...initialHrStyle};
+    else {
+        props.style = { ...initialHrStyle, ...props.style };
+    }
+
+    return createViewNode(nodeData)(undefined);
+}
+
+export function createBrNode(nodeData) {
+    let txt = text('\n');
+    txt.props = fromNodeData(nodeData);
+
+    return txt;
+}
+
+export function createInputNode(nodeData) {
+    return createElement(txtInput, fromNodeData(nodeData));
+}
+
+export function createANode(nodeData) {
+    return function(children) {
+        let props = fromNodeData(nodeData),
+            propedChildren = [];
+
+        for (let c of children) {
+            let txt = text(c);
+            txt.props = props;
+
+            propedChildren.push(txt);
         }
 
-        return {
-            nodeType: elementNode,
-            node: undefined,
-            tag: tag,
-            nodeData: {},
-            children: children,
-            text: text
-        };
-    };
+        return createViewNode(undefined)(propedChildren);
+    }
 }
 
-export function createSingleElementNode(tag) {
-    return function (nodeData) {
-        return {
-            nodeType: elementNode,
-            node: undefined,
-            tag: tag,
-            nodeData: fromNodeData(nodeData)
-        };
-    };
-}
+let initialBStyle = {
+     fontWeight: 'bold'
+};
 
-export function createEmptyElement(tag) {
-    return {
-        nodeType: tag.trim().toLowerCase() === 'svg' ? svgNode : elementNode,
-        node: undefined,
-        tag: tag,
-        nodeData: {}
-    };
+export function createBNode(nodeData) {
+    return function(children) {
+        let props = fromNodeData(nodeData);
+
+        if (props.style === undefined)
+            props.style = { ...initialBStyle};
+        else {
+            props.style = { ...initialBStyle, ...props.style };
+        }
+
+        let propedChildren = [];
+
+        for (let c of children) {
+            let txt = text(c);
+            txt.props = props;
+
+            propedChildren.push(txt);
+        }
+
+        return createViewNode(undefined)(propedChildren);
+    }
 }
 
 export function text(value) {
