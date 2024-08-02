@@ -1,5 +1,5 @@
 import React, {createElement } from 'react';
-import { View, Text, Button, txtInput, StyleSheet } from 'react-native';
+import { View, Text, Button, txtInput, StyleSheet, Image } from 'react-native';
 
 let textNode = 1,
     elementNode = 2,
@@ -98,6 +98,12 @@ export function createBNode(nodeData) {
 
         return createViewNode(undefined)(propedChildren);
     }
+}
+
+export function createImageNode(nodeData) {
+    let props = fromNodeData(nodeData);
+
+    return createElement(Image, props);
 }
 
 export function text(value) {
@@ -214,18 +220,6 @@ function fromNodeData(allData) {
 
     //                 nodeData.classes = nodeData.classes.concat(dataOne);
     //                 break;
-    //             case propertyData:
-    //                 if (nodeData.properties === undefined)
-    //                     nodeData.properties = {};
-
-    //                 nodeData.properties[dataOne] = data[2];
-    //                 break;
-    //             case attributeData:
-    //                 if (nodeData.attributes === undefined)
-    //                     nodeData.attributes = {};
-
-    //                 nodeData.attributes[dataOne] = data[2];
-    //                 break;
     //             case keyData:
     //                 nodeData.key = dataOne;
     //                 break;
@@ -236,8 +230,4 @@ function fromNodeData(allData) {
     }
 
     return nodeData;
-}
-
-function cascade(nodes, styles) {
-    return nodes;
 }

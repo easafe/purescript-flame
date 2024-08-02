@@ -42,6 +42,8 @@ foreign import createButtonNode ∷ ∀ message. Array (NodeData message) → Ar
 
 foreign import createBrNode :: forall message. Array (NodeData message) -> Html message
 
+foreign import createImageNode :: forall message. Array (NodeData message) -> Html message
+
 foreign import createHrNode :: forall message. Array (NodeData message) -> Html message
 
 foreign import createANode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
@@ -112,6 +114,10 @@ div_ children = createViewNode [] $ toNode children
 
 div' :: forall a h. ToHtml' a h
 div' nodeData = createViewNode (toNode nodeData) []
+
+img ∷ ∀ a h. ToHtml' a h
+img nodeData = createImageNode (toNode nodeData)
+
 
 -- h1 ∷ ∀ a b h. ToHtml a b h
 -- h1 = createElement "h1"
@@ -222,9 +228,6 @@ div' nodeData = createViewNode (toNode nodeData) []
 
 -- ol' ∷ ∀ a h. ToHtml' a h
 -- ol' = createElement' "ol"
-
--- img ∷ ∀ a h. ToHtml' a h
--- img = createElement' "img"
 
 -- optgroup' ∷ ∀ a h. ToHtml' a h
 -- optgroup' = createElement' "optgroup"
