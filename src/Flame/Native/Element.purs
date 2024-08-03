@@ -48,9 +48,11 @@ foreign import createHrNode :: forall message. Array (NodeData message) -> Html 
 
 foreign import createANode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
 
-foreign import createInputNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createInputNode :: forall message. Array (NodeData message) -> Html message
 
 foreign import createBNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+
+foreign import createLabelNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
 
 -- | Creates a text node
 foreign import text ∷ ∀ message. String → Html message
@@ -65,10 +67,7 @@ br' :: forall a h. ToHtml' a h
 br' nodeData = createBrNode (toNode nodeData)
 
 input :: forall a h. ToHtml' a h
-input nodeData = createInputNode (toNode nodeData) []
-
-input_ :: forall b h. ToHtml_ b h
-input_ children = createInputNode [] $ toNode children
+input nodeData = createInputNode (toNode nodeData)
 
 a :: forall a b h. ToHtml a b h
 a nodeData children = createANode (toNode nodeData) $ toNode children
@@ -117,7 +116,6 @@ div' nodeData = createViewNode (toNode nodeData) []
 
 img ∷ ∀ a h. ToHtml' a h
 img nodeData = createImageNode (toNode nodeData)
-
 
 -- h1 ∷ ∀ a b h. ToHtml a b h
 -- h1 = createElement "h1"
@@ -201,15 +199,14 @@ img nodeData = createImageNode (toNode nodeData)
 -- i' = createElement' "i"
 
 
--- label ∷ ∀ a b h. ToHtml a b h
--- label = createElement "label"
+label ∷ ∀ a b h. ToHtml a b h
+label nodeData children = createLabelNode (toNode nodeData) $ toNode children
 
--- label_ ∷ ∀ b h. ToHtml_ b h
--- label_ = createElement_ "label"
+label_ ∷ ∀ b h. ToHtml_ b h
+label_ children = createLabelNode [] $ toNode children
 
--- label' ∷ ∀ a h. ToHtml' a h
--- label' = createElement' "label"
-
+label' ∷ ∀ a h. ToHtml' a h
+label' nodeData = createLabelNode (toNode nodeData) []
 
 -- li ∷ ∀ a b h. ToHtml a b h
 -- li = createElement "li"

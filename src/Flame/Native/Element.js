@@ -1,5 +1,5 @@
 import React, {createElement } from 'react';
-import { View, Text, Button, txtInput, StyleSheet, Image } from 'react-native';
+import { View, Text, Button, TextInput, StyleSheet, Image } from 'react-native';
 
 let textNode = 1,
     elementNode = 2,
@@ -46,6 +46,22 @@ export function createHrNode(nodeData) {
     return createViewNode(nodeData)(undefined);
 }
 
+export function createLabelNode(nodeData) {
+    return function(children) {
+        let props = fromNodeData(nodeData),
+            propedChildren = [];
+
+        for (let c of children) {
+            let txt = text(c);
+            txt.props = props;
+
+            propedChildren.push(txt);
+        }
+
+        return createViewNode(undefined)(propedChildren);
+    }
+}
+
 export function createBrNode(nodeData) {
     let txt = text('\n');
     txt.props = fromNodeData(nodeData);
@@ -54,7 +70,13 @@ export function createBrNode(nodeData) {
 }
 
 export function createInputNode(nodeData) {
-    return createElement(txtInput, fromNodeData(nodeData));
+    let props = fromNodeData(nodeData);
+
+    if (props.type === 'button' || props.type === 'submit') {
+        return createElement(Button, { title: props.value || "", ...props })
+    }
+
+    return createElement(TextInput, props);
 }
 
 export function createANode(nodeData) {
@@ -108,93 +130,6 @@ export function createImageNode(nodeData) {
 
 export function text(value) {
     return createElement(Text, undefined, value);
-}
-
-export function createLazyNode(nodeData) {
-    return function (render) {
-        return function (arg) {
-            let key = nodeData[0];
-
-            return {
-                nodeType: lazyNode,
-                node: undefined,
-                nodeData: key === undefined ? undefined : { key: key },
-                render: render,
-                arg: arg,
-                rendered: undefined
-            };
-        };
-    };
-}
-
-export function createManagedNode(render) {
-    return function (nodeData) {
-        return function (arg) {
-            return {
-                nodeType: managedNode,
-                node: undefined,
-                nodeData: fromNodeData(nodeData),
-                createNode: render.createNode,
-                updateNode: render.updateNode,
-                arg: arg
-            };
-        };
-    };
-}
-
-export function createDatalessManagedNode(render) {
-    return function (arg) {
-        return {
-            nodeType: managedNode,
-            node: undefined,
-            nodeData: {},
-            createNode: render.createNode,
-            updateNode: render.updateNode,
-            arg: arg
-        };
-    };
-}
-
-export function createSvgNode(nodeData) {
-    return function (children) {
-        return {
-            nodeType: svgNode,
-            node: undefined,
-            tag: 'svg',
-            nodeData: fromNodeData(nodeData),
-            children: asSvg(children)
-        };
-    };
-}
-
-export function createDatalessSvgNode(children) {
-    return {
-        nodeType: svgNode,
-        node: undefined,
-        tag: 'svg',
-        nodeData: {},
-        children: asSvg(children)
-    };
-}
-
-export function createSingleSvgNode(nodeData) {
-    return {
-        nodeType: svgNode,
-        node: undefined,
-        tag: 'svg',
-        nodeData: fromNodeData(nodeData)
-    };
-}
-
-function asSvg(elements) {
-    for (let e of elements) {
-        if (e.nodeType === elementNode)
-            e.nodeType = svgNode;
-        if (e.children !== null && typeof e.children !== 'undefined')
-            e.children = asSvg(e.children);
-    }
-
-    return elements;
 }
 
 function fromNodeData(allData) {

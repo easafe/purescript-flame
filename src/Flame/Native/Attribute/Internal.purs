@@ -120,6 +120,9 @@ placeholder = createProperty "placeholder"
 src ∷ ToStringAttribute
 src = createProperty "source"
 
+type' ∷ ToStringAttribute
+type' = createProperty "type"
+
 title ∷ ToStringAttribute
 title = createProperty "title"
 
