@@ -26,13 +26,6 @@ export function createRawEvent_(name) {
     };
 }
 
-export function nodeValue_(event) {
-    if (event.target.contentEditable === true || event.target.contentEditable === "true" || event.target.contentEditable === "")
-        return event.target.innerText;
-
-    return event.target.value;
-}
-
 export function checkedValue_(event) {
     if (event.target.tagName === "INPUT" && (event.target.type === "checkbox" || event.target.type === "radio"))
         return event.target.checked;

@@ -1,5 +1,5 @@
 -- | Definition of react native events that can be fired from views
-module Flame.Native.Event (EventName, ToEvent, ToRawEvent, ToMaybeEvent, ToSpecialEvent, createEvent, createEventMessage, createRawEvent, onBlur, onBlur', onCheck, onClick, onClick', onChange, onChange', onContextmenu, onContextmenu', onDblclick, onDblclick', onDrag, onDrag', onDragend, onDragend', onDragenter, onDragenter', onDragleave, onDragleave', onDragover, onDragover', onDragstart, onDragstart', onDrop, onDrop', onError, onError', onFocus, onFocus', onFocusin, onFocusin', onFocusout, onFocusout', onInput, onInput', onKeydown, onKeydown', onKeypress, onKeypress', onKeyup, onKeyup', onMousedown, onMousedown', onMouseenter, onMouseenter', onMouseleave, onMouseleave', onMousemove, onMousemove', onMouseout, onMouseout', onLoad, onLoad', onUnload, onUnload', onMouseover, onMouseover', onMouseup, onMouseup', onReset, onReset', onScroll, onScroll', onSelect, onSelect', onSubmit, onSubmit', onWheel, onWheel') where
+module Flame.Native.Event where
 
 import Prelude
 
@@ -10,6 +10,7 @@ import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as FU
 import Flame.Types (NodeData, Key)
 import Web.Event.Event (Event)
+import Unsafe.Coerce as UC
 
 type EventName = String
 
@@ -22,16 +23,12 @@ type ToMaybeEvent message = (Event → Maybe message) → NodeData message
 type ToSpecialEvent message t = (t → message) → NodeData message
 
 --this way we dont need to worry about every possible element type
-foreign import nodeValue_ ∷ EffectFn1 Event String
 foreign import checkedValue_ ∷ EffectFn1 Event Boolean
 foreign import preventDefault_ ∷ EffectFn1 Event Unit
 foreign import key_ ∷ EffectFn1 Event Key
 foreign import selection_ ∷ EffectFn1 Event String
 foreign import createEvent_ ∷ ∀ message. EventName → message → (NodeData message)
 foreign import createRawEvent_ ∷ ∀ message. EventName → (Event → Effect (Maybe message)) → (NodeData message)
-
-nodeValue ∷ Event → Effect String
-nodeValue = FU.runEffectFn1 nodeValue_
 
 checkedValue ∷ Event → Effect Boolean
 checkedValue = FU.runEffectFn1 checkedValue_
@@ -89,12 +86,9 @@ onChange' = createEventMessage "change"
 
 -- | This event fires when the value of an input, select, textarea, contenteditable or designMode on elements changes
 onInput ∷ ∀ message. ToSpecialEvent message String
-onInput constructor = createRawEvent "input" handler
+onInput constructor = createEventMessage "onChangeText" handler
       where
-      handler event = Just <<< constructor <$> nodeValue event
-
-onInput' ∷ ∀ message. ToRawEvent message
-onInput' = createEventMessage "input"
+      handler = constructor <<< UC.unsafeCoerce
 
 -- | Helper for `input` event of checkboxes and radios
 onCheck ∷ ∀ message. ToSpecialEvent message Boolean
@@ -146,29 +140,8 @@ onReset = createEvent "reset"
 onReset' ∷ ∀ message. ToRawEvent message
 onReset' = createEventMessage "reset"
 
-onKeydown ∷ ∀ message. ToSpecialEvent message (Tuple Key String)
-onKeydown constructor = createRawEvent "keydown" (keyInput constructor)
-
-onKeydown' ∷ ∀ message. ToRawEvent message
-onKeydown' = createEventMessage "keydown"
-
-onKeypress ∷ ∀ message. ToSpecialEvent message (Tuple Key String)
-onKeypress constructor = createRawEvent "keypress" (keyInput constructor)
-
-onKeypress' ∷ ∀ message. ToRawEvent message
-onKeypress' = createEventMessage "keypress"
-
-onKeyup ∷ ∀ message. ToSpecialEvent message (Tuple Key String)
-onKeyup constructor = createRawEvent "keyup" (keyInput constructor)
-
 onKeyup' ∷ ∀ message. ToRawEvent message
 onKeyup' = createEventMessage "keyup"
-
-keyInput ∷ ∀ message. (Tuple Key String → message) → Event → Effect (Maybe message)
-keyInput constructor event = do
-      down ← key event
-      value ← nodeValue event
-      pure <<< Just <<< constructor $ Tuple down value
 
 onContextmenu ∷ ∀ message. ToEvent message
 onContextmenu = createEvent "contextmenu"

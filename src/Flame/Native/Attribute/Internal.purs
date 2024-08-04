@@ -53,17 +53,11 @@ else instance DF.Foldable f ⇒ ToStyleList (f (Tuple String String)) where
       toStyleList = FO.fromFoldable
 
 -- | Sets a react native property
-foreign import createProperty ∷ ∀ message. String → String → NodeData message
+foreign import createProperty ∷ ∀ message v. String → v → NodeData message
 
 foreign import createClass ∷ ∀ message. Array String → NodeData message
 
 foreign import createStyle ∷ ∀ message. Object String → NodeData message
-
-booleanToFalsyString ∷ Boolean → String
-booleanToFalsyString =
-      case _ of
-            true → "true"
-            false → ""
 
 class' ∷ ∀ a b. ToClassList b ⇒ b → NodeData a
 class' = createClass <<< map caseify <<< to
@@ -139,11 +133,13 @@ autocomplete ∷ ToStringAttribute
 autocomplete = createProperty "autocomplete"
 
 checked ∷ ToBooleanAttribute
-checked = createProperty "checked" <<< booleanToFalsyString
-
+checked = createProperty "checked"
 
 disabled ∷ ToBooleanAttribute
-disabled = createProperty "disabled" <<< booleanToFalsyString
+disabled = createProperty "disabled"
 
 selected ∷ ToBooleanAttribute
-selected = createProperty "selected" <<< booleanToFalsyString
+selected = createProperty "selected"
+
+keyboardType :: ToStringAttribute
+keyboardType = createProperty "keyboardType"
