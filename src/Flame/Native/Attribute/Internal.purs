@@ -90,9 +90,6 @@ caseify name'
 id ∷ ToStringAttribute
 id = createProperty "id"
 
-innerHtml ∷ ToStringAttribute
-innerHtml = createProperty "innerHTML"
-
 alt ∷ ToStringAttribute
 alt = createProperty "alt"
 

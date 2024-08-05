@@ -54,6 +54,10 @@ foreign import createBNode :: forall message. Array (NodeData message) -> Array 
 
 foreign import createLabelNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
 
+foreign import createTableNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+
+foreign import createTrNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+
 -- | Creates a text node
 foreign import text ∷ ∀ message. String → Html message
 
@@ -116,6 +120,33 @@ div' nodeData = createViewNode (toNode nodeData) []
 
 img ∷ ∀ a h. ToHtml' a h
 img nodeData = createImageNode (toNode nodeData)
+
+table :: forall a b h. ToHtml a b h
+table nodeData children = createTableNode (toNode nodeData) $ toNode children
+
+table_ :: forall  b h. ToHtml_ b h
+table_ children = createTableNode [] $ toNode children
+
+table' :: forall a h. ToHtml' a h
+table' nodeData = createTableNode (toNode nodeData) []
+
+tr :: forall a b h. ToHtml a b h
+tr nodeData children = createTrNode (toNode nodeData) $ toNode children
+
+tr_ :: forall  b h. ToHtml_ b h
+tr_ children = createTrNode [] $ toNode children
+
+tr' :: forall a h. ToHtml' a h
+tr' nodeData = createTrNode (toNode nodeData) []
+
+td :: forall a b h. ToHtml a b h
+td nodeData children = createViewNode (toNode nodeData) $ toNode children
+
+td_ :: forall  b h. ToHtml_ b h
+td_ children = createViewNode [] $ toNode children
+
+td' :: forall a h. ToHtml' a h
+td' nodeData = createViewNode (toNode nodeData) []
 
 -- h1 ∷ ∀ a b h. ToHtml a b h
 -- h1 = createElement "h1"

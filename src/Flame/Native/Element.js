@@ -1,17 +1,28 @@
-import React, {createElement } from 'react';
+import  {createElement } from 'react';
 import { View, Text, Button, TextInput, StyleSheet, Image } from 'react-native';
 
-let textNode = 1,
-    elementNode = 2,
-    svgNode = 3,
-    lazyNode = 5,
-    managedNode = 6;
 let styleData = 1,
     classData = 2,
     propertyData = 3,
     attributeData = 4,
     keyData = 7;
 
+let initialStyles = StyleSheet.create({
+    hr: {
+        borderBottomColor: 'black',
+        borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    table : {
+        flexDirection: 'column'
+    },
+    tr : {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    b: {
+        fontWeight: 'bold'
+   }
+});
 
 export function createViewNode(nodeData) {
     return function (children) {
@@ -24,26 +35,50 @@ export function createViewNode(nodeData) {
 export function createButtonNode(nodeData) {
     return function(children) {
         let props = fromNodeData(nodeData)
+        props.title = children[0] ;
 
-        return createElement(Button, { title: children[0], ...props });
+        return createElement(Button, props);
     }
 }
-
-let initialHrStyle = {
-    borderBottomColor: 'black',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-};
 
 export function createHrNode(nodeData) {
     let props = fromNodeData(nodeData);
 
     if (props.style === undefined)
-        props.style = { ...initialHrStyle};
+        props.style = [initialStyles.hr];
     else {
-        props.style = { ...initialHrStyle, ...props.style };
+        props.style = [initialStyles.hr, props.style];
     }
 
     return createViewNode(nodeData)(undefined);
+}
+
+export function createTableNode(nodeData) {
+    return function(children) {
+        let props = fromNodeData(nodeData);
+
+        if (props.style === undefined)
+            props.style = [initialStyles.table];
+        else {
+            props.style = [initialStyles.table, props.style];
+        }
+
+        return createElement(View, props, ...children);
+    }
+}
+
+export function createTrNode(nodeData) {
+    return function(children) {
+        let props = fromNodeData(nodeData);
+
+        if (props.style === undefined)
+            props.style = [initialStyles.tr];
+        else {
+            props.style = [initialStyles.tr, props.style];
+        }
+
+        return createElement(View, props, ...children);
+    }
 }
 
 export function createLabelNode(nodeData) {
@@ -95,18 +130,14 @@ export function createANode(nodeData) {
     }
 }
 
-let initialBStyle = {
-     fontWeight: 'bold'
-};
-
 export function createBNode(nodeData) {
     return function(children) {
         let props = fromNodeData(nodeData);
 
         if (props.style === undefined)
-            props.style = { ...initialBStyle};
+            props.style = [initialStyles.b];
         else {
-            props.style = { ...initialBStyle, ...props.style };
+            props.style = [initialStyles.b, props.style];
         }
 
         let propedChildren = [];
@@ -133,11 +164,9 @@ export function text(value) {
 }
 
 function fromNodeData(allData) {
-    let nodeData;
+    let nodeData = {};
 
-    if (allData !== undefined) {
-        nodeData = {};
-
+    if (allData !== undefined)
         for (let data of allData) {
             let dataOne = data[1];
             //[0] also always contain the data type
@@ -162,7 +191,6 @@ function fromNodeData(allData) {
                     nodeData[dataOne] = data[2];
             }
         }
-    }
 
     return nodeData;
 }
