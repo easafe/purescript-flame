@@ -7,6 +7,7 @@ import Data.Foldable as DF
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
+import Data.String.Regex (Regex)
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (global)
 import Data.Tuple (Tuple(..))
@@ -68,7 +69,7 @@ booleanToFalsyString =
             false → ""
 
 class' ∷ ∀ a b. ToClassList b ⇒ b → NodeData a
-class' = createClass <<< map caseify <<< to
+class' = createClass <<< to
 
 -- | Sets the node style
 -- |
@@ -87,13 +88,15 @@ caseify name'
               where
               { head, tail } = PU.unsafePartial (DM.fromJust $ DS.uncons name')
 
-              regex = PU.unsafePartial case DSR.regex "[A-Z]" global of
-                    DE.Right rgx → rgx
-                    DE.Left err → P.crashWith $ show err
-
-              replacer = const <<< ("-" <> _) <<< DS.toLower
-
               hyphenated = DSR.replace' regex replacer tail
+
+regex ∷ Regex
+regex = PU.unsafePartial case DSR.regex "[A-Z]" global of
+      DE.Right rgx → rgx
+      DE.Left err → P.crashWith $ show err
+
+replacer ∷ ∀ r. String → r → String
+replacer = const <<< ("-" <> _) <<< DS.toLower
 
 -- | Set the key attribute for "keyed" rendering
 key ∷ ToStringAttribute

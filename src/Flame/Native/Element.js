@@ -3,8 +3,6 @@ import { View, Text, Button, TextInput, StyleSheet, Image } from 'react-native';
 
 let styleData = 1,
     classData = 2,
-    propertyData = 3,
-    attributeData = 4,
     keyData = 7;
 
 let initialStyles = StyleSheet.create({
@@ -171,14 +169,10 @@ function fromNodeData(allData) {
             let dataOne = data[1];
             //[0] also always contain the data type
             switch (data[0]) {
-    //             case styleData:
-    //                 if (nodeData.styles === undefined)
-    //                     nodeData.styles = {};
-
-    //                 for (let key in dataOne)
-    //                     nodeData.styles[key] = dataOne[key];
-    //                 break;
-    //             case classData:
+                case styleData:
+                    nodeData.style = dataOne;
+                    break;
+    //            case classData:
     //                 if (nodeData.classes === undefined)
     //                     nodeData.classes = [];
 

@@ -36,56 +36,21 @@ instance ToClassList String where
 instance Homogeneous r Boolean ⇒ ToClassList { | r } where
       to = FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
 
--- | Enables either tuples, arrays or records be used as an argument to `style`
-class ToStyleList a where
-      toStyleList ∷ a → Object String
-
-instance ToStyleList (Tuple String String) where
-      toStyleList (Tuple a b) = FO.singleton a b
-else instance Homogeneous r String ⇒ ToStyleList { | r } where
-      toStyleList = FO.fromFoldable <<< map go <<< toArray
-            where
-            go (Tuple name' value') = Tuple (caseify name') value'
-
-            toArray ∷ _ → Array (Tuple String String)
-            toArray = FO.toUnfoldable <<< FO.fromHomogeneous
-else instance DF.Foldable f ⇒ ToStyleList (f (Tuple String String)) where
-      toStyleList = FO.fromFoldable
-
 -- | Sets a react native property
 foreign import createProperty ∷ ∀ message v. String → v → NodeData message
 
 foreign import createClass ∷ ∀ message. Array String → NodeData message
 
-foreign import createStyle ∷ ∀ message. Object String → NodeData message
-
-class' ∷ ∀ a b. ToClassList b ⇒ b → NodeData a
-class' = createClass <<< map caseify <<< to
-
--- | Sets the node style
+-- | Sets the element style
 -- |
 -- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
-style ∷ ∀ a r. ToStyleList r ⇒ r → NodeData a
-style record = createStyle $ toStyleList record
+foreign import createStyle ∷ ∀ r message. r -> NodeData message
 
-style1 ∷ ∀ a. String → String → NodeData a
-style1 a b = createStyle $ FO.singleton a b
+style :: ∀ r message. Homogeneous r String => { | r } -> NodeData message
+style = createStyle
 
--- | Transforms its input into a proper html attribute/tag name, i.e. lower case and hyphenated
-caseify ∷ String → String
-caseify name'
-      | name' == DS.toUpper name' = DS.toLower name'
-      | otherwise = DS.toLower (DS.singleton head) <> hyphenated
-              where
-              { head, tail } = PU.unsafePartial (DM.fromJust $ DS.uncons name')
-
-              regex = PU.unsafePartial case DSR.regex "[A-Z]" global of
-                    DE.Right rgx → rgx
-                    DE.Left err → P.crashWith $ show err
-
-              replacer = const <<< ("-" <> _) <<< DS.toLower
-
-              hyphenated = DSR.replace' regex replacer tail
+class' ∷ ∀ a b. ToClassList b ⇒ b → NodeData a
+class' = createClass <<< to
 
 id ∷ ToStringAttribute
 id = createProperty "id"
@@ -138,5 +103,5 @@ disabled = createProperty "disabled"
 selected ∷ ToBooleanAttribute
 selected = createProperty "selected"
 
-keyboardType :: ToStringAttribute
+keyboardType ∷ ToStringAttribute
 keyboardType = createProperty "keyboardType"

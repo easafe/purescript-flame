@@ -38,114 +38,114 @@ type ToHtml' a h = ToNode a h NodeData ⇒ a → Html h
 
 foreign import createViewNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
-foreign import createButtonNode ∷ ∀ message. Array (NodeData message) → Array (Html message) -> Html message
+foreign import createButtonNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
-foreign import createBrNode :: forall message. Array (NodeData message) -> Html message
+foreign import createBrNode ∷ ∀ message. Array (NodeData message) → Html message
 
-foreign import createImageNode :: forall message. Array (NodeData message) -> Html message
+foreign import createImageNode ∷ ∀ message. Array (NodeData message) → Html message
 
-foreign import createHrNode :: forall message. Array (NodeData message) -> Html message
+foreign import createHrNode ∷ ∀ message. Array (NodeData message) → Html message
 
-foreign import createANode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createANode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
-foreign import createInputNode :: forall message. Array (NodeData message) -> Html message
+foreign import createInputNode ∷ ∀ message. Array (NodeData message) → Html message
 
-foreign import createBNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createBNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
-foreign import createLabelNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createLabelNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
-foreign import createTableNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createTableNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
-foreign import createTrNode :: forall message. Array (NodeData message) -> Array (Html message) -> Html message
+foreign import createTrNode ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 
 -- | Creates a text node
 foreign import text ∷ ∀ message. String → Html message
 
-hr' :: forall a h. ToHtml' a h
+hr' ∷ ∀ a h. ToHtml' a h
 hr' nodeData = createHrNode (toNode nodeData)
 
-br :: forall message. Html message
+br ∷ ∀ message. Html message
 br = createBrNode []
 
-br' :: forall a h. ToHtml' a h
+br' ∷ ∀ a h. ToHtml' a h
 br' nodeData = createBrNode (toNode nodeData)
 
-input :: forall a h. ToHtml' a h
+input ∷ ∀ a h. ToHtml' a h
 input nodeData = createInputNode (toNode nodeData)
 
-a :: forall a b h. ToHtml a b h
+a ∷ ∀ a b h. ToHtml a b h
 a nodeData children = createANode (toNode nodeData) $ toNode children
 
-a_ :: forall b h. ToHtml_ b h
+a_ ∷ ∀ b h. ToHtml_ b h
 a_ children = createANode [] $ toNode children
 
-a' :: forall a h. ToHtml' a h
+a' ∷ ∀ a h. ToHtml' a h
 a' nodeData = createANode (toNode nodeData) []
 
-b :: forall a b h. ToHtml a b h
+b ∷ ∀ a b h. ToHtml a b h
 b nodeData children = createBNode (toNode nodeData) $ toNode children
 
-b_ :: forall b h. ToHtml_ b h
+b_ ∷ ∀ b h. ToHtml_ b h
 b_ children = createBNode [] $ toNode children
 
-b' :: forall a h. ToHtml' a h
+b' ∷ ∀ a h. ToHtml' a h
 b' nodeData = createBNode (toNode nodeData) []
 
-body :: forall a b h. ToHtml a b h
+body ∷ ∀ a b h. ToHtml a b h
 body nodeData children = createViewNode (toNode nodeData) $ toNode children
 
-body_ :: forall b h. ToHtml_ b h
+body_ ∷ ∀ b h. ToHtml_ b h
 body_ children = createViewNode [] $ toNode children
 
-body' :: forall a h. ToHtml' a h
+body' ∷ ∀ a h. ToHtml' a h
 body' nodeData = createViewNode (toNode nodeData) []
 
-button :: forall a b h. ToHtml a b h
-button nodeData children = createButtonNode (toNode nodeData ) $ toNode children
+button ∷ ∀ a b h. ToHtml a b h
+button nodeData children = createButtonNode (toNode nodeData) $ toNode children
 
-button_ :: forall b h. ToHtml_ b h
+button_ ∷ ∀ b h. ToHtml_ b h
 button_ children = createButtonNode [] $ toNode children
 
-button' :: forall a h. ToHtml' a h
+button' ∷ ∀ a h. ToHtml' a h
 button' nodeData = createButtonNode (toNode nodeData) []
 
-div :: forall a b h. ToHtml a b h
+div ∷ ∀ a b h. ToHtml a b h
 div nodeData children = createViewNode (toNode nodeData) $ toNode children
 
-div_ :: forall  b h. ToHtml_ b h
+div_ ∷ ∀ b h. ToHtml_ b h
 div_ children = createViewNode [] $ toNode children
 
-div' :: forall a h. ToHtml' a h
+div' ∷ ∀ a h. ToHtml' a h
 div' nodeData = createViewNode (toNode nodeData) []
 
 img ∷ ∀ a h. ToHtml' a h
 img nodeData = createImageNode (toNode nodeData)
 
-table :: forall a b h. ToHtml a b h
+table ∷ ∀ a b h. ToHtml a b h
 table nodeData children = createTableNode (toNode nodeData) $ toNode children
 
-table_ :: forall  b h. ToHtml_ b h
+table_ ∷ ∀ b h. ToHtml_ b h
 table_ children = createTableNode [] $ toNode children
 
-table' :: forall a h. ToHtml' a h
+table' ∷ ∀ a h. ToHtml' a h
 table' nodeData = createTableNode (toNode nodeData) []
 
-tr :: forall a b h. ToHtml a b h
+tr ∷ ∀ a b h. ToHtml a b h
 tr nodeData children = createTrNode (toNode nodeData) $ toNode children
 
-tr_ :: forall  b h. ToHtml_ b h
+tr_ ∷ ∀ b h. ToHtml_ b h
 tr_ children = createTrNode [] $ toNode children
 
-tr' :: forall a h. ToHtml' a h
+tr' ∷ ∀ a h. ToHtml' a h
 tr' nodeData = createTrNode (toNode nodeData) []
 
-td :: forall a b h. ToHtml a b h
+td ∷ ∀ a b h. ToHtml a b h
 td nodeData children = createViewNode (toNode nodeData) $ toNode children
 
-td_ :: forall  b h. ToHtml_ b h
+td_ ∷ ∀ b h. ToHtml_ b h
 td_ children = createViewNode [] $ toNode children
 
-td' :: forall a h. ToHtml' a h
+td' ∷ ∀ a h. ToHtml' a h
 td' nodeData = createViewNode (toNode nodeData) []
 
 -- h1 ∷ ∀ a b h. ToHtml a b h
@@ -229,7 +229,6 @@ td' nodeData = createViewNode (toNode nodeData) []
 -- i' ∷ ∀ a h. ToHtml' a h
 -- i' = createElement' "i"
 
-
 label ∷ ∀ a b h. ToHtml a b h
 label nodeData children = createLabelNode (toNode nodeData) $ toNode children
 
@@ -304,7 +303,6 @@ label' nodeData = createLabelNode (toNode nodeData) []
 
 -- strong' ∷ ∀ a h. ToHtml' a h
 -- strong' = createElement' "strong"
-
 
 -- table ∷ ∀ a b h. ToHtml a b h
 -- table = createElement "table"

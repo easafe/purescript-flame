@@ -40,7 +40,7 @@ noMessages ∷ ∀ model message. model → Tuple model (Array (Aff (Maybe messa
 noMessages model = model :> []
 
 -- | Mount a Flame application that can be fed arbitrary external messages
-mount ∷ ∀ model message.  String → Application model message → Effect Unit
+mount ∷ ∀ model message. String → Application model message → Effect Unit
 mount name application = run name application
 
 run ∷ ∀ model message. String → Application model message → Effect Unit
