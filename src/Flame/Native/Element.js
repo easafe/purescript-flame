@@ -1,5 +1,5 @@
 import  {createElement } from 'react';
-import { View, Text, Button, TextInput, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image } from 'react-native';
 
 let styleData = 1,
     classData = 2,
@@ -24,23 +24,37 @@ let initialStyles = StyleSheet.create({
 
 export function createViewNode(nodeData) {
     return function (children) {
-        let props = fromNodeData(nodeData)
+        let props = toProps(nodeData)
 
         return createElement(View, props, ...children);
     };
 }
 
+let noop = () => {};
+
 export function createButtonNode(nodeData) {
     return function(children) {
-        let props = fromNodeData(nodeData)
-        props.title = children[0] ;
+        let props = toProps(nodeData),
+            title = children[0]
+            onPress = noop,
+            disabled = false;
 
-        return createElement(Button, props);
+        if (props.disabled) {
+            disabled = true;
+            delete props.disabled;
+        }
+
+        if (props.onPress) {
+            onPress = props.onPress;
+            delete props.onPress;
+        }
+
+        return createElement(TouchableOpacity, { onPress, disabled }, createElement(View, props, createElement(Text, props, title.toUpperCase())));
     }
 }
 
 export function createHrNode(nodeData) {
-    let props = fromNodeData(nodeData);
+    let props = toProps(nodeData);
 
     if (props.style === undefined)
         props.style = [initialStyles.hr];
@@ -48,12 +62,12 @@ export function createHrNode(nodeData) {
         props.style = [initialStyles.hr, props.style];
     }
 
-    return createViewNode(nodeData)(undefined);
+    return createElement(View, props, undefined);
 }
 
 export function createTableNode(nodeData) {
     return function(children) {
-        let props = fromNodeData(nodeData);
+        let props = toProps(nodeData);
 
         if (props.style === undefined)
             props.style = [initialStyles.table];
@@ -67,7 +81,7 @@ export function createTableNode(nodeData) {
 
 export function createTrNode(nodeData) {
     return function(children) {
-        let props = fromNodeData(nodeData);
+        let props = toProps(nodeData);
 
         if (props.style === undefined)
             props.style = [initialStyles.tr];
@@ -81,14 +95,11 @@ export function createTrNode(nodeData) {
 
 export function createLabelNode(nodeData) {
     return function(children) {
-        let props = fromNodeData(nodeData),
+        let props = toProps(nodeData),
             propedChildren = [];
 
         for (let c of children) {
-            let txt = text(c);
-            txt.props = props;
-
-            propedChildren.push(txt);
+            propedChildren.push(createElement(Text, props, c));
         }
 
         return createViewNode(undefined)(propedChildren);
@@ -96,17 +107,14 @@ export function createLabelNode(nodeData) {
 }
 
 export function createBrNode(nodeData) {
-    let txt = text('\n');
-    txt.props = fromNodeData(nodeData);
-
-    return txt;
+    return createElement(Text, toProps(nodeData), '\n');
 }
 
 export function createInputNode(nodeData) {
-    let props = fromNodeData(nodeData);
+    let props = toProps(nodeData);
 
     if (props.type === 'button' || props.type === 'submit') {
-        return createElement(Button, { title: props.value || "", ...props })
+        return createButtonNode(nodeData)([props.value || ""]);
     }
 
     return createElement(TextInput, props);
@@ -114,23 +122,20 @@ export function createInputNode(nodeData) {
 
 export function createANode(nodeData) {
     return function(children) {
-        let props = fromNodeData(nodeData),
+        let props = toProps(nodeData),
             propedChildren = [];
 
         for (let c of children) {
-            let txt = text(c);
-            txt.props = props;
-
-            propedChildren.push(txt);
+            propedChildren.push(createElement(Text, props, c));
         }
 
-        return createViewNode(undefined)(propedChildren);
+        return createElement(View, undefined, ...propedChildren);
     }
 }
 
 export function createBNode(nodeData) {
     return function(children) {
-        let props = fromNodeData(nodeData);
+        let props = toProps(nodeData);
 
         if (props.style === undefined)
             props.style = [initialStyles.b];
@@ -141,18 +146,15 @@ export function createBNode(nodeData) {
         let propedChildren = [];
 
         for (let c of children) {
-            let txt = text(c);
-            txt.props = props;
-
-            propedChildren.push(txt);
+            propedChildren.push(createElement(Text, props, c));
         }
 
-        return createViewNode(undefined)(propedChildren);
+        return createElement(View, undefined, ...propedChildren);
     }
 }
 
 export function createImageNode(nodeData) {
-    let props = fromNodeData(nodeData);
+    let props = toProps(nodeData);
 
     return createElement(Image, props);
 }
@@ -161,7 +163,7 @@ export function text(value) {
     return createElement(Text, undefined, value);
 }
 
-function fromNodeData(allData) {
+function toProps(allData) {
     let nodeData = {};
 
     if (allData !== undefined)

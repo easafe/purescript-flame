@@ -41,12 +41,10 @@ foreign import createProperty ∷ ∀ message v. String → v → NodeData messa
 
 foreign import createClass ∷ ∀ message. Array String → NodeData message
 
--- | Sets the element style
--- |
--- | https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style
 foreign import createStyle ∷ ∀ r message. r -> NodeData message
 
-style :: ∀ r message. Homogeneous r String => { | r } -> NodeData message
+-- | Sets the element style
+style :: ∀ r message. { | r } -> NodeData message
 style = createStyle
 
 class' ∷ ∀ a b. ToClassList b ⇒ b → NodeData a
