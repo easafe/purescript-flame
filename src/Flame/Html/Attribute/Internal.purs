@@ -15,7 +15,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Partial as P
 import Partial.Unsafe as PU
-import Prelude (const, flip, map, not, otherwise, show, ($), (<<<), (<>), (==))
+import Prelude (const, flip, identity, map, not, otherwise, show, ($), (<<<), (<>), (==))
 import Type.Row.Homogeneous (class Homogeneous)
 
 type ToStringAttribute = ToNodeData String
@@ -32,6 +32,9 @@ class ToClassList a where
 
 instance ToClassList String where
       to = DA.filter (not <<< DS.null) <<< DS.split (Pattern " ")
+
+instance ToClassList (Array String) where
+      to = identity
 
 instance Homogeneous r Boolean ⇒ ToClassList { | r } where
       to = FO.keys <<< FO.filterWithKey (flip const) <<< FO.fromHomogeneous
