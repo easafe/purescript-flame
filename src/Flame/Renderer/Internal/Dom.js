@@ -8,7 +8,7 @@ let textNode = 1,
     lazyNode = 5,
     managedNode = 6;
 //these events cannot be synthetic
-let nonBubblingEvents = ["focus", "blur", "scroll", "load", "unload"];
+let nonBubblingEvents = ["focus", "blur", "scroll", "scrollend", "load", "unload"];
 
 export function start_(eventWrapper, root, updater, html) {
     return new F(eventWrapper, root, updater, html, false);
