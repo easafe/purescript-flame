@@ -12,7 +12,7 @@ todo
 dce-output
 
 npm-debug.log
-
+examples/App/
 .sass-cache/
 _site/
 
