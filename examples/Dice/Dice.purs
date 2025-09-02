@@ -3,15 +3,17 @@ module Examples.EffectList.Dice.Main where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame (QuerySelector(..), Html, (:>))
+import Flame (Html)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Data.Tuple (Tuple)
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model = Maybe Int
 
@@ -22,10 +24,10 @@ data Message = Roll | Update Int
 
 update ∷ Model → Message → Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      Roll → model :>
+      Roll → model /\
             [ Just <<< Update <$> liftEffect (ER.randomInt 1 6)
             ]
-      Update int → Just int :> []
+      Update int → Just int /\ []
 
 view ∷ Model → Html Message
 view model = HE.main "main"
@@ -35,7 +37,7 @@ view model = HE.main "main"
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "body")
-      { init: init :> []
+      { model: init
       , subscribe: []
       , update
       , view

@@ -2,15 +2,17 @@ module Examples.EffectList.Affjax.Main where
 
 import Prelude
 
-import Affjax.Web as A
 import Affjax.ResponseFormat as AR
+import Affjax.Web as A
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Flame (QuerySelector(..), Html, (:>), ListUpdate)
+import Flame (Html, Update)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model =
       { url ∷ String
@@ -29,11 +31,11 @@ init =
       , result: NotFetched
       }
 
-update ∷ ListUpdate Model Message
+update ∷ Update Model Message
 update model =
       case _ of
             UpdateUrl url → F.noMessages $ model { url = url, result = NotFetched }
-            Fetch → model { result = Fetching } :>
+            Fetch → model { result = Fetching } /\
                   [ do
                           response ← A.get AR.string model.url
                           pure <<< Just <<< Fetched $ case response of
@@ -59,7 +61,7 @@ view { url, result } = HE.main "main"
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "body")
-      { init: F.noMessages init
+      { model:  init
       , subscribe: []
       , update
       , view

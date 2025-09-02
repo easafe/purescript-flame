@@ -4,16 +4,18 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Effect.Timer as ET
-import Flame (AppId(..), Html, QuerySelector(..), Subscription, (:>))
+import Flame (AppId(..), Html, Subscription)
 import Flame as F
 import Flame.Html.Element as HE
 import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model =
       { roll ∷ Maybe Int
@@ -33,12 +35,12 @@ data Message
 
 update ∷ Model → Message → Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      IntervalRoll → model :> next "interval"
-      ClickRoll → model :> next "click"
+      IntervalRoll → model /\ next "interval"
+      ClickRoll → model /\ next "click"
       Update from int →
             { roll: Just int
             , from
-            } :> []
+            } /\ []
       where
       next from = [ Just <<< Update from <$> liftEffect (ER.randomInt 1 6) ]
 
@@ -56,7 +58,7 @@ main ∷ Effect Unit
 main = do
       let id = AppId "dice-rolling"
       F.mount (QuerySelector "body") id
-            { init: init :> []
+            { model: init
             , subscribe
             , update
             , view

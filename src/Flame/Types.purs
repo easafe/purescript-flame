@@ -1,8 +1,6 @@
 -- | Types common to Flame modules
 module Flame.Types
       ( PreApplication
-      , App
-      , (:>)
       , ToNodeData
       , Tag
       , Key
@@ -18,16 +16,15 @@ module Flame.Types
       ) where
 
 import Data.Maybe (Maybe)
-import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (Tuple3)
 import Foreign (Foreign)
 import Prelude (class Functor, class Show, map)
 
 -- | `PreApplication` contains
--- | * `init` – the initial model
+-- | * `model` – the initial model
 -- | * `view` – a function to update your markup
 type PreApplication model message =
-      { init ∷ model
+      { model ∷ model
       , view ∷ model → Html message
       }
 
@@ -42,16 +39,6 @@ data Source = Window | Document | Custom
 
 -- | Subscriptions are events from outside the view, e.g. `window`, `document` or `CustomEvent`
 type Subscription message = Tuple3 Source EventName (Foreign → message)
-
--- | Abstracts over common fields of an `Application`
-type App model message extension =
-      { view ∷ model → Html message
-      , subscribe ∷ Array (Subscription message)
-      | extension
-      }
-
--- | Infix tuple constructor
-infixr 6 Tuple as :>
 
 type ToNodeData value = ∀ message. value → NodeData message
 

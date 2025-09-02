@@ -66,10 +66,10 @@ data Message = Roll | Update Int
 
 update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      Roll -> model :> [
+      Roll -> model /\ [
             Just <<< Update <$> liftEffect (ER.randomInt 1 6)
       ]
-      Update int -> Just int :> []
+      Update int -> Just int /\ []
 
 view :: Model -> Html Message
 view model = HE.main "main" [
@@ -78,7 +78,7 @@ view model = HE.main "main" [
 ]
 ```
 
-Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operator `:>`) of the model and effect list is returned. Performing the effect in the list raises the `Update` message, which carries the generated random number that will be the new model.
+Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operator `/\`) of the model and effect list is returned. Performing the effect in the list raises the `Update` message, which carries the generated random number that will be the new model.
 
 Likewise, we could define a loading screen to appear before AJAX requests
 
@@ -103,16 +103,16 @@ useResponse = ...
 useDifferentResponse :: Model -> String -> Aff Model
 useDifferentResponse = ...
 
-update :: ListUpdate Model Message -- type synonym to reduce clutter
+update :: Update Model Message -- type synonym to reduce clutter
 update model = case _ of
-      Loading -> model { isLoading = true } :> [
+      Loading -> model { isLoading = true } /\ [
             Just <<< Response <$> performAJAX "url",
             Just <<< DifferentResponse <$> performAJAX "url2",
             Just <<< Response <$> performAJAX "url3",
             Just <<< DifferentResponse <$> performAJAX "url4",
             pure <<< Just $ Finish "Performed all"
       ]
-      Response contents -> F.noMessages $ useResponse model contents -- noMessages is the same as _ :> []
+      Response contents -> F.noMessages $ useResponse model contents -- noMessages is the same as _ /\ []
       Finish contents -> F.noMessages $ model { isLoading = false, response = model.response <> contents }
 
 view :: Model -> Html Message
@@ -131,7 +131,7 @@ Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Mayb
 
 ```haskell
 init :: Tuple Model (Array (Aff (Maybe Message)))
-init = model :> [
+init = model /\ [
       Just <<< Response <$> performAJAX "url",
       Just <<< DifferentResponse <$> performAJAX "url2",
       Just <<< Response <$> performAJAX "url3",
@@ -192,7 +192,7 @@ type Model = {
 
 data Message = Loading
 
-update :: AffUpdate Model Message -- type synonym to reduce clutter
+update :: Update Model Message -- type synonym to reduce clutter
 update { display } = do
             display _ { isLoading = true }
             traverse (\rs -> display  _ { response = rs }) [
@@ -204,7 +204,7 @@ update { display } = do
             pure $ _ { isLoading = false }
 
 init :: Tuple Model (Maybe Message)
-init = model :> Just Loading
+init = model /\ Just Loading
 ```
 
 `display` renders the view with the modified model without leaving the `update` function, which is again a little more straightforward.
@@ -226,14 +226,14 @@ newtype MyModel = MyModel {
 }
 derive instance myModelNewtype :: Newtype MyModel _
 
-update :: AffUpdate MyModel Message
+update :: Update MyModel Message
 update { display, model: MyModel model, message } =
       case message of
-            UpdateUrl url -> FAE.diff { url, result: NotFetched }
+            UpdateUrl url -> F.diff { url, result: NotFetched }
             Fetch -> do
-                  display $ FAE.diff' { result: Fetching }
+                  display $ F.diff' { result: Fetching }
                   response <- A.get AR.string model.url
-                  FAE.diff <<< { result: _ } $ case response.body of
+                  F.diff <<< { result: _ } $ case response.body of
                         Left error -> Error $ A.printResponseFormatError error
                         Right ok -> Ok ok
             ... -> ...

@@ -10,8 +10,8 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame.Application.EffectList (ListUpdate)
-import Flame.Types((:>), Html, NodeData)
+import Flame.Application.EffectList (Update)
+import Flame.Types((/\), Html, NodeData)
 import Web.DOM.ParentNode(QuerySelector(..))
 import Flame.Application.EffectList as F
 import Flame.Html.Attribute as HA
@@ -52,7 +52,7 @@ createRandomNRows n lastID = liftEffect (EU.runEffectFn2 createRandomNRows_ n la
 
 main :: Effect Unit
 main = F.mount_ (QuerySelector "main") {
-    init: model :> [],
+    model: model /\ [],
     view,
     subscribe: [],
     update
@@ -133,15 +133,15 @@ spacer = HE.td' [ HA.class' "col-md-6" ]
 footer :: Html Message
 footer = HE.span' [ HA.class' "preloadicon glyphicon glyphicon-remove", HA.createAttribute "aria-hidden" "true" ]
 
-update :: ListUpdate Model Message
+update :: Update Model Message
 update model =
     case _ of
-        Create amount -> model :> [map (\rows -> Just (DisplayCreated rows)) (createRandomNRows amount model.lastID)]
+        Create amount -> model /\ [map (\rows -> Just (DisplayCreated rows)) (createRandomNRows amount model.lastID)]
         DisplayCreated rows -> F.noMessages (model { lastID = model.lastID + DA.length rows, rows = rows })
 
         AppendOneThousand ->
             let amount = 1000
-            in model :> [map (\rows -> Just (DisplayAppended rows)) (createRandomNRows amount model.lastID)]
+            in model /\ [map (\rows -> Just (DisplayAppended rows)) (createRandomNRows amount model.lastID)]
         DisplayAppended newRows -> F.noMessages (model { lastID = model.lastID + DA.length newRows, rows = model.rows <> newRows})
 
         UpdateEveryTenth -> F.noMessages model { rows = DA.mapWithIndex updateLabel model.rows  }

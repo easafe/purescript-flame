@@ -8,13 +8,15 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Flame (QuerySelector(..), Html, Key, (:>))
+import Flame (Html, Key)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 import Web.HTML as WH
 import Web.HTML.Window as WHW
 import Web.Storage.Storage as WSS
@@ -51,7 +53,7 @@ update model message =
                         Remove index → model { todos = DM.fromMaybe model.todos $ DA.deleteAt index model.todos }
                         message' → saveOnEnter model message'
       in
-            newModel :> [ liftEffect $ serialize newModel ]
+            newModel /\ [ liftEffect $ serialize newModel ]
 
       where
       saveOnEnter updatedModel (Add (Tuple "Enter" todo)) = updatedModel
@@ -89,7 +91,7 @@ view model = HE.main "main"
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "body")
-      { init: init :> []
+      { model: init
       , subscribe: []
       , update
       , view

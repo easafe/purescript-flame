@@ -5,14 +5,16 @@ import Prelude
 import Data.Array ((:))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame (QuerySelector(..), Html, (:>))
+import Flame (Html)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model =
       { current ∷ Maybe Int
@@ -29,14 +31,14 @@ data Message = Roll | Update Int
 
 update ∷ Model → Message → Tuple Model (Array (Aff (Maybe Message)))
 update model@{ history } = case _ of
-      Roll → model :>
+      Roll → model /\
             [ Just <<< Update <$> liftEffect (ER.randomInt 1 6)
             ]
       Update roll →
             model
                   { current = Just roll
                   , history = roll : history
-                  } :> []
+                  } /\ []
 
 view ∷ Model → Html Message
 view model@{ current, history } = HE.fragment
@@ -56,7 +58,7 @@ lazyEntry roll = HE.lazy Nothing toEntry roll -- lazy node will only be recomput
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "body")
-      { init: init :> []
+      { model: init
       , subscribe: []
       , update
       , view

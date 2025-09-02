@@ -1,4 +1,4 @@
-module Test.Basic.EffectList (mount) where
+module Test.Basic.Application (mount) where
 
 import Prelude
 
@@ -7,15 +7,18 @@ import Data.Maybe as DM
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
-import Flame (QuerySelector(..), Html, (:>))
-import Flame.Application.EffectList as FAE
+import Flame (Html)
+import Flame as F
+import Flame.Application as FA
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Partial.Unsafe as UP
+import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Event as WEE
 import Web.UIEvent.KeyboardEvent as WUK
 
@@ -25,11 +28,11 @@ data Message = Current String | Cut | Submit
 
 update ∷ Model → Message → Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      Cut → model :>
+      Cut → model /\
             [ Just <<< Current <$> cut model
             ]
-      Submit → "thanks" :> []
-      Current text → text :> []
+      Submit → "thanks" /\ []
+      Current text → text /\ []
       where
       cut text = do
             amount ← liftEffect <<< ER.randomInt 1 $ DSC.length text
@@ -53,8 +56,8 @@ view model = HE.main_
                   _ → pure Nothing
 
 mount ∷ Effect Unit
-mount = FAE.mount_ (QuerySelector "#mount-point")
-      { init: "" :> []
+mount = F.mount_ (QuerySelector "#mount-point")
+      { model: ""
       , subscribe: []
       , update
       , view
