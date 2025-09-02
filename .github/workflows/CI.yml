@@ -10,13 +10,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '15'
+          node-version: '22'
           cache: 'npm'
 
       - uses: purescript-contrib/setup-purescript@main
 
       - name: Cache PureScript dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         # This cache uses the .dhall files to know when it should reinstall
         # and rebuild packages. It caches both the installed packages from
         # the `.spago` directory and compilation artifacts from the `output`
