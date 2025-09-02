@@ -5,17 +5,18 @@ import Prelude
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame (Html, Update, QuerySelector(..))
+import Flame (Html, Update)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-
-import Flame.Types(NodeData)
+import Flame.Types (NodeData)
+import Web.DOM.ParentNode (QuerySelector(..))
 
 data Message =
     Create Int |
@@ -52,7 +53,7 @@ createRandomNRows n lastID = liftEffect (EU.runEffectFn2 createRandomNRows_ n la
 
 main :: Effect Unit
 main = F.mount_ (QuerySelector "body") {
-    model: model /\ [],
+    model: model,
     subscribe: [],
     view,
     update
