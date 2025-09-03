@@ -17,7 +17,7 @@ type Application model message = {
 }
 ```
 
-is the `update` function. This is where we define our business logic by matching event `message`s and returning an updated model. So far we have been using the `Update` type alias. Let's expand it:
+is the `update` function. So far we have been using the `Update` type alias. Let's expand it:
 
 ```haskell
 type Application model message = {
@@ -28,7 +28,7 @@ type Application model message = {
 }
 ```
 
-Besides the updated model, `update` also returns an array of side effects to perform. Each entry in the array may optionally raise another `message`, which in turn is handled by `update` as well.
+That means that `update` returns an updated model but also an array of side effects to perform. Each entry in the array may optionally raise another `message`, which is in turn handled by `update` as well.
 
 Consider an application to roll dices
 
@@ -54,7 +54,7 @@ view model = HE.main "main" [
 
 `Roll` returns the model as it is. However, generating random numbers is a side effect so we return it on our array. Flame will run this effect and raise `Update`, which then updates the model with the die number.
 
-Likewise, we could define a loading screen to appear before AJAX requests
+Likewise, we could perform some network requests with a loading screen
 
 ```haskell
 type Model = {
@@ -63,13 +63,13 @@ type Model = {
 }
 
 data Message =
-      Loading |
+      Perform |
       Response String |
       DifferentResponse String |
       Finish String
 
-performAJAX :: String -> Aff String
-performAJAX url = ...
+fetch :: String -> Aff String
+fetch url = ...
 
 useResponse :: Model -> String -> Aff Model
 useResponse = ...
@@ -79,20 +79,20 @@ useDifferentResponse = ...
 
 update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      Loading -> model { isLoading = true } /\  requests
+      Perform -> model { isLoading = true } /\ requests
       Response contents -> F.noMessages $ useResponse model contents -- noMessages is the same as _ /\ []
       Finish contents -> F.noMessages model { isLoading = false, response = model.response <> contents }
       where requests = [
-                  Just <<< Response <$> performAJAX "url",
-                  Just <<< DifferentResponse <$> performAJAX "url2",
-                  Just <<< Response <$> performAJAX "url3",
-                  Just <<< DifferentResponse <$> performAJAX "url4",
+                  Just <<< Response <$> fetch "url",
+                  Just <<< DifferentResponse <$> fetch "url2",
+                  Just <<< Response <$> fetch "url3",
+                  Just <<< DifferentResponse <$> fetch "url4",
                   pure <<< Just $ Finish "Performed all"
             ]
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-      HE.button [HA.disabled model.isLoading, HA.onClick Loading] "Perform requests",
+      HE.button [HA.disabled model.isLoading, HA.onClick Perform] "Perform requests",
       if model.isLoading then
             HE.div [HA.class' "overlay"] "Loading..."
        else
@@ -100,7 +100,7 @@ view model = HE.main "main" [
 ]
 ```
 
-Here for `Loading`, we return an array of network calls and a final `Finish` message. The effects are run in order, and once we have a response, their events are raised for `update` as well.
+Here for `Perform`, we return an array of network calls and a final `Finish` message. The effects are run in order, and once we have a response their events are raised for `update` as well.
 
 You may be wondering: why separate model updating and side effects? The reason is that in this way we are "forced" to keep most of our business logic in pure functions, which are easier to reason and test. Effects become interchangeable, decoupled from what we do with their results.
 
@@ -135,7 +135,7 @@ Once a subscription has been defined, the raised `message` will be handled by th
 
 * Arbitrary message passing
 
-Sometimes, we need to talk to an application from external events handlers or other points in the code away from the mount point. Consider an app that uses web sockets, or a singe page application that uses multiple mount points for lazy loading, or just simple initialization events. For these and other use cases, Flame provides a `mount` (no trailing underscore) function that takes an application id, as well a `send` function to raise messages for application ids
+Sometimes, we need to talk to an application from external events handlers or other points in the code away from the mount point. Consider an app that uses web sockets, or a singe page application that uses multiple mount points for lazy loading, or just some initialization events. For these and other use cases, Flame provides a `mount` (no trailing underscore) function that takes an application id, as well a `send` function to raise messages for application ids
 
 ```haskell
 mount :: forall id model message. Show id => QuerySelector -> AppId id message -> Application model message -> Effect Unit
@@ -199,7 +199,7 @@ Flame also provides a way to "broadcast" `CustomEvent`s for all listeners. `Flam
 broadcast :: forall arg. SerializeState arg => EventType -> arg -> Effect Unit
 ```
 
-whose events can be handled with `onCustomEven` on your `subscribe` list. Broadcasting events is considered unsafe, as it is user code responsibility to make sure all listeners expect the same `message` payload.
+whose events can be handled with `onCustomEvent` on your `subscribe` list. Broadcasting events is considered unsafe as it is user code responsibility to make sure all listeners expect the same `message` payload.
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See this [test application](https://github.com/easafe/purescript-flame/tree/master/examples/Subscriptions) for a full example of subscriptions.
 
