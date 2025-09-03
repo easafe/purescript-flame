@@ -10,9 +10,9 @@ With all pieces in place
 
 ```haskell
 type Application model message = {
-      init :: model,
+      model :: model
       view :: model -> Html message,
-      update :: model -> message -> model,
+      update :: Update model message,
       subscribe :: Array (Subscription message)
 }
 ```
@@ -29,7 +29,7 @@ mount_ :: forall model message. QuerySelector -> Application model message -> Ef
 mount :: forall id model message. Show id => QuerySelector -> AppId id message -> Application model message -> Effect Unit
 ```
 
-The first parameter is a CSS selector used as mount point. The application markup is added as children nodes to the mount point, otherwise it is left untouched. Several applications can live in the same `document` provided they are mounted on different selectors.
+The first parameter is a CSS selector used as mount point. The application markup is added as children nodes to the mount point. Several applications can live in the same `document` provided they are mounted on different selectors.
 
 ### Server side rendering
 
@@ -51,7 +51,7 @@ The module `Flame` provides
 
 ```haskell
 type PreApplication model message = {
-      init :: model,
+      model :: model
       view :: model -> Html message
 }
 
@@ -62,18 +62,17 @@ which can used to render server-side the initial state of an application. On cli
 
 ```haskell
 type ResumedApplication model message = {
-      init :: Array (Aff (Maybe message)), -- only the (optional) initial message to be raised
       view :: model -> Html message,
       update :: model -> message -> Tuple model (Array (Aff (Maybe message))), -- update is only available client side
       subscribe :: Array (Subscription message) -- subscriptions are only available client side
 }
 
-resumeMount_ :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect Unit
+resumeMount_ :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect model
 --or
-resumeMount :: forall id model message. UnserializeState model => Show id => QuerySelector -> AppId id message -> ResumedApplication model message -> Effect Unit
+resumeMount :: forall id model message. UnserializeState model => Show id => QuerySelector -> AppId id message -> ResumedApplication model message -> Effect model
 ```
 
-to install event handlers in the pre rendered markup. The `SerializeState`/`UnserializeState` type class automatically parses the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well.
+to install event handlers in the pre rendered markup. The `SerializeState`/`UnserializeState` type class automatically parses the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well. To make initialization logic easier, `resumeMount` returns the initial parsed model.
 
 See the [Dice application](https://github.com/easafe/purescript-flame/tree/master/examples/ServerSideRendering) for an example of how to pre render an application on server-side.
 

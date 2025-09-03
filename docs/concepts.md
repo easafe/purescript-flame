@@ -10,9 +10,9 @@ A Flame application consists of the following record
 
 ```haskell
 type Application model message = {
-      init :: model,
+      model :: model,
       view :: model -> Html message,
-      update :: model -> message -> model,
+      update :: Update model message,
       subscribe :: Array (Subscription message)
 }
 ```
@@ -31,11 +31,11 @@ that is, the state of our application is a single integer. In a real world appli
 With our model type declared, we can define the initial state of the application
 
 ```haskell
-init :: Model
-init = 0
+model :: Model
+model = 0
 ```
 
-The first time the application is rendered, Flame calls the view function with `init`.
+The first time the application is rendered, Flame calls the view function with `model`.
 
 ### Application markup
 
@@ -67,13 +67,13 @@ data Message = Increment | Decrement
 and thus our update function looks like
 
 ```haskell
-update :: Model -> Message -> Model
+update :: Update Model Message
 update model = case _ of
-      Increment -> model + 1
-      Decrement -> model - 1
+      Increment -> model + 1 /\ []
+      Decrement -> model - 1 /\ []
 ```
 
-See [Handling events](events) for an in depth look at update strategies.
+See [Handling events](events) for an in depth look at updates.
 
 ### Subscriptions
 
@@ -84,10 +84,9 @@ In the counter example no external events are handled, so the subscription list 
 ```haskell
 subscribe :: Array (Subscription Message)
 subscribe = []
-}
 ```
 
-See [Handling external events](events#handling-external-events) for an in depth look at subscriptions.
+See [Subscriptions](events#subscriptions) for an in depth look at subscriptions.
 
 ### Rendering
 
@@ -95,8 +94,8 @@ Having all pieces put together, we can either render the application to the DOM,
 
 ```haskell
 main :: Effect Unit
-main = FAN.mount_ (QuerySelector "body") {
-      init,
+main = F.mount_ (QuerySelector "body") {
+      model,
       view,
       update,
       subscribe
