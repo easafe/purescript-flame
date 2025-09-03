@@ -8,13 +8,14 @@ import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Examples.EffectList.ServerSideRendering.Shared (Model(..), Message)
 import Examples.EffectList.ServerSideRendering.Shared as EESS
-import Flame (QuerySelector(..), Html)
+import Flame (Html)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import HTTPure (ResponseM, ServerM, Request)
 import HTTPure as H
 import Node.FS.Aff as FSA
+import Web.DOM.ParentNode (QuerySelector(..))
 
 -- | Boot up the server
 main ∷ ServerM
@@ -34,7 +35,7 @@ serveJavaScript = do
 
 serveHTML ∷ ResponseM
 serveHTML = do
-      stringContents ← liftEffect $ F.preMount (QuerySelector "#main") { init: Model Nothing, view: markup }
+      stringContents ← liftEffect $ F.preMount (QuerySelector "#main") { model: Model Nothing, view: markup }
       H.ok' htmlContentType stringContents
       where
       htmlContentType = H.header "Content-Type" "text/html"

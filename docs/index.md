@@ -33,9 +33,9 @@ module Counter.Main where
 import Prelude
 
 import Effect (Effect)
-import Flame (Html, QuerySelector(..), Subscription)
--- Side effects free updating; see docs for other examples
-import Flame.Application.NoEffects as FAN
+import Web.DOM.ParentNode (QuerySelector(..))
+import Flame (Html, Update, Subscription)
+import Flame as F
 import Flame.Html.Element as HE
 import Flame.Html.Attribute as HA
 
@@ -46,14 +46,14 @@ type Model = Int
 data Message = Increment | Decrement
 
 -- | Initial state of the app
-init :: Model
-init = 0
+model :: Model
+model = 0
 
 -- | `update` is called to handle events
-update :: Model -> Message -> Model
+update :: Update Model Message
 update model = case _ of
-      Increment -> model + 1
-      Decrement -> model - 1
+      Increment -> model + 1 /\ []
+      Decrement -> model - 1 /\ []
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
@@ -69,8 +69,8 @@ subscribe = []
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = FAN.mount_ (QuerySelector "body") {
-      init,
+main = F.mount_ (QuerySelector "body") {
+      model,
       view,
       update,
       subscribe

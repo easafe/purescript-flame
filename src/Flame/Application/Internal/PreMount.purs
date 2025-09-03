@@ -51,7 +51,7 @@ serializedState selector = do
 
 preMount ∷ ∀ model message. SerializeState model ⇒ QuerySelector → PreApplication model message → Effect String
 preMount (QuerySelector selector) application = do
-      let html = injectState state $ application.view application.init
+      let html = injectState state $ application.view application.model
       FRS.render html
       where
       sanitizedSelector = onlyLetters selector
@@ -60,4 +60,4 @@ preMount (QuerySelector selector) application = do
                   [ HA.style { display: "none" }
                   , HA.id $ idSerializedState sanitizedSelector
                   , HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
-                  ] $ FS.serialize application.init
+                  ] $ FS.serialize application.model

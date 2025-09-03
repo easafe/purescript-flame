@@ -10,9 +10,9 @@ In the application record
 
 ```haskell
 type Application model message = {
-      init :: model,
+      model :: model
       view :: model -> Html message,
-      update :: model -> message -> model,
+      update :: Update model message,
       subscribe :: Array (Subscription message)
 }
 ```

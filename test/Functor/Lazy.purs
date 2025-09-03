@@ -1,13 +1,16 @@
 module Test.Functor.Lazy where
 
-import Prelude
+import Data.Maybe
 import Effect
 import Flame
 import Flame.Html.Element
-import Data.Maybe
-import Flame.Html.Element as H
+import Prelude
+
+import Data.Tuple.Nested ((/\))
 import Flame.Html.Attribute as HA
+import Flame.Html.Element as H
 import Flame.Html.Event as E
+import Web.DOM.ParentNode (QuerySelector(..))
 
 data CounterMsg = Increment Int
 
@@ -33,9 +36,11 @@ data PageMsg = CounterMsg CounterMsg
 
 type Model = { counter ∷ CounterModel }
 
-init = { counter: initCounter } :> []
+init ∷  { counter ∷ { count :: Int } }
+init = { counter: initCounter }
 
-update model (PageMsg (CounterMsg msg)) = model { counter = updateCounter model.counter msg } :> []
+update :: Update Model Msg
+update model (PageMsg (CounterMsg msg)) = model { counter = updateCounter model.counter msg } /\ []
 
 view ∷ Model → Html Msg
 view model = H.div_ [ PageMsg <$> CounterMsg <$> counterView model.counter ]
@@ -43,7 +48,7 @@ view model = H.div_ [ PageMsg <$> CounterMsg <$> counterView model.counter ]
 mount ∷ Effect Unit
 mount = mount_ (QuerySelector "#mount-point")
       { subscribe: []
-      , init
+      , model:init
       , update
       , view
       }

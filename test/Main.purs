@@ -18,7 +18,6 @@ import Effect.Class (liftEffect)
 import Effect.Exception.Unsafe as EEU
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Flame.Application.Effectful as FAE
 import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -27,20 +26,15 @@ import Flame.Renderer.String as FRS
 import Flame.Subscription as FS
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Partial.Unsafe (unsafePartial)
-import Test.Basic.EffectList as TBEL
-import Test.Basic.Effectful as TBE
+import Test.Basic.Application as TBEL
 import Test.Functor.Basic as TBF
 import Test.Functor.Lazy as TFL
-import Test.Basic.NoEffects as TBN
-import Test.Effectful.SlowEffects as TES
-import Test.ServerSideRendering.Effectful as TSE
+import Test.ServerSideRendering.Application as TSE
 import Test.ServerSideRendering.FragmentNode as TSF
 import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Subscription.Broadcast as TSB
 import Test.Subscription.EffectList (TEELMessage(..))
 import Test.Subscription.EffectList as TEEL
-import Test.Subscription.Effectful as TEE
-import Test.Subscription.NoEffects as TEN
 import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
@@ -673,53 +667,8 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   childrenIdsSwapped ← childNodeIds "#test-div"
                   TSA.shouldEqual [ "1", "2", "3" ] childrenIdsSwapped
 
-      -- TS.it "remove nodes" do
-      -- TS.it "remove all nodes" do
-      -- TS.it "move nodes" do
-      -- TS.it "move and remove nodes" do
-      -- TS.it "move and add nodes" do
-
-      TS.describe "diff" do
-            TS.it "updates record fields" do
-                  TSA.shouldEqual { a: 23, b: "hello", c: true } $ FAE.diff' { c: true } { a: 23, b: "hello", c: false }
-                  TSA.shouldEqual { a: 23, b: "hello", c: false } $ FAE.diff' {} { a: 23, b: "hello", c: false }
-
-            TS.it "updates record fields with newtype" do
-                  TSA.shouldEqual (TestNewtype { a: 23, b: "hello", c: true }) <<< FAE.diff' { c: true } $ TestNewtype { a: 23, b: "hello", c: false }
-                  TSA.shouldEqual (TestNewtype { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ TestNewtype { a: 23, b: "hello", c: false }
-
-            TS.it "updates record fields with functor" do
-                  TSA.shouldEqual (Just { a: 23, b: "hello", c: true }) <<< FAE.diff' { c: true } $ Just { a: 23, b: "hello", c: false }
-                  TSA.shouldEqual (Just { a: 23, b: "hello", c: false }) <<< FAE.diff' {} $ Just { a: 23, b: "hello", c: false }
-
-            TS.it "new copy is returned" do
-                  --since diff uses unsafe javascript, make sure the reference is not being written to
-                  let model = { a: 1, b: 2 }
-                  TSA.shouldEqual { a: 1, b: 3 } $ FAE.diff' { b: 3 } model
-                  TSA.shouldEqual { a: 12, b: 2 } $ FAE.diff' { a: 12 } model
-
       TS.describe "Basic applications" do
-            TS.it "noeffects" do
-                  liftEffect do
-                        unsafeCreateEnviroment
-                        TBN.mount
-                  childrenLength ← childrenNodeLength
-                  --button, span, button
-                  TSA.shouldEqual 3 childrenLength
-
-                  initial ← textContent "#text-output"
-                  TSA.shouldEqual "0" initial
-
-                  dispatchEvent clickEvent "#decrement-button"
-                  current ← textContent "#text-output"
-                  TSA.shouldEqual "-1" current
-
-                  dispatchEvent clickEvent "#increment-button"
-                  dispatchEvent clickEvent "#increment-button"
-                  current2 ← textContent "#text-output"
-                  TSA.shouldEqual "1" current2
-
-            TS.it "effectlist" do
+            TS.it "application" do
                   liftEffect do
                         unsafeCreateEnviroment
                         TBEL.mount
@@ -749,38 +698,6 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   dispatchEvent enterPressedEvent "#text-input"
                   submitted ← textContent "#text-output"
                   TSA.shouldEqual "thanks" submitted
-
-            TS.it "effectful" do
-                  liftEffect do
-                        unsafeCreateEnviroment
-                        TBE.mount
-                  childrenLength ← childrenNodeLength
-                  --span, span, span, br, button, button
-                  TSA.shouldEqual 6 childrenLength
-
-                  currentIncrement ← textContent "#text-output-increment"
-                  currentDecrement ← textContent "#text-output-decrement"
-                  currentLuckyNumber ← textContent "#text-output-lucky-number"
-                  TSA.shouldEqual "-1" currentDecrement
-                  TSA.shouldEqual "0" currentIncrement
-                  TSA.shouldEqual "2" currentLuckyNumber
-
-                  dispatchEvent clickEvent "#decrement-button"
-                  currentIncrement2 ← textContent "#text-output-increment"
-                  currentDecrement2 ← textContent "#text-output-decrement"
-                  currentLuckyNumber2 ← textContent "#text-output-lucky-number"
-                  TSA.shouldEqual "-2" currentDecrement2
-                  TSA.shouldEqual "0" currentIncrement2
-                  TSA.shouldEqual "2" currentLuckyNumber2
-
-                  dispatchEvent clickEvent "#increment-button"
-                  dispatchEvent clickEvent "#increment-button"
-                  currentIncrement3 ← textContent "#text-output-increment"
-                  currentDecrement3 ← textContent "#text-output-decrement"
-                  currentLuckyNumber3 ← textContent "#text-output-lucky-number"
-                  TSA.shouldEqual "2" currentIncrement3
-                  TSA.shouldEqual "-2" currentDecrement3
-                  TSA.shouldEqual "2" currentLuckyNumber3
 
       TS.describe "functor" do
             TS.it "basic" do
@@ -822,49 +739,9 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   current2 ← textContent "#add-button"
                   TSA.shouldEqual "Current Value: 3001" current2
 
-      TS.describe "Effectful specific" do
-            TS.it "slower effects" do
-                  liftEffect do
-                        unsafeCreateEnviroment
-                        TES.mount
-                  outputCurrent ← textContent "#text-output-current"
-                  outputNumbers ← textContent "#text-output-numbers"
-                  TSA.shouldEqual "0" outputCurrent
-                  TSA.shouldEqual "[]" outputNumbers
-
-                  --the event for snoc has a delay, make sure it doesnt overwrite unrelated fields when updating
-                  dispatchEvent clickEvent "#snoc-button"
-                  dispatchEvent clickEvent "#bump-button"
-                  outputCurrent2 ← textContent "#text-output-current"
-                  outputNumbers2 ← textContent "#text-output-numbers"
-                  TSA.shouldEqual "1" outputCurrent2
-                  TSA.shouldEqual "[]" outputNumbers2
-
-                  AF.delay $ Milliseconds 1000.0
-                  outputCurrent3 ← textContent "#text-output-current"
-                  outputNumbers3 ← textContent "#text-output-numbers"
-                  TSA.shouldEqual "2" outputCurrent3
-                  TSA.shouldEqual "[0]" outputNumbers3
 
       TS.describe "Subscription applications" do
-            TS.it "noeffects" do
-                  liftEffect do
-                        unsafeCreateEnviroment
-                        TEN.mount
-                  output ← textContent "#text-output"
-                  TSA.shouldEqual "0" output
-
-                  dispatchDocumentEvent clickEvent
-                  output2 ← textContent "#text-output"
-                  TSA.shouldEqual "-1" output2
-
-                  dispatchDocumentEvent keydownEvent
-                  dispatchDocumentEvent keydownEvent
-                  dispatchDocumentEvent keydownEvent
-                  output3 ← textContent "#text-output"
-                  TSA.shouldEqual "2" output3
-
-            TS.it "effectlist" do
+            TS.it "application" do
                   id ← liftEffect do
                         unsafeCreateEnviroment
                         TEEL.mount
@@ -878,23 +755,6 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   liftEffect $ FS.send id TEELIncrement
                   output3 ← textContent "#text-output"
                   TSA.shouldEqual "0" output3
-
-            TS.it "effectful" do
-                  liftEffect do
-                        unsafeCreateEnviroment
-                        TEE.mount
-                  output ← textContent "#text-output"
-                  TSA.shouldEqual "5" output
-
-                  dispatchWindowEvent errorEvent
-                  dispatchWindowEvent errorEvent
-                  dispatchWindowEvent errorEvent
-                  output2 ← textContent "#text-output"
-                  TSA.shouldEqual "2" output2
-
-                  dispatchWindowEvent offlineEvent
-                  output3 ← textContent "#text-output"
-                  TSA.shouldEqual "3" output3
 
             TS.it "broadcast" do
                   id ← liftEffect do
@@ -912,7 +772,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "-33" output3
 
       TS.describe "Server side rendering" do
-            TS.it "effectful" do
+            TS.it "application" do
                   liftEffect do
                         unsafeCreateEnviroment
                         TSE.preMount
@@ -1044,17 +904,6 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
             element ← unsafeQuerySelector selector
             event ← eventFunction
             WEE.dispatchEvent event $ WDE.toEventTarget element
-
-      dispatchDocumentEvent eventFunction = liftEffect $ void do
-            window ← WH.window
-            document ← WHW.document window
-            event ← eventFunction
-            WEE.dispatchEvent event $ WDD.toEventTarget document
-
-      dispatchWindowEvent eventFunction = liftEffect $ void do
-            window ← WH.window
-            event ← eventFunction
-            WEE.dispatchEvent event $ WHW.toEventTarget window
 
       childNodeIds selector = liftEffect do
             children ← childrenNode selector

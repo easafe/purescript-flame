@@ -7,10 +7,11 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
-import Flame (QuerySelector(..), Html)
-import Flame.Application.NoEffects as FAN
+import Flame (Html, Update)
+import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model = Array NestedModel
 
@@ -19,8 +20,8 @@ data Message = Add | Remove Int | CounterMessage Int NestedMessage
 init ∷ Model
 init = []
 
-update ∷ Model → Message → Model
-update model = case _ of
+update ∷ Update Model Message
+update model = F.noMessages <<< case _ of
       Add → DA.snoc model nestedInit
       Remove index → DM.fromMaybe model $ DA.deleteAt index model
       CounterMessage index message →
@@ -62,8 +63,8 @@ nestedView index model = HE.main ("main-" <> show index)
       ]
 
 mount ∷ Effect Unit
-mount = FAN.mount_ (QuerySelector "#mount-point")
-      { init
+mount = F.mount_ (QuerySelector "#mount-point")
+      { model: init
       , subscribe: []
       , update
       , view

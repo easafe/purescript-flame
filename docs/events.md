@@ -10,54 +10,27 @@ Perhaps the most important field in the application record
 
 ```haskell
 type Application model message = {
-      init :: model,
+      model :: model
       view :: model -> Html message,
-      update :: model -> message -> model,
+      update :: Update model message,
       subscribe :: Array (Subscription message)
 }
 ```
 
-is the `update` function. This is where we define our business logic by matching event `message`s and returning an updated model. For simplicity, we have only considered side effects free updating so far, however Flame offers three different ways to define your `update` function.
-
-Each module under `Flame.Application` export a `mount` (or `mount_`) function which asks for an application record with different `init` and `update` types
-
-```haskell
-import Flame.Application.NoEffects (mount) -- side effects free updating
-import Flame (mount) -- Elm style updating, using a list of effects
-import Flame.Application.Effectful (mount) -- Aff based updating
-```
-
-Let's discuss each of them in detail.
-
-### No effects updating
-
-The application record is the same as we have seen so far
+is the `update` function. So far we have been using the `Update` type alias. Let's expand it:
 
 ```haskell
 type Application model message = {
-      init :: model,
-      view :: model -> Html message,
-      update :: model -> message -> model,
-      subscribe :: Array (Subscription message)
-}
-```
-
-This is enough for toy examples or small modules, but probably not sufficient to build an user facing application. If we want to do any sort of effectul computation we need to look into the next `update` types.
-
-### Effect list updating
-
-This is the default way to run a Flame application. The record here has `init` and `update` return an array of effects to be performed
-
-```haskell
-type Application model message = {
-      init :: Tuple model (Array (Aff (Maybe message))),
+      model :: model,
       view :: model -> Html message,
       update :: model -> message -> Tuple model (Array (Aff (Maybe message))),
       subscribe :: Array (Subscription message)
 }
 ```
 
-For every entry in the array, the effect is run and `update` is called again with the resulting `message`. Consider an application to roll dices
+That means that `update` returns an updated model but also an array of side effects to perform. Each entry in the array may optionally raise another `message`, which is in turn handled by `update` as well.
+
+Consider an application to roll dices
 
 ```haskell
 type Model = Maybe Int
@@ -66,10 +39,11 @@ data Message = Roll | Update Int
 
 update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      Roll -> model :> [
-            Just <<< Update <$> liftEffect (ER.randomInt 1 6)
-      ]
-      Update int -> Just int :> []
+      Roll -> model /\ [ rollDice ]
+      Update int -> Just int /\ []
+      where rollDice = do
+                  n <- EC.liftEffect $ ER.randomInt 1 6
+                  pure <<< Just $ Update n
 
 view :: Model -> Html Message
 view model = HE.main "main" [
@@ -78,9 +52,9 @@ view model = HE.main "main" [
 ]
 ```
 
-Whenever `update` receives the `Roll` message, a `Tuple` (using the infix operator `:>`) of the model and effect list is returned. Performing the effect in the list raises the `Update` message, which carries the generated random number that will be the new model.
+`Roll` returns the model as it is. However, generating random numbers is a side effect so we return it on our array. Flame will run this effect and raise `Update`, which then updates the model with the die number.
 
-Likewise, we could define a loading screen to appear before AJAX requests
+Likewise, we could perform some network requests with a loading screen
 
 ```haskell
 type Model = {
@@ -89,13 +63,13 @@ type Model = {
 }
 
 data Message =
-      Loading |
+      Perform |
       Response String |
       DifferentResponse String |
       Finish String
 
-performAJAX :: String -> Aff String
-performAJAX url = ...
+fetch :: String -> Aff String
+fetch url = ...
 
 useResponse :: Model -> String -> Aff Model
 useResponse = ...
@@ -103,143 +77,32 @@ useResponse = ...
 useDifferentResponse :: Model -> String -> Aff Model
 useDifferentResponse = ...
 
-update :: ListUpdate Model Message -- type synonym to reduce clutter
+update :: Model -> Message -> Tuple Model (Array (Aff (Maybe Message)))
 update model = case _ of
-      Loading -> model { isLoading = true } :> [
-            Just <<< Response <$> performAJAX "url",
-            Just <<< DifferentResponse <$> performAJAX "url2",
-            Just <<< Response <$> performAJAX "url3",
-            Just <<< DifferentResponse <$> performAJAX "url4",
-            pure <<< Just $ Finish "Performed all"
-      ]
-      Response contents -> F.noMessages $ useResponse model contents -- noMessages is the same as _ :> []
-      Finish contents -> F.noMessages $ model { isLoading = false, response = model.response <> contents }
+      Perform -> model { isLoading = true } /\ requests
+      Response contents -> F.noMessages $ useResponse model contents -- noMessages is the same as _ /\ []
+      Finish contents -> F.noMessages model { isLoading = false, response = model.response <> contents }
+      where requests = [
+                  Just <<< Response <$> fetch "url",
+                  Just <<< DifferentResponse <$> fetch "url2",
+                  Just <<< Response <$> fetch "url3",
+                  Just <<< DifferentResponse <$> fetch "url4",
+                  pure <<< Just $ Finish "Performed all"
+            ]
 
 view :: Model -> Html Message
 view model = HE.main "main" [
-      HE.button [HA.disabled model.isLoading, HA.onClick Loading] "Perform requests",
+      HE.button [HA.disabled model.isLoading, HA.onClick Perform] "Perform requests",
       if model.isLoading then
-            HE.div [HA.className "overlay"] "Loading..."
+            HE.div [HA.class' "overlay"] "Loading..."
        else
             ...
 ]
 ```
 
-In the same way, here every call to `performAJAX` also causes `update` to be called again with a new `Response` or `DifferentResponse` until we get a `Finish` message.
+Here for `Perform`, we return an array of network calls and a final `Finish` message. The effects are run in order, and once we have a response their events are raised for `update` as well.
 
-Notice that the type of `init` is also defined as `Tuple model (Array (Aff (Maybe message)))`. This enables us to run effects at the startup of the application. Suppose in the previous example we also wanted to perform some AJAX requests before any other user interaction. We could have defined `init` as follows
-
-```haskell
-init :: Tuple Model (Array (Aff (Maybe Message)))
-init = model :> [
-      Just <<< Response <$> performAJAX "url",
-      Just <<< DifferentResponse <$> performAJAX "url2",
-      Just <<< Response <$> performAJAX "url3",
-      Just <<< DifferentResponse <$> performAJAX "url4",
-      pure <<< Just $ Finish "Performed all"
-]
-```
-
-which has the same expected behavior of calling `update` with the resulting message of every entry in the array.
-
-### Effectful updating
-
-Returning an array of effects is great for testability and isolating input/output, but certain program flows became somewhat awkward to write. For most messages, we essentially have to create a different data constructor for each step in the computation. For that reason, Flame provides an alternative way to perform effects in the `update` function.
-
-The effectful updating defines `Application` as
-
-```haskell
-type Application model message = {
-      init :: Tuple model (Maybe message),
-      view :: model -> Html message,
-      update :: Environment model message -> Aff (model -> model),
-      subscribe :: Array (Subscription message)
-}
-```
-
-Here instead of returning a list of effects, we perform them directly in the `Aff` monad. Because the `update` function is now fully asynchronous, its type is a little different. Instead of the model, we return a function to modify it -- this ensures slower computations don't overwrite unrelated updates that might happen in the meanwhile. `Environment` is defined as follows
-
-```haskell
-type Environment model message = {
-      model :: model,
-      message :: message,
-      display :: (model -> model) -> Aff Unit
-}
-```
-
-`model` and `message` are now grouped in a record. `display` is a function to arbitrarily re-render the view.
-
-Let's rewrite the dice application using the effectful updates
-
-```haskell
-type Model = Maybe Int
-
-data Message = Roll
-
-update :: Environment Model Message -> Aff (Model -> Model)
-update _ = map (const <<< Just) $ liftEffect $ ER.randomInt 1 6
-```
-
-Since we are always generating a new model, and don't need an intermediate message to update it, we can ignore the environment and perform the update in a single go.
-
-Let's see how we can use `display` to rewrite the AJAX example from above as well
-
-```haskell
-type Model = {
-      response :: String,
-      isLoading :: boolean
-}
-
-data Message = Loading
-
-update :: AffUpdate Model Message -- type synonym to reduce clutter
-update { display } = do
-            display _ { isLoading = true }
-            traverse (\rs -> display  _ { response = rs }) [
-                  performAJAX "url",
-                  performAJAX "url2",
-                  performAJAX "url3",
-                  performAJAX "url4",
-            ]
-            pure $ _ { isLoading = false }
-
-init :: Tuple Model (Maybe Message)
-init = model :> Just Loading
-```
-
-`display` renders the view with the modified model without leaving the `update` function, which is again a little more straightforward.
-
-But juggling model update functions can quickly turn messy, specially if we are using records. For that reason, helper functions are provided to modify only given fields
-
-```haskell
-diff' :: forall changed model. Diff changed model => changed -> (model -> model)
-diff :: forall changed model. Diff changed model => changed -> Aff (model -> model)
-```
-
-the `Diff` type class guarantees that `changed` only includes fields present in `model` so instead of `pure _ { field = value }` we can write `diff { field: value }`. Let's see an example:
-
-```haskell
-newtype MyModel = MyModel {
-      url :: String,
-      result :: Result,
-      ...
-}
-derive instance myModelNewtype :: Newtype MyModel _
-
-update :: AffUpdate MyModel Message
-update { display, model: MyModel model, message } =
-      case message of
-            UpdateUrl url -> FAE.diff { url, result: NotFetched }
-            Fetch -> do
-                  display $ FAE.diff' { result: Fetching }
-                  response <- A.get AR.string model.url
-                  FAE.diff <<< { result: _ } $ case response.body of
-                        Left error -> Error $ A.printResponseFormatError error
-                        Right ok -> Ok ok
-            ... -> ...
-```
-
-Here, no matter how many fields `MyModel` has, we update only what's required in each case expression. Notice that `diff` always takes a record as first parameter. The model, however, can be either a record or newtype (given a `Newtype` instance)/plain functor that holds a record to be updated.
+You may be wondering: why separate model updating and side effects? The reason is that in this way we are "forced" to keep most of our business logic in pure functions, which are easier to reason and test. Effects become interchangeable, decoupled from what we do with their results.
 
 ## [Subscriptions](#subscriptions)
 
@@ -250,7 +113,7 @@ More often than not, a real world application needs to handle events that don't 
 When mounting the application, `subscribe` can be used to specify `message`s as a list of subscriptions. The modules under `Flame.Subscription` define `on` event handlers similar to those used in views
 
 ```haskell
-FAN.mount_ (QuerySelector "body") {
+F.mount_ (QuerySelector "body") {
       ...
       subscribe: [
             FSW.onLoad Message, -- `window` event from `Flame.Subscription.Window`
@@ -272,7 +135,7 @@ Once a subscription has been defined, the raised `message` will be handled by th
 
 * Arbitrary message passing
 
-Sometimes, we need to talk to an application from external events handlers or other points in code far away from the mount point. Consider an app that uses web sockets, or a singe page application that uses multiple mount points for lazy loading. For these and other use cases, Flame provides a `mount` function that takes an application id, as well a `send` function to raise messages for application ids
+Sometimes, we need to talk to an application from external events handlers or other points in the code away from the mount point. Consider an app that uses web sockets, or a singe page application that uses multiple mount points for lazy loading, or just some initialization events. For these and other use cases, Flame provides a `mount` (no trailing underscore) function that takes an application id, as well a `send` function to raise messages for application ids
 
 ```haskell
 mount :: forall id model message. Show id => QuerySelector -> AppId id message -> Application model message -> Effect Unit
@@ -336,7 +199,7 @@ Flame also provides a way to "broadcast" `CustomEvent`s for all listeners. `Flam
 broadcast :: forall arg. SerializeState arg => EventType -> arg -> Effect Unit
 ```
 
-whose events can be handled with `onCustomEven` on your `subscribe` list. Broadcasting events is considered unsafe, as it is user code responsibility to make sure all listeners expect the same `message` payload.
+whose events can be handled with `onCustomEvent` on your `subscribe` list. Broadcasting events is considered unsafe as it is user code responsibility to make sure all listeners expect the same `message` payload.
 
 See the [API reference](https://pursuit.purescript.org/packages/purescript-flame) for a complete list of built-in external events. See this [test application](https://github.com/easafe/purescript-flame/tree/master/examples/Subscriptions) for a full example of subscriptions.
 

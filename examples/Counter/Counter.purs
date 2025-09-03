@@ -4,10 +4,11 @@ module Examples.NoEffects.Counter.Main where
 import Prelude
 
 import Effect (Effect)
-import Flame (QuerySelector(..), Html)
-import Flame.Application.NoEffects as FAN
-import Flame.Html.Element as HE
+import Flame (Html, Update)
+import Flame as F
 import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 -- | The model represents the state of the app
 type Model = Int
@@ -20,8 +21,8 @@ init ∷ Model
 init = 0
 
 -- | `update` is called to handle events
-update ∷ Model → Message → Model
-update model = case _ of
+update ∷ Update Model  Message
+update model = F.noMessages <<< case _ of
       Increment → model + 1
       Decrement → model - 1
 
@@ -35,8 +36,8 @@ view model = HE.main "main"
 
 -- | Mount the application on the given selector
 main ∷ Effect Unit
-main = FAN.mount_ (QuerySelector "body")
-      { init
+main = F.mount_ (QuerySelector "body")
+      { model: init
       , subscribe: []
       , update
       , view

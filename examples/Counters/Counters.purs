@@ -6,12 +6,14 @@ import Data.Array ((!!))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple as DT
 import Effect (Effect)
 import Examples.NoEffects.Counter.Main as ECM
-import Flame (QuerySelector(..), Html)
-import Flame.Application.NoEffects as FAN
+import Flame (Html, Update)
+import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 type Model = Array ECM.Model
 
@@ -20,14 +22,14 @@ data Message = Add | Remove Int | CounterMessage Int ECM.Message
 init ∷ Model
 init = []
 
-update ∷ Model → Message → Model
-update model = case _ of
+update ∷ Update Model Message
+update model = F.noMessages <<< case _ of
       Add → DA.snoc model ECM.init
       Remove index → DM.fromMaybe model $ DA.deleteAt index model
       CounterMessage index message →
             case model !! index of
                   Nothing → model
-                  Just model' → DM.fromMaybe model $ DA.updateAt index (ECM.update model' message) model
+                  Just model' → DM.fromMaybe model $ DA.updateAt index (DT.fst $ ECM.update model' message) model
 
 view ∷ Model → Html Message
 view model = HE.main "main"
@@ -41,8 +43,8 @@ view model = HE.main "main"
             ]
 
 main ∷ Effect Unit
-main = FAN.mount_ (QuerySelector "body")
-      { init
+main = F.mount_ (QuerySelector "body")
+      { model: init
       , subscribe: []
       , update
       , view
