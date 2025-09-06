@@ -73,7 +73,6 @@ export function createEmptyElement(tag) {
     };
 }
 
-
 export function text(value) {
     return {
         nodeType: textNode,

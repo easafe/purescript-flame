@@ -261,7 +261,7 @@ view model = HE.content' [
 
 ```haskell
 view :: Model -> Html Message
-view model = HE.main "main" [
+view model = HE.main [HA.id "main"] [
       HE.button [HA.onClick Add] "Add",
       HE.div_ $ DA.mapWithIndex viewCounter model
 ]

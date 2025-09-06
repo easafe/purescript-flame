@@ -42,10 +42,10 @@ update (Model m) message =
 
 -- | `view` is called whenever the model is updated
 view ∷ Model → Html Message
-view model = HE.main "my-id" $ children model
+view model = HE.main [HA.id "my-id"] $ children model
 
 preView ∷ Model → Html Message
-preView model = HE.main "my-id" $ children model
+preView model = HE.main [HA.id "my-id"] $ children model
 
 nodeRenderer ∷ NodeRenderer Int
 nodeRenderer =
@@ -64,7 +64,7 @@ children ∷ Model → Array (Html Message)
 children (Model model) =
       [ HE.managed nodeRenderer [ HA.id "text-output" ] model
       , HE.br
-      , HE.button [ HA.id "increment-button", HA.onClick Increment ] "+"
+      , HE.button [ HA.id "increment-button", HA.onClick Increment ] [HE.text "+"]
       ]
 
 preMount ∷ Effect Unit

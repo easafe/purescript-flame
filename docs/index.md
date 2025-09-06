@@ -57,10 +57,10 @@ update model = case _ of
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.button [HA.onClick Decrement] "-",
+view model = HE.main [HA.id "main"] [
+      HE.button [HA.onClick Decrement] [HE.text "-"],
       HE.text $ show model,
-      HE.button [HA.onClick Increment] "+"
+      HE.button [HA.onClick Increment] [HE.text "+"]
 ]
 
 -- | Events that come from outside the `view`

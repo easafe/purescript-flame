@@ -74,7 +74,7 @@ update model message =
             pure Nothing
 
 view ∷ Model → Html Message
-view model = HE.main "main"
+view model = HE.main [HA.id "main"]
       [ HE.h1_ "todos"
       , HE.input [ HA.type' "text", HA.placeholder "What needs to be done?", HA.value model.input, HA.onKeyup Add ]
       , HE.div_ $ DA.mapWithIndex todoItem model.todos

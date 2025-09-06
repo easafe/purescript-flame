@@ -32,7 +32,7 @@ update model = F.noMessages <<< case _ of
                   Just model' → DM.fromMaybe model $ DA.updateAt index (DT.fst $ ECM.update model' message) model
 
 view ∷ Model → Html Message
-view model = HE.main "main"
+view model = HE.main [HA.id "main"]
       [ HE.button [ HA.onClick Add ] "Add"
       , HE.div_ $ DA.mapWithIndex viewCounter model
       ]
