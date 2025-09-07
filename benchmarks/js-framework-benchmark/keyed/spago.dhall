@@ -11,5 +11,5 @@
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
-, backend = "purs-backend-es build"
+, backend = "npx purs-backend-es build"
 }

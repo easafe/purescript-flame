@@ -26,11 +26,9 @@
     },
     "devDependencies": {
         "purescript": "0.15.15",
+        "purs-backend-es": "^1.4.3",
         "spago": "0.21.0",
         "webpack": "^4.47.0",
         "webpack-cli": "^3.3.12"
-    },
-    "dependencies": {
-        "purs-backend-es": "^1.4.3"
     }
 }
