@@ -92,9 +92,9 @@ update model = case _ of
 
 view :: Model -> Html Message
 view model = HE.main [HA.id "main"] [
-      HE.button [HA.disabled model.isLoading, HA.onClick Perform] "Perform requests",
+      HE.button [HA.disabled model.isLoading, HA.onClick Perform] [HE.text "Perform requests"],
       if model.isLoading then
-            HE.div [HA.class' "overlay"] "Loading..."
+            HE.div [HA.class' "overlay"] [HE.text "Loading..."]
        else
             ...
 ]

@@ -92,16 +92,6 @@ HE.div [HA.id "my-div", HA.disabled False, HA.title "div title"] [
 -}
 ```
 
-But for some common cases, the markup DSL also defines convenience type classes so we can write
-
-* `HE.element "my-element" _` instead of `HE.element [HA.id "my-element"] _` to declare an element with only id as attribute
-
-* `HE.element _ "text content"` instead of `HE.element _ [HE.text "text content"]` to declare elements with only text as children
-
-* `HE.element (HA.attribute _) _` instead of `HE.element [HA.attribute _] _` to declare elements with a single attribute
-
-* `HE.element _ $ HE.element _ _` instead of `HE.element _ [HE.Element _ _]` to declare elements with a single child element
-
 Flame also offers a few special elements for cases where finer control is necessary
 
 * Managed elements
@@ -114,7 +104,7 @@ type NodeRenderer arg = {
       updateNode :: Node -> arg -> arg -> Effect Node
 }
 
-managed :: forall arg nd message. ToNode nd message NodeData => NodeRenderer arg -> nd -> arg -> Html message
+managed :: forall arg message. NodeRenderer arg -> Array (NodeData message) -> arg -> Html message
 ```
 
 On rendering, Flame calls `createNode` only once and from then on `updateNode`. These functions can check on their local state `arg` to decide whether/how to change a DOM node. For easy of use, the elements attributes and events are still automatically patched -- otherwise, `HE.managed_` should be used
@@ -138,7 +128,7 @@ This is useful to avoid recomputing potentially expensive views such as large li
 Fragments are wrappers
 
 ```haskell
-fragment :: forall children message. ToNode children message Html => children -> Html message
+fragment :: forall message. Array (Html message) -> Html message
 ```
 
 meaning that only their children elements will be rendered to the DOM. Fragments are useful in cases where having an extra parent element is unnecessary, or wherever [`DocumentFragment`](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) could be used.
@@ -219,7 +209,9 @@ type Model = {
 data Message = Do
 
 view :: Model -> Html Message
-view model = HE.div [HA.class' { usefulClass: model.enabled }] $ HE.input [HA.type' "button", HA.value "Do thing number " <> show $ model.done, HA.onClick Do]
+view model = HE.div [HA.class' { usefulClass: model.enabled }] [
+      HE.input [HA.type' "button", HA.value "Do thing number " <> show $ model.done, HA.onClick Do]
+]
 ```
 
 or to selective alter the markup
@@ -237,7 +229,7 @@ view = case _ of
             HE.input [HA.type' "text", HA.onInput Update],
             HE.input [HA.type' "button", HA.value "Greet!", HA.onClick Greet]
       ]
-      Just name -> "Greetings, " <> name <> "!"
+      Just name -> HE.text $ "Greetings, " <> name <> "!"
 ```
 
 as well create "partial views" without the need for any special syntax
@@ -262,12 +254,12 @@ view model = HE.content' [
 ```haskell
 view :: Model -> Html Message
 view model = HE.main [HA.id "main"] [
-      HE.button [HA.onClick Add] "Add",
+      HE.button [HA.onClick Add] [HE.text "Add"],
       HE.div_ $ DA.mapWithIndex viewCounter model
 ]
       where viewCounter index model' = HE.div [HA.style { display: "flex" }] [
                   CounterMessage index <$> ECM.view model',
-                  HE.button [HA.onClick $ Remove index] "Remove"
+                  HE.button [HA.onClick $ Remove index] [HE.text "Remove"]
             ]
 ```
 
