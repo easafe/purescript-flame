@@ -3,16 +3,17 @@ module Main where
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
+import Flame (Update)
 import Flame as F
-import Flame.Application.EffectList as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Types ((/\), Html, NodeData)
+import Flame.Types (Html, NodeData)
 import Prelude (Unit, bind, map, mod, pure, show, (+), (/=), (<>), (==), otherwise)
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -78,9 +79,8 @@ jumbotron = HE.div [ HA.class' "jumbotron" ]
               [ HE.div [ HA.class' "col-md-6" ]
                       [ HE.h1_ [ HE.text "Flame 1.0.0 (non-keyed)" ]
                       ]
-              , HE.div [ HA.class' "col-md-6" ]
-                      [ map renderActionButton buttons
-                      ]
+              , HE.div [ HA.class' "col-md-6" ] (map renderActionButton buttons)
+
               ]
       ]
 

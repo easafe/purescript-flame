@@ -80,9 +80,8 @@ jumbotron = HE.div [ HA.class' "jumbotron" ]
               [ HE.div [ HA.class' "col-md-6" ]
                       [ HE.h1_ [ HE.text "Flame 1.0.0 (keyed)" ]
                       ]
-              , HE.div [ HA.class' "col-md-6" ]
-                      [ map renderActionButton buttons
-                      ]
+              , HE.div [ HA.class' "col-md-6" ] (map renderActionButton buttons)
+
               ]
       ]
 

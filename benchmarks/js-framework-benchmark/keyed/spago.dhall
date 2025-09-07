@@ -1,11 +1,15 @@
 { name = "js-framework-benchmark-flame"
-, dependencies = [
-    "flame",
-    "aff",
-    "arrays",
-    "effect",
-    "maybe",
-    "prelude" ]
+, dependencies =
+  [ "aff"
+  , "arrays"
+  , "effect"
+  , "flame"
+  , "maybe"
+  , "prelude"
+  , "tuples"
+  , "web-dom"
+  ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
+, backend = "purs-backend-es build"
 }
