@@ -18,7 +18,7 @@ derive instance modelGeneric ∷ Generic Model _
 data Message = Roll | Update Int
 
 view ∷ Model → Html Message
-view (Model model) = HE.main [HA.id "main"]
+view (Model model) = HE.main [ HA.id "main" ]
       [ HE.text (show model)
-      , HE.button [ HA.onClick Roll ] "Roll"
+      , HE.button [ HA.onClick Roll ] [ HE.text "Roll" ]
       ]

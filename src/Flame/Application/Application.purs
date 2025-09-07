@@ -86,10 +86,10 @@ resumeMountWith (QuerySelector selector) appId resumed = do
             Just parent → do
                   run parent true (map showId appId)
                         { model
-                        , view : resumed.view
-                        , update : resumed.update
-                        , subscribe :  resumed.subscribe
-                  }
+                        , view: resumed.view
+                        , update: resumed.update
+                        , subscribe: resumed.subscribe
+                        }
                   pure model
             Nothing → EE.throw $ "Error resuming application mount: no element matching selector " <> selector <> " found!"
 

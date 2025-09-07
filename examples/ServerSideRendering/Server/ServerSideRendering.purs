@@ -43,10 +43,10 @@ serveHTML = do
 markup ∷ Model → Html Message
 markup model = HE.html_
       [ HE.head_
-              [ HE.title "Server Side Rendering Dice Example"
-              , HE.meta $ HA.charset "utf-8"
+              [ HE.title [ HE.text "Server Side Rendering Dice Example" ]
+              , HE.meta [ HA.charset "utf-8" ]
               ]
-      , HE.body_ $ EESS.view model
+      , HE.body_ [ EESS.view model ]
       , HE.script' [ HA.type' "text/javascript", HA.src scriptName ]
       ]
 

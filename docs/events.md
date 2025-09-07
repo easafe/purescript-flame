@@ -48,7 +48,7 @@ update model = case _ of
 view :: Model -> Html Message
 view model = HE.main [HA.id "main"] [
       HE.text $ show model,
-      HE.button [HA.onClick Roll] "Roll"
+      HE.button [HA.onClick Roll] [HE.text "Roll"]
 ]
 ```
 
