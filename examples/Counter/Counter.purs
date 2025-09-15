@@ -21,17 +21,17 @@ init ∷ Model
 init = 0
 
 -- | `update` is called to handle events
-update ∷ Update Model  Message
+update ∷ Update Model Message
 update model = F.noMessages <<< case _ of
       Increment → model + 1
       Decrement → model - 1
 
 -- | `view` updates the app markup whenever the model is updated
 view ∷ Model → Html Message
-view model = HE.main "main"
-      [ HE.button [ HA.onClick Decrement ] "-"
+view model = HE.main [ HA.id "main" ]
+      [ HE.button [ HA.onClick Decrement ] [ HE.text "-" ]
       , HE.text $ show model
-      , HE.button [ HA.onClick Increment ] "+"
+      , HE.button [ HA.onClick Increment ] [ HE.text "+" ]
       ]
 
 -- | Mount the application on the given selector

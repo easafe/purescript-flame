@@ -30,14 +30,14 @@ update model = F.noMessages <<< case _ of
                   Just model' → DM.fromMaybe model $ DA.updateAt index (nestedUpdate model' message) model
 
 view ∷ Model → Html Message
-view model = HE.main "main"
-      [ HE.button [ HA.id "add-button", HA.onClick Add ] "Add"
+view model = HE.main [HA.id "main"]
+      [ HE.button [ HA.id "add-button", HA.onClick Add ] [HE.text "Add"]
       , HE.div_ $ DA.mapWithIndex viewCounter model
       ]
       where
       viewCounter index model' = HE.div [ HA.style { display: "flex" } ]
             [ CounterMessage index <$> nestedView index model'
-            , HE.button [ HA.onClick $ Remove index ] "Remove"
+            , HE.button [ HA.onClick $ Remove index ] [HE.text "Remove"]
             ]
 
 -- | The model represents the state of the app
@@ -56,10 +56,10 @@ nestedUpdate model = case _ of
 
 -- | `view` updates the app markup whenever the model is updated
 nestedView ∷ Int → NestedModel → Html NestedMessage
-nestedView index model = HE.main ("main-" <> show index)
-      [ HE.button [ HA.id ("decrement-button-" <> show index), HA.onClick Decrement ] "-"
-      , HE.span ("text-output-" <> show index) $ show model
-      , HE.button [ HA.id ("increment-button-" <> show index), HA.onClick Increment ] "+"
+nestedView index model = HE.main [HA.id ("main-" <> show index)]
+      [ HE.button [ HA.id ("decrement-button-" <> show index), HA.onClick Decrement ] [HE.text "-"]
+      , HE.span [HA.id ("text-output-" <> show index)] [HE.text $ show model]
+      , HE.button [ HA.id ("increment-button-" <> show index), HA.onClick Increment ] [HE.text "+"]
       ]
 
 mount ∷ Effect Unit

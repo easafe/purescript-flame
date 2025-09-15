@@ -32,14 +32,14 @@ update model = F.noMessages <<< case _ of
                   Just model' → DM.fromMaybe model $ DA.updateAt index (DT.fst $ ECM.update model' message) model
 
 view ∷ Model → Html Message
-view model = HE.main "main"
-      [ HE.button [ HA.onClick Add ] "Add"
+view model = HE.main [ HA.id "main" ]
+      [ HE.button [ HA.onClick Add ] [ HE.text "Add" ]
       , HE.div_ $ DA.mapWithIndex viewCounter model
       ]
       where
       viewCounter index model' = HE.div [ HA.style { display: "flex" } ]
             [ CounterMessage index <$> ECM.view model'
-            , HE.button [ HA.onClick $ Remove index ] "Remove"
+            , HE.button [ HA.onClick $ Remove index ] [ HE.text "Remove" ]
             ]
 
 main ∷ Effect Unit

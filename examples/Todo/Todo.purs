@@ -74,8 +74,8 @@ update model message =
             pure Nothing
 
 view ∷ Model → Html Message
-view model = HE.main "main"
-      [ HE.h1_ "todos"
+view model = HE.main [ HA.id "main" ]
+      [ HE.h1_ [ HE.text "todos" ]
       , HE.input [ HA.type' "text", HA.placeholder "What needs to be done?", HA.value model.input, HA.onKeyup Add ]
       , HE.div_ $ DA.mapWithIndex todoItem model.todos
       , HE.text "Double click to edit a todo"
@@ -85,8 +85,8 @@ view model = HE.main "main"
             [ if index == model.editing then
                     HE.input [ HA.onKeyup Update, HA.value todo ]
               else
-                    HE.span [ HA.onDblclick (Edit index) ] todo
-            , HE.button [ HA.onClick $ Remove index ] "remove"
+                    HE.span [ HA.onDblclick (Edit index) ] [ HE.text todo ]
+            , HE.button [ HA.onClick $ Remove index ] [ HE.text "remove" ]
             ]
 
 main ∷ Effect Unit

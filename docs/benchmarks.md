@@ -6,7 +6,7 @@ permalink: /benchmarks
 
 ## Benchmarks
 
-Flame performs comparatively to similar JavaScript or PureScript libraries in usual metrics like bundle size, initialization speed, memory usage, etc. For what it is worth, here is how it stacks against a few popular frameworks (on an old Linux Core i5 with 16GB of ram):
+Flame performs comparatively to JavaScript libraries / frameworks in usual metrics like bundle size, initialization speed, memory usage, etc. For what it is worth, here is how it stacks against a few popular frameworks (Linux Core i9 with 64GB of ram):
 
 ![benchmark-keyed-1](assets/img/benchmark-keyed-1.png)
 ![benchmark-keyed-2](assets/img/benchmark-keyed-2.png)

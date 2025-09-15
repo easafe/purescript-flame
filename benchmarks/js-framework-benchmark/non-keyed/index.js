@@ -1,1 +1,1 @@
-require('./dce-output/Main').main();
+require('./output-es/Main').main();

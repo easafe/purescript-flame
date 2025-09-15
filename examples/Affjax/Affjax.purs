@@ -45,23 +45,23 @@ update model =
             Fetched result → F.noMessages $ model { result = result }
 
 view ∷ Model → Html Message
-view { url, result } = HE.main "main"
+view { url, result } = HE.main [ HA.id "main" ]
       [ HE.input [ HA.onInput UpdateUrl, HA.value url, HA.type' "text" ]
-      , HE.button [ HA.onClick Fetch, HA.disabled $ result == Fetching ] "Fetch"
+      , HE.button [ HA.onClick Fetch, HA.disabled $ result == Fetching ] [ HE.text "Fetch" ]
       , case result of
               NotFetched →
-                    HE.div_ "Not Fetched..."
+                    HE.div_ [ HE.text "Not Fetched..." ]
               Fetching →
-                    HE.div_ "Fetching..."
+                    HE.div_ [ HE.text "Fetching..." ]
               Ok ok →
-                    HE.pre_ <<< HE.code_ $ "Ok: " <> ok
+                    HE.pre_ [ HE.code_ [ HE.text $ "Ok: " <> ok ] ]
               Error error →
-                    HE.div_ $ "Error: " <> error
+                    HE.div_ [ HE.text $ "Error: " <> error ]
       ]
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "body")
-      { model:  init
+      { model: init
       , subscribe: []
       , update
       , view

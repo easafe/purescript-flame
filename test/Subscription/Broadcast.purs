@@ -13,6 +13,7 @@ import Effect.Aff (Aff)
 import Flame (Html)
 import Flame as F
 import Flame.Application as FA
+import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Subscription as FS
 import Web.DOM.ParentNode (QuerySelector(..))
@@ -32,8 +33,8 @@ update model = case _ of
 
 -- | `view` is called whenever the model is updated
 view ∷ Model → Html TSBMessage
-view model = HE.main "main"
-      [ HE.span "text-output" $ show model
+view model = HE.main [HA.id "main"]
+      [ HE.span [HA.id "text-output"] [HE.text $ show model]
       ]
 
 -- | Mount the application on the given selector

@@ -60,4 +60,5 @@ preMount (QuerySelector selector) application = do
                   [ HA.style { display: "none" }
                   , HA.id $ idSerializedState sanitizedSelector
                   , HA.createAttribute (attributeSerializedState sanitizedSelector) sanitizedSelector
-                  ] $ FS.serialize application.model
+                  ]
+                  [ HE.text $ FS.serialize application.model ]

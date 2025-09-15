@@ -46,9 +46,9 @@ update model = case _ of
                   pure <<< Just $ Update n
 
 view :: Model -> Html Message
-view model = HE.main "main" [
+view model = HE.main [HA.id "main"] [
       HE.text $ show model,
-      HE.button [HA.onClick Roll] "Roll"
+      HE.button [HA.onClick Roll] [HE.text "Roll"]
 ]
 ```
 
@@ -91,10 +91,10 @@ update model = case _ of
             ]
 
 view :: Model -> Html Message
-view model = HE.main "main" [
-      HE.button [HA.disabled model.isLoading, HA.onClick Perform] "Perform requests",
+view model = HE.main [HA.id "main"] [
+      HE.button [HA.disabled model.isLoading, HA.onClick Perform] [HE.text "Perform requests"],
       if model.isLoading then
-            HE.div [HA.class' "overlay"] "Loading..."
+            HE.div [HA.class' "overlay"] [HE.text "Loading..."]
        else
             ...
 ]

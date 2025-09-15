@@ -41,20 +41,20 @@ update model@{ history } = case _ of
                   } /\ []
 
 view ∷ Model → Html Message
-view model@{ current, history } = HE.fragment
+view model = HE.fragment
       [ -- only children elements will be rendered
-        HE.text $ show current
-      , HE.button [ HA.onClick Roll ] "Roll"
+        HE.text $ show model.current
+      , HE.button [ HA.onClick Roll ] [ HE.text "Roll" ]
       , HE.br
-      , HE.span_ "History"
-      , HE.div_ $ map lazyEntry history
+      , HE.span_ [ HE.text "History" ]
+      , HE.div_ $ map lazyEntry model.history
       ]
 
 lazyEntry ∷ Int → Html Message
 lazyEntry roll = HE.lazy Nothing toEntry roll -- lazy node will only be recomputed in case the roll changes
       where
       rolled = show roll
-      toEntry = const (HE.div (HA.key rolled) rolled) -- keyed rendering for rolls
+      toEntry = const (HE.div [ HA.key rolled ] [ HE.text rolled ]) -- keyed rendering for rolls
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "body")
