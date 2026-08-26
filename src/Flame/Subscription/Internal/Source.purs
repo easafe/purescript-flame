@@ -3,14 +3,16 @@ module Flame.Subscription.Internal.Create
       , createRawSubscription
       ) where
 
-import Data.Tuple.Nested as DTN
+import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
+import Effect (Effect)
 import Flame.Html.Event (EventName)
 import Flame.Types (Source, Subscription)
 import Foreign as F
-import Prelude (const, (<<<))
+import Prelude (const, pure, (<<<))
 
 createSubscription ∷ ∀ message. Source → EventName → message → Subscription message
-createSubscription source eventName message = DTN.tuple3 source eventName (const message)
+createSubscription source eventName message = source /\ eventName /\ pure <<< Just <<< const message
 
-createRawSubscription ∷ ∀ arg message. Source → EventName → (arg → message) → Subscription message
-createRawSubscription source eventName message = DTN.tuple3 source eventName (message <<< F.unsafeFromForeign)
+createRawSubscription ∷ ∀ arg message. Source → EventName → (arg → Effect (Maybe message)) → Subscription message
+createRawSubscription source eventName message =  source /\ eventName /\ message <<< F.unsafeFromForeign

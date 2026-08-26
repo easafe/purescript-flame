@@ -1,0 +1,36 @@
+package:
+  dependencies:
+    - aff
+    - argonaut-codecs
+    - argonaut-core
+    - argonaut-generic
+    - arrays
+    - bifunctors
+    - console
+    - effect
+    - either
+    - exceptions
+    - foldable-traversable
+    - foreign
+    - foreign-object
+    - maybe
+    - newtype
+    - nullable
+    - partial
+    - prelude
+    - random
+    - refs
+    - spec
+    - strings
+    - tuples
+    - typelevel-prelude
+    - unsafe-coerce
+    - web-dom
+    - web-events
+    - web-html
+    - web-uievents
+  name: flame
+workspace:
+  extraPackages: {}
+  packageSet:
+    url: https://raw.githubusercontent.com/purescript/package-sets/psc-0.15.4-20220822/packages.json

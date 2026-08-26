@@ -4,7 +4,7 @@ module Test.Subscription.Broadcast (mount, TSBMessage(..)) where
 
 import Prelude
 
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
@@ -42,7 +42,7 @@ mount ∷ Effect Unit
 mount = do
       F.mount_ (QuerySelector "#mount-point")
             { model: 0
-            , subscribe: [ FS.onCustomEvent' (EventType "increment-event") TEELIncrement, FS.onCustomEvent (EventType "decrement-event") TEELDecrement ]
+            , subscribe: [ FS.onCustomEvent (EventType "increment-event") TEELIncrement, FS.onCustomEvent' (EventType "decrement-event") (pure <<< Just <<< TEELDecrement) ]
             , update
             , view
             }

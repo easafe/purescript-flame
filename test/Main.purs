@@ -35,6 +35,7 @@ import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Subscription.Broadcast as TSB
 import Test.Subscription.EffectList (TEELMessage(..))
 import Test.Subscription.EffectList as TEEL
+import Test.Subscription.RawSubscription as TSRS
 import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
@@ -218,20 +219,22 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   let
                         html = HE.html [ HA.lang "en" ]
                               [ HE.head [ HA.disabled true ] [ HE.title [ HE.text "title" ] ]
-                              , HE.body [HA.id "content"]
+                              , HE.body [ HA.id "content" ]
                                       [ HE.lazy Nothing
                                               ( const
                                                       ( HE.main_
-                                                              [ HE.button [HA.style { display: "block", width: "20px" }] [HE.text "-"]
+                                                              [ HE.button [ HA.style { display: "block", width: "20px" } ] [ HE.text "-" ]
                                                               , HE.br
                                                               , HE.text "Test"
-                                                              , HE.button [HA.createAttribute "my-attribute" "myValue"] [HE.text "+"]
+                                                              , HE.button [ HA.createAttribute "my-attribute" "myValue" ] [ HE.text "+" ]
                                                               , HE.hr' [ HA.autocomplete "off", HA.style { border: "200px solid blue" } ]
-                                                              , HE.div_  [HE.div_
-                                                                      [
-                                                                        --empty data should not be rendered
-                                                                        HE.span [HA.class' ""] [ HE.a [ HA.autofocus true ] [HE.text "here"] ]
-                                                                      ]]
+                                                              , HE.div_
+                                                                      [ HE.div_
+                                                                              [
+                                                                                --empty data should not be rendered
+                                                                                HE.span [ HA.class' "" ] [ HE.a [ HA.autofocus true ] [ HE.text "here" ] ]
+                                                                              ]
+                                                                      ]
                                                               ]
                                                       )
                                               )
@@ -244,7 +247,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
       TS.describe "root node" do
             TS.it "root node is unchanged" do
                   liftEffect unsafeCreateEnviroment
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   void $ mountHtml' html
                   rootNode ← liftEffect $ FAD.querySelector "#mount-point"
                   TSA.shouldSatisfy rootNode DM.isJust
@@ -253,7 +256,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   liftEffect unsafeCreateEnviroment
                   rootNode ← liftEffect $ unsafeQuerySelector "#mount-point"
                   liftEffect $ innerHtml rootNode """<div id="oi"></div>"""
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   state ← mountHtml' html
                   childrenCount ← childrenNodeLengthOf "#mount-point"
                   TSA.shouldEqual 2 childrenCount
@@ -263,64 +266,64 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
       --we also have to test the translation of virtual nodes to actual dom nodes
       TS.describe "DOM node creation" do
             TS.it "styles" do
-                  let html = HE.a [ HA.id "link", HA.style { border: "solid", margin: "0px" } ] [HE.text "TEST"]
+                  let html = HE.a [ HA.id "link", HA.style { border: "solid", margin: "0px" } ] [ HE.text "TEST" ]
                   state ← mountHtml html
                   nodeStyle ← getStyle "#link"
                   TSA.shouldEqual "border: solid; margin: 0px;" nodeStyle
 
-                  let updatedHtml = HE.a [ HA.id "link", HA.style { border: "2px", padding: "23px" } ] [HE.text "TEST"]
+                  let updatedHtml = HE.a [ HA.id "link", HA.style { border: "2px", padding: "23px" } ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state updatedHtml
                   updatedNodeStyle ← getStyle "#link"
                   TSA.shouldEqual "border: 2px; padding: 23px;" updatedNodeStyle
 
-                  let emptyUpdatedHtml = HE.a [ HA.id "link", HA.style {} ] [HE.text "TEST"]
+                  let emptyUpdatedHtml = HE.a [ HA.id "link", HA.style {} ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state emptyUpdatedHtml
                   emptyUpdatedNodeStyle ← getStyle "#link"
                   TSA.shouldEqual "" emptyUpdatedNodeStyle
 
-                  let fullUpdatedHtml = HE.a [ HA.id "link", HA.style { "z-index": "3" } ] [HE.text "TEST"]
+                  let fullUpdatedHtml = HE.a [ HA.id "link", HA.style { "z-index": "3" } ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state fullUpdatedHtml
                   fullNodeStyle ← getStyle "#link"
                   TSA.shouldEqual "z-index: 3;" fullNodeStyle
 
             TS.it "element classes" do
-                  let html = HE.p [HA.class' "firstClass secondClass thirdClass"] [HE.text "TEST"]
+                  let html = HE.p [ HA.class' "firstClass secondClass thirdClass" ] [ HE.text "TEST" ]
                   state ← mountHtml html
                   nodeClass ← getClass "p"
                   TSA.shouldEqual "first-class second-class third-class" nodeClass
 
-                  let updatedHtml = HE.p [HA.class' { firstClass: false }] [HE.text "TEST"]
+                  let updatedHtml = HE.p [ HA.class' { firstClass: false } ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state updatedHtml
                   updatedNodeClass ← getClass "p"
                   TSA.shouldEqual "" updatedNodeClass
 
-                  let emptyUpdatedHtml = HE.p [HA.class' ""] [HE.text "TEST"]
+                  let emptyUpdatedHtml = HE.p [ HA.class' "" ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state emptyUpdatedHtml
                   emptyUpdatedNodeClass ← getClass "p"
                   TSA.shouldEqual "" emptyUpdatedNodeClass
 
-                  let fullUpdatedHtml = HE.p [HA.class' { some: true, some2: true }] [HE.text "TEST"]
+                  let fullUpdatedHtml = HE.p [ HA.class' { some: true, some2: true } ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state fullUpdatedHtml
                   fullNodeClass ← getClass "p"
                   TSA.shouldEqual "some some2" fullNodeClass
 
             TS.it "svg classes" do
-                  let html = HE.svg [HA.class' "firstClass secondClass thirdClass"] [HE.text "TEST"]
+                  let html = HE.svg [ HA.class' "firstClass secondClass thirdClass" ] [ HE.text "TEST" ]
                   state ← mountHtml html
                   nodeClass ← getSvgClass "svg"
                   TSA.shouldEqual (Just "first-class second-class third-class") nodeClass
 
-                  let updatedHtml = HE.svg [HA.class' { firstClass: false }] [HE.text "TEST"]
+                  let updatedHtml = HE.svg [ HA.class' { firstClass: false } ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state updatedHtml
                   updatedNodeClass ← getSvgClass "svg"
                   TSA.shouldEqual (Just "") updatedNodeClass
 
-                  let emptyUpdatedHtml = HE.svg [HA.class' ""] [HE.text "TEST"]
+                  let emptyUpdatedHtml = HE.svg [ HA.class' "" ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state emptyUpdatedHtml
                   emptyUpdatedNodeClass ← getSvgClass "svg"
                   TSA.shouldEqual (Just "") emptyUpdatedNodeClass
 
-                  let fullUpdatedHtml = HE.svg [HA.class' { some: true, some2: true }] [HE.text "TEST"]
+                  let fullUpdatedHtml = HE.svg [ HA.class' { some: true, some2: true } ] [ HE.text "TEST" ]
                   liftEffect $ FRID.resume state fullUpdatedHtml
                   fullNodeClass ← getSvgClass "svg"
                   TSA.shouldEqual (Just "some some2") fullNodeClass
@@ -370,7 +373,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual [ "q", "aaa" ] updatedNodeProperties
 
             TS.it "text property of lazy nodes" do
-                  let html = HE.lazy Nothing (const (HE.div_ [HE.text "oi"])) unit
+                  let html = HE.lazy Nothing (const (HE.div_ [ HE.text "oi" ])) unit
                   void $ mountHtml html
                   text ← textContent "#mount-point"
                   TSA.shouldEqual "oi" text
@@ -407,24 +410,24 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
 
             TS.it "unset text property" do
                   --nodes with a single text node child have the textContent property set
-                  let html = HE.div [HA.id "test-div"] [HE.text "oi"]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.text "oi" ]
                   state ← mountHtml html
                   text ← textContent "#test-div"
                   TSA.shouldEqual "oi" text
 
-                  let updatedHtml = HE.div' [HA.id "test-div"]
+                  let updatedHtml = HE.div' [ HA.id "test-div" ]
                   liftEffect $ FRID.resume state updatedHtml
                   text2 ← textContent "#test-div"
                   TSA.shouldEqual "" text2
 
             TS.it "text to children" do
                   --nodes with a single text node child have the textContent property set
-                  let html = HE.div [HA.id "test-div"] [HE.text "oi"]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.text "oi" ]
                   state ← mountHtml html
                   text ← textContent "#test-div"
                   TSA.shouldEqual "oi" text
 
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.span_ [HE.text "ola"], HE.div_ [HE.text "hah"], HE.br ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.span_ [ HE.text "ola" ], HE.div_ [ HE.text "hah" ], HE.br ]
                   liftEffect $ FRID.resume state updatedHtml
                   text2 ← textContent "#test-div"
                   --from children
@@ -434,12 +437,12 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
 
             TS.it "children to text" do
                   --nodes with a single text node child have the textContent property set
-                  let html = HE.div [HA.id "test-div"] [ HE.span_ [HE.text "ola"], HE.div_ [HE.text "hah"], HE.br ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.span_ [ HE.text "ola" ], HE.div_ [ HE.text "hah" ], HE.br ]
                   state ← mountHtml html
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 3 childrenCount
 
-                  let updatedHtml = HE.div [HA.id "test-div"] [HE.text "oi"]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.text "oi" ]
                   liftEffect $ FRID.resume state updatedHtml
                   text ← textContent "#test-div"
                   TSA.shouldEqual "oi" text
@@ -447,9 +450,9 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual 0 childrenCount2
 
             TS.it "update node tag" do
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   state ← mountHtml html
-                  let updatedHtml = HE.span [HA.class' "test-class"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let updatedHtml = HE.span [ HA.class' "test-class" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   oldElement ← liftEffect $ FAD.querySelector "#test-div"
                   TSA.shouldSatisfy oldElement DM.isNothing
@@ -457,9 +460,9 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "test-class" nodeClass
 
             TS.it "update node type" do
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   state ← mountHtml html
-                  let updatedHtml = HE.svg' [HA.viewBox "0 0 0 0"]
+                  let updatedHtml = HE.svg' [ HA.viewBox "0 0 0 0" ]
                   liftEffect $ FRID.resume state updatedHtml
                   oldElement ← liftEffect $ FAD.querySelector "#test-div"
                   TSA.shouldSatisfy oldElement DM.isNothing
@@ -467,34 +470,34 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "viewBox:0 0 0 0" nodeAttributes
 
             TS.it "update fragment to node" do
-                  let html = HE.div [HA.id "test-div"] [ HE.fragment [ HE.input [ HA.id "t", HA.value "a" ], HE.br ], HE.span_ [HE.text "ss"] ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.fragment [ HE.input [ HA.id "t", HA.value "a" ], HE.br ], HE.span_ [ HE.text "ss" ] ]
                   state ← mountHtml html
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 3 childrenCount
 
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.div_ [HE.text "aa"], HE.span_ [HE.text "ss"] ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.div_ [ HE.text "aa" ], HE.span_ [ HE.text "ss" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount2 ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 2 childrenCount2
 
             TS.it "inserting children" do
-                  let html = HE.div' [HA.id "test-div"]
+                  let html = HE.div' [ HA.id "test-div" ]
                   state ← mountHtml html
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.br, HE.hr ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.br, HE.hr ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 2 childrenCount
 
             TS.it "removing children" do
-                  let html = HE.div [HA.id "test-div"] [ HE.br, HE.hr ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.br, HE.hr ]
                   state ← mountHtml html
-                  let updatedHtml = HE.div' [HA.id "test-div"]
+                  let updatedHtml = HE.div' [ HA.id "test-div" ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 0 childrenCount
 
             TS.it "removing children with innerHtml" do
-                  let html = HE.div [HA.id "test-div"] [ HE.br, HE.hr ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.br, HE.hr ]
                   state ← mountHtml html
                   let updatedHtml = HE.div' [ HA.id "test-div", HA.innerHtml "<p>oi</p>" ]
                   liftEffect $ FRID.resume state updatedHtml
@@ -506,7 +509,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
             TS.it "removing and inserting children with innerHtml" do
                   let html = HE.div' [ HA.id "test-div", HA.innerHtml "<p>oi</p>" ]
                   state ← mountHtml html
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.br, HE.hr ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.br, HE.hr ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 2 childrenCount
@@ -514,9 +517,9 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldSatisfy hr DM.isJust
 
             TS.it "fragments" do
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   state ← mountHtml html
-                  let updatedHtml = HE.fragment [HE.lazy Nothing (const (HE.svg' [HA.viewBox "0 0 0 0"])) unit]
+                  let updatedHtml = HE.fragment [ HE.lazy Nothing (const (HE.svg' [ HA.viewBox "0 0 0 0" ])) unit ]
                   liftEffect $ FRID.resume state updatedHtml
                   oldElement ← liftEffect $ FAD.querySelector "#test-div"
                   TSA.shouldSatisfy oldElement DM.isNothing
@@ -548,26 +551,26 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "test" nodeClass
 
             TS.it "setting inner html" do
-                  let html = HE.div_ [HE.div' [ HA.id "test-div", HA.innerHtml "<span>Test</span>" ]]
+                  let html = HE.div_ [ HE.div' [ HA.id "test-div", HA.innerHtml "<span>Test</span>" ] ]
                   state ← mountHtml html
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 1 childrenCount
 
-                  let updatedHtml = HE.main_ [HE.div' [ HA.id "test-div", HA.innerHtml "<span>Test</span><hr>" ]]
+                  let updatedHtml = HE.main_ [ HE.div' [ HA.id "test-div", HA.innerHtml "<span>Test</span><hr>" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount2 ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 2 childrenCount2
 
-                  let updatedHtml2 = HE.main_ [HE.text "oi"]
+                  let updatedHtml2 = HE.main_ [ HE.text "oi" ]
                   liftEffect $ FRID.resume state updatedHtml2
                   oldElement ← liftEffect $ FAD.querySelector "#test-div"
                   TSA.shouldSatisfy oldElement DM.isNothing
 
             TS.it "replacing child nodes (type)" do
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   state ← mountHtml html
 
-                  let updatedHtml = HE.div [HA.id "test-div"] [HE.svg' [HA.viewBox "0 0 0 0"]]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.svg' [ HA.viewBox "0 0 0 0" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   oldElement ← liftEffect $ FAD.querySelector "input"
                   TSA.shouldSatisfy oldElement DM.isNothing
@@ -575,10 +578,10 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "viewBox:0 0 0 0" nodeAttributes
 
             TS.it "replacing child nodes (tag)" do
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ]]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
                   state ← mountHtml html
 
-                  let updatedHtml = HE.div [HA.id "test-div"] [HE.div_ [HE.text "test"]]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.div_ [ HE.text "test" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   oldElement ← liftEffect $ FAD.querySelector "input"
                   TSA.shouldSatisfy oldElement DM.isNothing
@@ -586,10 +589,10 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "" nodeAttributes
 
             TS.it "replacing child nodes (number of children)" do
-                  let html = HE.div [HA.id "test-div"] [ HE.input [ HA.id "t", HA.value "a" ], HE.div [HA.class' "inside-div"] [HE.text "test"], HE.span [HA.id "test-span"] [HE.br] ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ], HE.div [ HA.class' "inside-div" ] [ HE.text "test" ], HE.span [ HA.id "test-span" ] [ HE.br ] ]
                   state ← mountHtml html
 
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.main_ [HE.text "oi"], HE.section_  [HE.hr] ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.main_ [ HE.text "oi" ], HE.section_ [ HE.hr ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   oldElements ← liftEffect $ DT.traverse FAD.querySelector [ "input", "#test-div div", "#test-div span" ]
                   TSA.shouldSatisfy oldElements (DA.all DM.isNothing)
@@ -615,37 +618,37 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
 
       TS.describe "keyed" do
             TS.it "common prefix" do
-                  let html = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "1" ], HE.span' [ HA.key "2" ] ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "1" ], HE.span' [ HA.key "2" ] ]
                   state ← mountHtml html
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "1" ], HE.span' [ HA.key "2" ], HE.span' [ HA.key "3" ] ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "1" ], HE.span' [ HA.key "2" ], HE.span' [ HA.key "3" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 3 childrenCount
 
             TS.it "common suffix" do
-                  let html = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "2" ], HE.span' [ HA.key "3" ] ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "2" ], HE.span' [ HA.key "3" ] ]
                   state ← mountHtml html
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "1" ], HE.span' [ HA.key "2" ], HE.span' [ HA.key "3" ] ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "1" ], HE.span' [ HA.key "2" ], HE.span' [ HA.key "3" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenCount ← childrenNodeLengthOf "#test-div"
                   TSA.shouldEqual 3 childrenCount
 
             TS.it "swap backwards" do
-                  let html = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "1", HA.id "1" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "3", HA.id "3" ] ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "1", HA.id "1" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "3", HA.id "3" ] ]
                   state ← mountHtml html
                   childrenIds ← childNodeIds "#test-div"
                   TSA.shouldEqual [ "1", "2", "3" ] childrenIds
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "3", HA.id "3" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "1", HA.id "1" ] ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "3", HA.id "3" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "1", HA.id "1" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenIdsSwapped ← childNodeIds "#test-div"
                   TSA.shouldEqual [ "3", "2", "1" ] childrenIdsSwapped
 
             TS.it "swap forward" do
-                  let html = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "3", HA.id "3" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "1", HA.id "1" ] ]
+                  let html = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "3", HA.id "3" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "1", HA.id "1" ] ]
                   state ← mountHtml html
                   childrenIds ← childNodeIds "#test-div"
                   TSA.shouldEqual [ "3", "2", "1" ] childrenIds
-                  let updatedHtml = HE.div [HA.id "test-div"] [ HE.span' [ HA.key "1", HA.id "1" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "3", HA.id "3" ] ]
+                  let updatedHtml = HE.div [ HA.id "test-div" ] [ HE.span' [ HA.key "1", HA.id "1" ], HE.span' [ HA.key "2", HA.id "2" ], HE.span' [ HA.key "3", HA.id "3" ] ]
                   liftEffect $ FRID.resume state updatedHtml
                   childrenIdsSwapped ← childNodeIds "#test-div"
                   TSA.shouldEqual [ "1", "2", "3" ] childrenIdsSwapped
@@ -752,6 +755,25 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   liftEffect $ FSUC.broadcast' (EventType "increment-event")
                   output3 ← textContent "#text-output"
                   TSA.shouldEqual "-33" output3
+
+            TS.it "raw subscriptions" do
+                  liftEffect do
+                        unsafeCreateEnviroment
+                        TSRS.mount
+                  output ← textContent "#text-output"
+                  TSA.shouldEqual "0" output
+
+                  liftEffect $ FSUC.broadcast' (EventType "nothing-event")
+                  output2 ← textContent "#text-output"
+                  TSA.shouldEqual "0" output2
+
+                  liftEffect $ FSUC.broadcast' (EventType "just-event")
+                  output3 ← textContent "#text-output"
+                  TSA.shouldEqual "1" output3
+
+                  liftEffect $ FSUC.broadcast' (EventType "nothing-event")
+                  output4 ← textContent "#text-output"
+                  TSA.shouldEqual "1" output4
 
       TS.describe "Server side rendering" do
             TS.it "application" do

@@ -6,26 +6,27 @@ module Flame.Subscription
       , onCustomEvent'
       ) where
 
-import Data.Tuple.Nested as DTN
+import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Flame.Application.Internal.Dom as FAID
 import Flame.Serialization (class UnserializeState)
 import Flame.Serialization as FS
 import Flame.Types (AppId(..), Source(..), Subscription)
 import Foreign as F
-import Prelude (class Show, Unit, const, show, (<<<))
+import Prelude (class Show, Unit, const, pure, show, (<<<))
 import Web.Event.Event (EventType(..))
 
 -- | Raises an arbitrary message on the given application
 send ∷ ∀ id message. Show id ⇒ AppId id message → message → Effect Unit
 send (AppId id) message = FAID.dispatchCustomEvent (show id) message
 
+-- | Subscribe to a `CustomEvent` that has no data associated
+onCustomEvent ∷ ∀ message. EventType → message → Subscription message
+onCustomEvent (EventType eventName) message = Custom /\ eventName /\ pure <<< Just <<< const message
+
 -- | Subscribe to a `CustomEvent`
 -- |
 -- | `arg` must be serializable since it might come from external JavaScript
-onCustomEvent ∷ ∀ arg message. UnserializeState arg ⇒ EventType → (arg → message) → Subscription message
-onCustomEvent (EventType eventName) message = DTN.tuple3 Custom eventName (message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign)
-
--- | Subscribe to a `CustomEvent` that has no data associated
-onCustomEvent' ∷ ∀ message. EventType → message → Subscription message
-onCustomEvent' (EventType eventName) message = DTN.tuple3 Custom eventName (const message)
+onCustomEvent' ∷ ∀ arg message. UnserializeState arg ⇒ EventType → (arg → Effect (Maybe message)) → Subscription message
+onCustomEvent' (EventType eventName) message = Custom /\ eventName /\ message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign

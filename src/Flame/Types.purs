@@ -16,7 +16,8 @@ module Flame.Types
       ) where
 
 import Data.Maybe (Maybe)
-import Data.Tuple.Nested (Tuple3)
+import Data.Tuple.Nested (type (/\))
+import Effect (Effect)
 import Foreign (Foreign)
 import Prelude (class Functor, class Show, map)
 
@@ -38,7 +39,7 @@ type EventName = String
 data Source = Window | Document | Custom
 
 -- | Subscriptions are events from outside the view, e.g. `window`, `document` or `CustomEvent`
-type Subscription message = Tuple3 Source EventName (Foreign → message)
+type Subscription message = Source /\ EventName /\ (Foreign → Effect (Maybe message))
 
 type ToNodeData value = ∀ message. value → NodeData message
 
