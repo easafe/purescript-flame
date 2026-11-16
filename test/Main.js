@@ -28,6 +28,10 @@ export function enterPressedEvent() {
     return new window.KeyboardEvent('keypress', { key: 'Enter', bubbles: true });
 }
 
+export function mouseenterEvent() {
+    return new window.Event('mouseenter', { bubbles: false });
+}
+
 export function errorEvent() {
     return new window.Event('error', { bubbles: true });
 }

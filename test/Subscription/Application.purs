@@ -1,4 +1,4 @@
-module Test.Subscription.EffectList (mount, TEELMessage(..)) where
+module Test.Subscription.Application (mount, mountWith, TEELMessage(..)) where
 
 -- | Counter example using a side effects free function
 
@@ -36,8 +36,11 @@ view model = HE.main [HA.id "main"]
 
 -- | Mount the application on the given selector
 mount ∷ Effect (AppId String TEELMessage)
-mount = do
-      let id = AppId "teel"
+mount = mountWith "teel"
+
+mountWith ∷ String → Effect (AppId String TEELMessage)
+mountWith name = do
+      let id = AppId name
       F.mount (QuerySelector "#mount-point") id
             { model: 0
             , subscribe: []

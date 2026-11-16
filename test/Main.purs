@@ -12,7 +12,9 @@ import Data.String.CodeUnits as DSC
 import Data.Tuple (Tuple(..))
 import Data.Traversable as DT
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Ref as ER
 import Effect.Exception.Unsafe as EEU
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
@@ -20,6 +22,7 @@ import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.Internal.Dom as FRID
+import Flame.Types (AppId(..), DomRenderingState, Html)
 import Flame.Renderer.String as FRS
 import Flame.Subscription as FS
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
@@ -31,9 +34,10 @@ import Test.ServerSideRendering.Application as TSE
 import Test.ServerSideRendering.FragmentNode as TSF
 import Test.ServerSideRendering.ManagedNode as TSM
 import Test.Subscription.Broadcast as TSB
-import Test.Subscription.EffectList (TEELMessage(..))
-import Test.Subscription.EffectList as TEEL
+import Test.Subscription.Application (TEELMessage(..))
+import Test.Subscription.Application as TEEL
 import Test.Subscription.RawSubscription as TSRS
+import Test.Subscription.Reentrant as TSR
 import Unsafe.Coerce as UC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
@@ -59,6 +63,7 @@ foreign import inputEvent ∷ Effect Event
 foreign import keydownEvent ∷ Effect Event
 foreign import enterPressedEvent ∷ Effect Event
 foreign import errorEvent ∷ Effect Event
+foreign import mouseenterEvent ∷ Effect Event
 foreign import offlineEvent ∷ Effect Event
 foreign import getCssText ∷ Element → String
 foreign import getAllAttributes ∷ Element → String
@@ -88,7 +93,7 @@ main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
                   html2' ← liftEffect $ FRS.render html2
                   TSA.shouldEqual """<a style="width: 23px; display: none">TEST</a>""" html2'
 
-                  let html3 = HE.a [ HA.style1 "mystyle" "test-test" ] [ HE.text "TEST" ]
+                  let html3 = HE.a [ HA.style' "mystyle" "test-test" ] [ HE.text "TEST" ]
                   html3' ← liftEffect $ FRS.render html3
                   TSA.shouldEqual """<a style="mystyle: test-test">TEST</a>""" html3'
 
@@ -329,10 +334,10 @@ main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
                   nodeAttributes ← getAttributes "#t"
                   TSA.shouldEqual "href:e.com max:oi id:t" nodeAttributes
 
-                  let updatedHtml = HE.input [ HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong" ]
+                  let updatedHtml = HE.input [ HA.id "t", HA.href "e.com", HA.min "ola", HA.itemprop "pong" ]
                   liftEffect $ FRID.resume state updatedHtml
                   updatedNodeAttributes ← getAttributes "#t"
-                  TSA.shouldEqual "href:e.com id:t min:ola ping:pong" updatedNodeAttributes
+                  TSA.shouldEqual "href:e.com id:t min:ola itemprop:pong" updatedNodeAttributes
 
                   let emptyUpdatedHtml = HE.input [ HA.id "t" ]
                   liftEffect $ FRID.resume state emptyUpdatedHtml
@@ -340,10 +345,10 @@ main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
                   --id is a property that also has an attribute
                   TSA.shouldEqual "id:t" emptyUpdatedNodeAttributes
 
-                  let fullUpdatedHtml = HE.input [ HA.id "t", HA.href "e.com", HA.min "ola", HA.ping "pong" ]
+                  let fullUpdatedHtml = HE.input [ HA.id "t", HA.href "e.com", HA.min "ola", HA.itemprop "pong" ]
                   liftEffect $ FRID.resume state fullUpdatedHtml
                   fullNodeAttributes ← getAttributes "#t"
-                  TSA.shouldEqual "id:t href:e.com min:ola ping:pong" fullNodeAttributes
+                  TSA.shouldEqual "id:t href:e.com min:ola itemprop:pong" fullNodeAttributes
 
             TS.it "presential attributes" do
                   let html = HE.input [ HA.id "t", HA.type' "checkbox", HA.disabled true, HA.autofocus true ]
@@ -736,6 +741,35 @@ main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
                   output3 ← textContent "#text-output"
                   TSA.shouldEqual "0" output3
 
+            TS.it "messages sent before mounting are processed once mounted" do
+                  liftEffect do
+                        unsafeCreateEnviroment
+                        FS.send (AppId "queued" ∷ AppId String TEELMessage) TEELIncrement
+                        FS.send (AppId "queued" ∷ AppId String TEELMessage) TEELIncrement
+                  id ← liftEffect $ TEEL.mountWith "queued"
+                  output ← textContent "#text-output"
+                  TSA.shouldEqual "2" output
+
+                  liftEffect $ FS.send id TEELDecrement
+                  output2 ← textContent "#text-output"
+                  TSA.shouldEqual "1" output2
+
+            TS.it "messages raised while rendering see the current model" do
+                  id ← liftEffect do
+                        unsafeCreateEnviroment
+                        TSR.mount
+                  output ← textContent "#text-output"
+                  TSA.shouldEqual "0" output
+
+                  --the managed node raises Rendered while the view for Tick is being patched
+                  liftEffect $ FS.send id TSR.Tick
+                  output2 ← textContent "#text-output"
+                  TSA.shouldEqual "11" output2
+
+                  liftEffect $ FS.send id TSR.Tick
+                  output3 ← textContent "#text-output"
+                  TSA.shouldEqual "12" output3
+
             TS.it "broadcast" do
                   _ ← liftEffect do
                         unsafeCreateEnviroment
@@ -839,7 +873,161 @@ main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
                   current ← textContent "#text-output"
                   TSA.shouldEqual "3" current
 
+      TS.describe "reflected properties" do
+            TS.it "camel case properties set and unset their attribute" do
+                  let html = HE.td' [ HA.id "t", HA.colspan 2, HA.tabindex 3, HA.maxlength 5 ]
+                  state ← mountHtml html
+                  nodeAttributes ← getAttributes "#t"
+                  TSA.shouldEqual "id:t colspan:2 tabindex:3" nodeAttributes
+                  let updatedHtml = HE.td' [ HA.id "t" ]
+                  liftEffect $ FRID.resume state updatedHtml
+                  updatedNodeAttributes ← getAttributes "#t"
+                  TSA.shouldEqual "id:t" updatedNodeAttributes
+
+            --jsdom does not reflect contentEditable, so only the property value can be checked
+            TS.it "contentEditable takes the literal true and false" do
+                  let html = HE.div [ HA.id "t", HA.contentEditable true ] []
+                  state ← mountHtml html
+                  properties ← getProperties "#t" [ "contentEditable" ]
+                  TSA.shouldEqual [ "true" ] properties
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "t", HA.contentEditable false ] []
+                  updatedProperties ← getProperties "#t" [ "contentEditable" ]
+                  TSA.shouldEqual [ "false" ] updatedProperties
+
+            TS.it "boolean properties are unset on removal" do
+                  let html = HE.input [ HA.id "t", HA.checked true, HA.disabled true ]
+                  state ← mountHtml html
+                  properties ← getProperties "#t" [ "checked", "disabled" ]
+                  TSA.shouldEqual [ "true", "true" ] properties
+                  liftEffect $ FRID.resume state $ HE.input [ HA.id "t" ]
+                  updatedProperties ← getProperties "#t" [ "checked", "disabled" ]
+                  TSA.shouldEqual [] updatedProperties
+
+            TS.it "svg boolean attributes take the literal true and false" do
+                  let html = HE.svg [ HA.id "t", HA.externalResourcesRequired false ] []
+                  _ ← mountHtml html
+                  nodeAttributes ← getAttributes "#t"
+                  TSA.shouldEqual "externalResourcesRequired:false id:t" nodeAttributes
+
+      --the dom node update suite only covers prefix, suffix and swap moves of the keyed algorithm,
+      -- single fragments without siblings and bubbling events; these are the reported bugs
+      TS.describe "renderer regressions" do
+            let keyedSpan k = HE.span' [ HA.key k, HA.id k ]
+
+            TS.it "keyed reorder with an insertion in the middle" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] (map keyedSpan [ "a", "b", "c", "d" ])
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] (map keyedSpan [ "a", "d", "b", "x" ])
+                  ids ← childNodeIds "#test-div"
+                  TSA.shouldEqual [ "a", "d", "b", "x" ] ids
+
+            TS.it "keyed reorder after a common prefix" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] (map keyedSpan [ "a", "b", "c", "d", "e", "f" ])
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] (map keyedSpan [ "a", "b", "e", "c", "x", "f" ])
+                  ids ← childNodeIds "#test-div"
+                  TSA.shouldEqual [ "a", "b", "e", "c", "x", "f" ] ids
+
+            TS.it "keyed children with a text sibling" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] [ keyedSpan "a", HE.text "t", keyedSpan "b" ]
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] [ keyedSpan "a", HE.text "u", keyedSpan "b" ]
+                  content ← textContent "#test-div"
+                  TSA.shouldEqual "u" content
+
+            TS.it "fragment grows next to a sibling" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] [ HE.fragment [ keyedSpan "a" ], HE.p' [ HA.id "p" ] ]
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] [ HE.fragment [ keyedSpan "a", keyedSpan "b" ], HE.p' [ HA.id "p" ] ]
+                  ids ← childNodeIds "#test-div"
+                  TSA.shouldEqual [ "a", "b", "p" ] ids
+
+            TS.it "empty fragment is filled next to a sibling" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] [ HE.fragment [], HE.p' [ HA.id "p" ] ]
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] [ HE.fragment [ keyedSpan "a" ], HE.p' [ HA.id "p" ] ]
+                  ids ← childNodeIds "#test-div"
+                  TSA.shouldEqual [ "a", "p" ] ids
+
+            TS.it "emptying a fragment keeps its siblings" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] [ HE.fragment [ keyedSpan "a" ], HE.p' [ HA.id "p" ] ]
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] [ HE.fragment [], HE.p' [ HA.id "p" ] ]
+                  ids ← childNodeIds "#test-div"
+                  TSA.shouldEqual [ "p" ] ids
+
+            TS.it "nested fragment replaced by an element" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] [ HE.fragment [ HE.fragment [ keyedSpan "a" ], keyedSpan "b" ] ]
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] [ HE.p' [ HA.id "p" ] ]
+                  ids ← childNodeIds "#test-div"
+                  TSA.shouldEqual [ "p" ] ids
+
+            TS.it "children replaced by text with the same content" do
+                  state ← mountHtml $ HE.div [ HA.id "test-div" ] [ HE.span_ [ HE.text "a" ] ]
+                  liftEffect $ FRID.resume state $ HE.div [ HA.id "test-div" ] [ HE.text "a" ]
+                  content ← textContent "#test-div"
+                  TSA.shouldEqual "a" content
+                  childrenCount ← childrenNodeLengthOf "#test-div"
+                  TSA.shouldEqual 0 childrenCount
+
+            TS.it "same html value used twice" do
+                  let item t = HE.div_ [ HE.span_ [ HE.text t ] ]
+                  let one = item "x"
+                  state ← mountHtml $ HE.main [ HA.id "test-div" ] [ one, one ]
+                  let two = item "y"
+                  liftEffect $ FRID.resume state $ HE.main [ HA.id "test-div" ] [ two, two ]
+                  content ← textContent "#test-div"
+                  TSA.shouldEqual "yy" content
+
+            TS.it "same lazy value used twice" do
+                  let lazyItem = HE.lazy Nothing (\n → HE.i_ [ HE.text $ show n ]) 1
+                  _ ← mountHtml $ HE.main [ HA.id "test-div" ] [ lazyItem, lazyItem ]
+                  content ← textContent "#test-div"
+                  TSA.shouldEqual "11" content
+
+            TS.it "non bubbling events reach their handler" do
+                  ref ← liftEffect $ ER.new 0
+                  _ ← mountHtmlWith (\_ → ER.modify_ (_ + 1) ref) $ HE.div_ [ HE.span [ HA.id "s", HA.onMouseenter unit ] [] ]
+                  dispatchEvent mouseenterEvent "#s"
+                  count ← liftEffect $ ER.read ref
+                  TSA.shouldEqual 1 count
+
+            TS.it "functor mapping applies to events on the root of a lazy node" do
+                  ref ← liftEffect $ ER.new []
+                  let lazyButton = HE.lazy Nothing (\_ → HE.button [ HA.id "b", HA.onClick "inner" ] [ HE.text "x" ]) unit
+                  _ ← mountHtmlWith (record ref) $ HE.div_ [ map ("mapped:" <> _) lazyButton ]
+                  dispatchEvent clickEvent "#b"
+                  messages ← liftEffect $ ER.read ref
+                  TSA.shouldEqual [ "mapped:inner" ] messages
+
+            TS.it "functor mapping composes across lazy re-rendering" do
+                  ref ← liftEffect $ ER.new []
+                  let inner n = map ("inner:" <> _) $ HE.button [ HA.id "b", HA.onClick "x" ] [ HE.text $ show n ]
+                  let outer n = map ("outer:" <> _) $ HE.lazy Nothing inner n
+                  state ← mountHtmlWith (record ref) $ HE.div_ [ outer 1 ]
+                  liftEffect $ FRID.resume state $ HE.div_ [ outer 2 ]
+                  dispatchEvent clickEvent "#b"
+                  messages ← liftEffect $ ER.read ref
+                  TSA.shouldEqual [ "outer:inner:x" ] messages
+
+            TS.it "hydration of nested fragments" do
+                  let
+                        view suffix = HE.main_
+                              [ HE.fragment [ HE.fragment [ HE.span [ HA.id "a" ] [ HE.text $ "a" <> suffix ], HE.span [ HA.id "b" ] [ HE.text $ "b" <> suffix ] ] ]
+                              , HE.p [ HA.id "p" ] [ HE.text $ "p" <> suffix ]
+                              ]
+                  state ← hydrateHtmlWith (const $ pure unit) """<main><span id="a">a</span><span id="b">b</span><p id="p">p</p></main>""" $ view ""
+                  liftEffect $ FRID.resume state $ view "!"
+                  a ← textContent "#a"
+                  p ← textContent "#p"
+                  TSA.shouldEqual [ "a!", "p!" ] [ a, p ]
+
+            TS.it "hydration keeps functor mapping on lazy nodes" do
+                  ref ← liftEffect $ ER.new []
+                  let lazyButton = HE.lazy Nothing (\_ → HE.button [ HA.id "b", HA.onClick "x" ] [ HE.text "x" ]) unit
+                  _ ← hydrateHtmlWith (record ref) """<main><button id="b">x</button></main>""" $ HE.main_ [ map ("mapped:" <> _) lazyButton ]
+                  dispatchEvent clickEvent "#b"
+                  messages ← liftEffect $ ER.read ref
+                  TSA.shouldEqual [ "mapped:x" ] messages
+
       where
+      record ∷ ∀ message. ER.Ref (Array message) → message → Effect Unit
+      record ref message = ER.modify_ (flip DA.snoc message) ref
+
       unsafeQuerySelector ∷ String → Effect Element
       unsafeQuerySelector selector = do
             maybeElement ← FAD.querySelector selector
@@ -851,6 +1039,21 @@ main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
             unsafeCreateEnviroment
             mountDiv ← unsafePartial (DM.fromJust <$> FAD.querySelector "#mount-point")
             FRID.start mountDiv (const (pure unit)) html
+
+      mountHtmlWith ∷ ∀ message. (message → Effect Unit) → Html message → Aff DomRenderingState
+      mountHtmlWith updater html = liftEffect do
+            unsafeCreateEnviroment
+            mountDiv ← unsafePartial (DM.fromJust <$> FAD.querySelector "#mount-point")
+            FRID.start mountDiv updater html
+
+      hydrateHtmlWith ∷ ∀ message. (message → Effect Unit) → String → Html message → Aff DomRenderingState
+      --as with resumeMount, the root of the view is the mounting element itself
+      hydrateHtmlWith updater markup html = liftEffect do
+            unsafeCreateEnviroment
+            mountDiv ← unsafeQuerySelector "#mount-point"
+            innerHtml mountDiv markup
+            root ← unsafeQuerySelector "#mount-point > *"
+            FRID.startFrom (UC.unsafeCoerce root) updater html
 
       mountHtml' html = liftEffect do
             mountDiv ← unsafePartial (DM.fromJust <$> FAD.querySelector "#mount-point")
