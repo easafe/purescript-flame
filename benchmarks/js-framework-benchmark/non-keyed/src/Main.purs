@@ -19,9 +19,9 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 data Message
       = Create Int
-      | DisplayCreated (Array Row)
+      | DisplayCreated (Array TableRow)
       | AppendOneThousand
-      | DisplayAppended (Array Row)
+      | DisplayAppended (Array TableRow)
       | UpdateEveryTenth
       | Clear
       | Swap
@@ -29,11 +29,11 @@ data Message
       | Select Int
 
 type Model =
-      { rows ∷ Array Row
+      { rows ∷ Array TableRow
       , lastID ∷ Int
       }
 
-type Row =
+type TableRow =
       { id ∷ Int
       , label ∷ String
       , selected ∷ Boolean
@@ -45,21 +45,21 @@ type Button =
       , message ∷ Message
       }
 
-foreign import createRandomNRows_ ∷ EffectFn2 Int Int (Array Row)
+foreign import createRandomNRows_ ∷ EffectFn2 Int Int (Array TableRow)
 
-createRandomNRows ∷ Int → Int → Aff (Array Row)
+createRandomNRows ∷ Int → Int → Aff (Array TableRow)
 createRandomNRows n lastID = liftEffect (EU.runEffectFn2 createRandomNRows_ n lastID)
 
 main ∷ Effect Unit
 main = F.mount_ (QuerySelector "main")
-      { model: model
+      { model: init
       , view
       , subscribe: []
       , update
       }
 
-model ∷ Model
-model =
+init ∷ Model
+init =
       { rows: []
       , lastID: 0
       }
@@ -105,10 +105,10 @@ renderActionButton button = HE.div [ HA.class' "col-sm-6 smallpad" ]
               [ HE.text button.label ]
       ]
 
-renderLazyRow ∷ Row → Html Message
+renderLazyRow ∷ TableRow → Html Message
 renderLazyRow row = HE.lazy Nothing renderRow row
 
-renderRow ∷ Row → Html Message
+renderRow ∷ TableRow → Html Message
 renderRow row = HE.tr [ HA.class' { "danger": row.selected } ]
       [ HE.td colMd1 [ HE.text (show row.id) ]
       , HE.td colMd4 [ HE.a [ HA.onClick (Select row.id) ] [ HE.text row.label ] ]
@@ -161,12 +161,14 @@ update model =
 
             Select id → F.noMessages (model { rows = map (select id) model.rows })
 
+updateLabel ∷ Int → TableRow → TableRow
 updateLabel index row =
       if index `mod` 10 == 0 then
             row { label = row.label <> " !!!" }
       else
             row
 
+swapRows ∷ Array TableRow → Int → Int → Maybe (Array TableRow)
 swapRows arr index otherIndex = do
       rowA ← arr !! index
       rowB ← arr !! otherIndex
@@ -174,6 +176,7 @@ swapRows arr index otherIndex = do
       arrB ← DA.updateAt otherIndex rowA arrA
       pure arrB
 
+select ∷ Int → TableRow → TableRow
 select id row
       | row.id == id = row { selected = true }
       | row.selected = row { selected = false }

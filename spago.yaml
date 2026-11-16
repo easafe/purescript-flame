@@ -1,4 +1,11 @@
 package:
+  name: flame
+  publish:
+    version: 1.6.0
+    license: MIT
+    location:
+      githubOwner: easafe
+      githubRepo: purescript-flame
   dependencies:
     - aff
     - argonaut-codecs
@@ -14,23 +21,25 @@ package:
     - foreign
     - foreign-object
     - maybe
-    - newtype
     - nullable
     - partial
     - prelude
-    - random
     - refs
-    - spec
     - strings
     - tuples
     - typelevel-prelude
     - unsafe-coerce
     - web-dom
     - web-events
-    - web-html
-    - web-uievents
-  name: flame
+  test:
+    main: Test.Main
+    dependencies:
+      - newtype
+      - random
+      - spec
+      - spec-node
+      - web-html
+      - web-uievents
 workspace:
-  extraPackages: {}
   packageSet:
-    url: https://raw.githubusercontent.com/purescript/package-sets/psc-0.15.4-20220822/packages.json
+    registry: 82.1.1

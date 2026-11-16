@@ -9,9 +9,9 @@
     },
     "scripts": {
         "postinstall": "spago install",
-        "clean": "rm -rf dist output .spago node_modules",
+        "clean": "rm -rf dist output output-es .spago node_modules",
         "build": "spago build",
-        "build-prod": "spago build && webpack --config=webpack.flame.config.js"
+        "build-prod": "spago build && purs-backend-es build && esbuild index.js --bundle --minify --outfile=dist/bundle.js"
     },
     "keywords": [
         "purescript",
@@ -25,10 +25,9 @@
         "url": "https://github.com/krausest/js-framework-benchmark.git"
     },
     "devDependencies": {
-        "purescript": "0.15.15",
+        "esbuild": "^0.28.2",
+        "purescript": "^0.15.17",
         "purs-backend-es": "^1.4.3",
-        "spago": "0.21",
-        "webpack": "^4.47.0",
-        "webpack-cli": "^3.3.12"
+        "spago": "^1.0.5"
     }
 }

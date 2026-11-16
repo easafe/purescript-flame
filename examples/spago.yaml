@@ -1,0 +1,23 @@
+package:
+  name: flame-examples
+  dependencies:
+    - aff
+    - affjax
+    - affjax-web
+    - argonaut-codecs
+    - argonaut-core
+    - arrays
+    - console
+    - effect
+    - either
+    - flame
+    - httpurple
+    - js-timers
+    - maybe
+    - node-fs
+    - prelude
+    - random
+    - tuples
+    - web-dom
+    - web-html
+    - web-storage

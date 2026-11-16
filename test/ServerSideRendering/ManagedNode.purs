@@ -3,7 +3,7 @@ module Test.ServerSideRendering.ManagedNode (preMount, mount) where
 import Prelude
 
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe(..), fromJust)
+import Data.Maybe (fromJust)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU

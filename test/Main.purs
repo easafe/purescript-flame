@@ -12,8 +12,6 @@ import Data.String.CodeUnits as DSC
 import Data.Tuple (Tuple(..))
 import Data.Traversable as DT
 import Effect (Effect)
-import Effect.Aff (Milliseconds(..))
-import Effect.Aff as AF
 import Effect.Class (liftEffect)
 import Effect.Exception.Unsafe as EEU
 import Effect.Uncurried (EffectFn2)
@@ -46,13 +44,10 @@ import Web.DOM.ParentNode as WDP
 import Web.Event.Event (EventType(..))
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
-import Web.HTML as WH
-import Web.HTML.HTMLDocument as WDD
 import Web.HTML.HTMLInputElement as WHH
 import Test.Spec.Assertions as TSA
 import Test.Spec as TS
-import Web.HTML.Window as WHW
-import Test.Spec.Runner as TSR
+import Test.Spec.Runner.Node as TSRN
 import Test.Spec.Reporter.Console (consoleReporter)
 
 --we use jsdom to provide a browser like enviroment to run tests
@@ -73,7 +68,7 @@ foreign import createSvg ∷ Effect Node
 foreign import createDiv ∷ Effect Node
 
 main ∷ Effect Unit
-main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
+main = TSRN.runSpecAndExitProcess [ consoleReporter ] do
       TS.describe "Server side virtual node creation" do
             TS.it "ToClassList instances" do
                   let html = HE.a [ HA.class' "test" ] [ HE.text "TEST" ]
@@ -257,7 +252,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   rootNode ← liftEffect $ unsafeQuerySelector "#mount-point"
                   liftEffect $ innerHtml rootNode """<div id="oi"></div>"""
                   let html = HE.div [ HA.id "test-div" ] [ HE.input [ HA.id "t", HA.value "a" ] ]
-                  state ← mountHtml' html
+                  _ ← mountHtml' html
                   childrenCount ← childrenNodeLengthOf "#mount-point"
                   TSA.shouldEqual 2 childrenCount
                   divNode ← liftEffect $ FAD.querySelector "#oi"
@@ -536,7 +531,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
 
                   divElement ← liftEffect createDiv
                   liftEffect $ innerHtml (UC.unsafeCoerce divElement) """<span class="oi"></span>"""
-                  let updatedHtml = HE.managed_ { createNode: const (pure divElement), updateNode: \e _ _ → pure divElement } unit
+                  let updatedHtml = HE.managed_ { createNode: const (pure divElement), updateNode: \_ _ _ → pure divElement } unit
                   liftEffect $ FRID.resume state updatedHtml
                   oldElement ← liftEffect $ FAD.querySelector "svg"
                   TSA.shouldSatisfy oldElement DM.isNothing
@@ -599,12 +594,12 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   nodeAttributes ← getAttributes "#test-div main"
                   TSA.shouldEqual "" nodeAttributes
                   nodeAttributes2 ← getAttributes "#test-div section"
-                  TSA.shouldEqual "" nodeAttributes
+                  TSA.shouldEqual "" nodeAttributes2
 
       TS.describe "events" do
             TS.it "event sets dom property" do
                   let html = HE.input [ HA.onClick unit ]
-                  state ← mountHtml html
+                  _ ← mountHtml html
                   nodeProperties ← getProperties "input" [ eventPrefix <> "click" ]
                   TSA.shouldSatisfy nodeProperties ((_ == 1) <<< DA.length)
 
@@ -742,7 +737,7 @@ main = AF.launchAff_ $ TSR.runSpec [ consoleReporter ] do
                   TSA.shouldEqual "0" output3
 
             TS.it "broadcast" do
-                  id ← liftEffect do
+                  _ ← liftEffect do
                         unsafeCreateEnviroment
                         TSB.mount
                   output ← textContent "#text-output"

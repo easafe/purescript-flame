@@ -9,26 +9,28 @@
             "package.json"
       ],
       "type": "module",
+      "engines": {
+            "node": ">=18"
+      },
       "scripts": {
-            "example-server-side-rendering-client": "parcel build examples/ServerSideRendering/Client/server-side-rendering-client.js --dist-dir examples/ServerSideRendering/dist",
+            "example-server-side-rendering-client": "esbuild examples/src/ServerSideRendering/Client/server-side-rendering-client.js --bundle --minify --outfile=examples/src/ServerSideRendering/dist/server-side-rendering-client.js",
             "example-server-side-rendering": "npm run example-server-side-rendering-client",
-            "example-affjax-list": "parcel build examples/Affjax/affjax.js --dist-dir examples/Affjax/dist",
-            "example-counter": "parcel build examples/Counter/counter.js --dist-dir examples/Counter/dist",
-            "example-counters": "parcel build examples/Counters/counters.js --dist-dir examples/Counters/dist",
-            "example-dice": "parcel build examples/Dice/dice.js --dist-dir examples/Dice/dist",
-            "example-special": "parcel build examples/SpecialElements/special.js --dist-dir examples/SpecialElements/dist",
-            "example-subscriptions": "parcel build examples/Subscriptions/subscriptions.js --dist-dir examples/Subscriptions/dist",
-            "example-todo": "parcel build examples/Todo/todo.js --dist-dir examples/Todo/dist",
-            "scratchpad": "parcel watch test/scratchpadloader.js --dist-dir test/dist",
-            "server-side-rendering": "npm run example-server-side-rendering && node examples/ServerSideRendering/Server/server-side-rendering-server.js",
+            "example-affjax-list": "esbuild examples/src/Affjax/affjax.js --bundle --minify --outfile=examples/src/Affjax/dist/affjax.js",
+            "example-counter": "esbuild examples/src/Counter/counter.js --bundle --minify --outfile=examples/src/Counter/dist/counter.js",
+            "example-counters": "esbuild examples/src/Counters/counters.js --bundle --minify --outfile=examples/src/Counters/dist/counters.js",
+            "example-dice": "esbuild examples/src/Dice/dice.js --bundle --minify --outfile=examples/src/Dice/dist/dice.js",
+            "example-special": "esbuild examples/src/SpecialElements/special.js --bundle --minify --outfile=examples/src/SpecialElements/dist/special.js",
+            "example-subscriptions": "esbuild examples/src/Subscriptions/subscriptions.js --bundle --minify --outfile=examples/src/Subscriptions/dist/subscriptions.js",
+            "example-todo": "esbuild examples/src/Todo/todo.js --bundle --minify --outfile=examples/src/Todo/dist/todo.js",
+            "scratchpad": "esbuild test/scratchpadloader.js --bundle --watch --outfile=test/dist/scratchpadloader.js",
+            "server-side-rendering": "npm run example-server-side-rendering && node examples/src/ServerSideRendering/Server/server-side-rendering-server.js",
             "build-examples": "npm run example-affjax-list && npm run example-counter && npm run example-counters && npm run example-dice && npm run example-todo && npm run example-special && npm run example-subscriptions",
-            "test": "spago -x examples.dhall test && npm run build-examples"
+            "test": "spago test && npm run build-examples"
       },
       "devDependencies": {
-            "jsdom": "^16.5.3",
-            "parcel": "^2.7.0"
-      },
-      "alias": {
-            "xhr2": false
+            "esbuild": "^0.28.2",
+            "jsdom": "^31.0.1",
+            "purescript": "^0.15.17",
+            "spago": "^1.0.5"
       }
 }

@@ -1,0 +1,14 @@
+package:
+  name: js-framework-benchmark-flame-keyed
+  dependencies:
+    - aff
+    - arrays
+    - effect
+    - flame
+    - maybe
+    - prelude
+    - tuples
+    - web-dom
+workspace:
+  packageSet:
+    registry: 82.1.1

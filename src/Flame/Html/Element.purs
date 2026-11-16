@@ -7,7 +7,6 @@ import Data.Array as DA
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Effect (Effect)
-import Flame.Html.Attribute.Internal as FHAI
 import Flame.Internal.Fragment as FIF
 import Flame.Types (Html, Key, NodeData, Tag)
 import Web.DOM (Node)

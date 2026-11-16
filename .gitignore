@@ -27,4 +27,5 @@ vendor
 
 .spago
 
-.parcel-cache
+output-es/
+.spec-results

@@ -12,7 +12,6 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Flame (Html)
 import Flame as F
-import Flame.Application as FA
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Subscription as FS

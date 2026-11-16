@@ -3,7 +3,6 @@ module Test.ServerSideRendering.FragmentNode (preMount, mount) where
 import Prelude
 
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
