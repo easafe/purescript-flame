@@ -13,24 +13,7 @@ let reUnescapedHtml = /[&<>"']/g,
         ['"', '&quot;'],
         ["'", '&#39;']
     ]);
-let containerElements = new Set([
-    'a',
-    'defs',
-    'glyph',
-    'g',
-    'marker',
-    'mask',
-    'missing-glyph',
-    'pattern',
-    'svg',
-    'switch',
-    'symbol',
-    'text',
-    'desc',
-    'metadata',
-    'title'
-]),
-    voidElements = new Set([
+let voidElements = new Set([
         'area',
         'base',
         'br',
@@ -47,6 +30,13 @@ let containerElements = new Set([
         'track',
         'wbr'
     ]);
+/** Properties whose reflected attribute is not just the lower cased name */
+let propertyAttributeNames = new Map([
+    ['htmlFor', 'for'],
+    ['className', 'class'],
+    ['acceptCharset', 'accept-charset'],
+    ['httpEquiv', 'http-equiv']
+]);
 let omitProperties = new Set([
     'attributes',
     'childElementCount',
@@ -129,7 +119,7 @@ function stringify(html) {
             let childrenTag = new Array(html.children.length);
 
             for (let i = 0; i < html.children.length; ++i)
-                childrenTag.push(stringify(html.children[i]));
+                childrenTag[i] = stringify(html.children[i]);
 
             return childrenTag.join('');
         //skip for now, as element creation needs polyfills on server-side
@@ -139,22 +129,28 @@ function stringify(html) {
             let isSvg = html.nodeType === svgNode,
                 stringfiedNodeData = stringifyNodeData(html.nodeData),
                 tag = html.tag,
-                markup = ['<' + tag];
+                markup = ['<' + tag],
+                hasInnerHtml = html.nodeData.properties !== undefined && html.nodeData.properties.innerHTML !== undefined,
+                hasContent = hasInnerHtml || html.text !== undefined || html.children !== undefined && html.children.length > 0;
 
             if (stringfiedNodeData.length > 0)
                 markup.push(' ' + stringfiedNodeData);
 
-            if (isSvg && !containerElements.has(tag))
-                markup.push(' /');
+            //any svg element may have children (e.g. gradient stops, filter primitives, animations), so only empty ones are self closed
+            if (isSvg && !hasContent) {
+                markup.push(' />');
+
+                return markup.join('');
+            }
 
             markup.push('>');
 
-            if (!voidElements.has(tag) && !isSvg || isSvg && containerElements.has(tag)) {
-                if (html.nodeData.properties !== undefined && html.nodeData.properties.innerHTML !== undefined)
+            if (isSvg || !voidElements.has(tag)) {
+                if (hasInnerHtml)
                     markup.push(html.nodeData.properties.innerHTML);
                 else if (html.text !== undefined)
                     markup.push(escape(html.text));
-                else if (html.children !== undefined && html.children.length > 0)
+                else if (html.children !== undefined)
                     for (let i = 0; i < html.children.length; ++i)
                         markup.push(stringify(html.children[i]));
 
@@ -202,17 +198,19 @@ function setClasses(mapped, classes) {
     mapped.set('class', classes.join(' '));
 }
 
+/** Properties are rendered as the attribute they reflect */
 function setProperties(mapped, properties) {
     for (let key in properties)
         if (!omitProperties.has(key)) {
-            let value = properties[key];
+            let value = properties[key],
+                name = propertyAttributeNames.get(key) || key.toLowerCase();
 
-            if (booleanAttributes.has(key)) {
+            if (booleanAttributes.has(name)) {
                 if (value)
-                    mapped.set(key, key);
+                    mapped.set(name, name);
             }
             else
-                mapped.set(key, escape(value));
+                mapped.set(name, escape(value));
         }
 }
 
