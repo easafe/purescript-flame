@@ -13,9 +13,17 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Flame.Serialization (class Serializable)
 import Flame.Serialization as FS
-import Flame.Types (Html, PreApplication)
+import Flame.Types (Html)
 import Prelude (bind, discard, pure, ($), (<>))
 import Web.DOM.ParentNode (QuerySelector(..))
+
+-- | `PreApplication` contains
+-- | * `model` – the initial model
+-- | * `view` – a function to update your markup
+type PreApplication model message =
+      { model ∷ model
+      , view ∷ model → Html message
+      }
 
 -- | Adds the serialized state node as the first child of the given markup (or of `body` for full pages)
 foreign import injectState ∷ ∀ message. Html message → Html message → Html message

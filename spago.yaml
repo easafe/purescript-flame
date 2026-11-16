@@ -6,6 +6,10 @@ package:
     location:
       githubOwner: easafe
       githubRepo: purescript-flame
+  build:
+    # Flame.Html.Attribute re-exports whole modules on purpose
+    censorProjectWarnings:
+      - ImplicitQualifiedImportReExport
   dependencies:
     - aff
     - argonaut-codecs

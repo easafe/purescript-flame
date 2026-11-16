@@ -4,6 +4,7 @@ module Flame.Subscription
       ( send
       , onCustomEvent
       , onCustomEvent'
+      , onCustomEvent_
       ) where
 
 import Data.Maybe (Maybe(..))
@@ -25,8 +26,14 @@ send (AppId id) message = FAID.dispatchCustomEvent (show id) message
 onCustomEvent ∷ ∀ message. EventType → message → Subscription message
 onCustomEvent (EventType eventName) message = Custom /\ eventName /\ pure <<< Just <<< const message
 
--- | Subscribe to a `CustomEvent`
+-- | Subscribe to a `CustomEvent`, building the message from its payload
 -- |
 -- | `arg` must be serializable since it might come from external JavaScript
-onCustomEvent' ∷ ∀ arg message. Serializable arg ⇒ EventType → (arg → Effect (Maybe message)) → Subscription message
-onCustomEvent' (EventType eventName) message = Custom /\ eventName /\ message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign
+onCustomEvent' ∷ ∀ arg message. Serializable arg ⇒ EventType → (arg → message) → Subscription message
+onCustomEvent' (EventType eventName) message = Custom /\ eventName /\ pure <<< Just <<< message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign
+
+-- | Subscribe to a `CustomEvent` with an effectful handler that may return `Nothing`
+-- |
+-- | `arg` must be serializable since it might come from external JavaScript
+onCustomEvent_ ∷ ∀ arg message. Serializable arg ⇒ EventType → (arg → Effect (Maybe message)) → Subscription message
+onCustomEvent_ (EventType eventName) message = Custom /\ eventName /\ message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign

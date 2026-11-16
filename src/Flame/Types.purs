@@ -1,9 +1,6 @@
 -- | Types common to Flame modules
 module Flame.Types
-      ( PreApplication
-      , ToNodeData
-      , Tag
-      , Key
+      ( Key
       , AppId(..)
       , ApplicationId
       , Subscription
@@ -21,29 +18,25 @@ import Effect (Effect)
 import Foreign (Foreign)
 import Prelude (class Functor, class Show, map)
 
--- | `PreApplication` contains
--- | * `model` – the initial model
--- | * `view` – a function to update your markup
-type PreApplication model message =
-      { model ∷ model
-      , view ∷ model → Html message
-      }
-
+-- | Unique name of a mounted application, used to route external messages to it
 type ApplicationId = String
 
+-- | Identifies an application that can be fed messages from outside its `view`
+-- |
+-- | `a` is the identifier (anything with a `Show` instance), `b` is the application message type
 newtype AppId ∷ ∀ k. Type → k → Type
 newtype AppId a b = AppId a
 
+-- | Name of a DOM event, e.g. `"click"`
 type EventName = String
 
+-- | Where a subscription listens for events: the `window` object, the `document` object or a `CustomEvent` dispatched on the document
 data Source = Window | Document | Custom
 
 -- | Subscriptions are events from outside the view, e.g. `window`, `document` or `CustomEvent`
 type Subscription message = Source /\ EventName /\ (Foreign → Effect (Maybe message))
 
-type ToNodeData value = ∀ message. value → NodeData message
-
-type Tag = String
+-- | Key used by keyed rendering to match children nodes between updates
 type Key = String
 
 -- | FFI class that keeps track of DOM rendering
@@ -62,7 +55,7 @@ foreign import data NodeData ∷ Type → Type
 -- | The type of virtual nodes
 foreign import data Html ∷ Type → Type
 
---we support events that are not fired if the message is Nothing
+-- | Maps the messages raised by a given `Html`; events may not fire, hence `Maybe`
 foreign import messageMapper ∷ ∀ message mapped. (Maybe message → Maybe mapped) → Html message → Html mapped
 
 instance Functor Html where
