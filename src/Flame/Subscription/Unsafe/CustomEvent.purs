@@ -5,7 +5,7 @@ module Flame.Subscription.Unsafe.CustomEvent
 
 import Effect (Effect)
 import Flame.Application.Internal.Dom as FAID
-import Flame.Serialization (class SerializeState)
+import Flame.Serialization (class Serializable)
 import Flame.Serialization as FS
 import Prelude (Unit, unit, (<<<))
 import Web.Event.Event (EventType(..))
@@ -13,7 +13,7 @@ import Web.Event.Event (EventType(..))
 -- | Broadcast a `CustomEvent` to all applications
 -- |
 -- | This is considered unsafe as there is no guarantee that the payload matches listeners' expectations
-broadcast ∷ ∀ arg. SerializeState arg ⇒ EventType → arg → Effect Unit
+broadcast ∷ ∀ arg. Serializable arg ⇒ EventType → arg → Effect Unit
 broadcast (EventType eventName) = FAID.dispatchCustomEvent eventName <<< FS.serialize
 
 -- | Broadcast a `CustomEvent` that has no data associated to all applications

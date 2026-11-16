@@ -29,6 +29,7 @@ start parent updater = EU.runEffectFn4 start_ Just parent (maybeUpdater updater)
 startFrom ∷ ∀ message. DomNode → (message → Effect Unit) → Html message → Effect DomRenderingState
 startFrom parent updater = EU.runEffectFn4 startFrom_ Just parent (maybeUpdater updater)
 
+-- | Adapts the application updater to handlers that may not raise a message
 maybeUpdater ∷ ∀ message. (message → Effect Unit) → (Maybe message → Effect Unit)
 maybeUpdater updater = case _ of
       Just message → updater message

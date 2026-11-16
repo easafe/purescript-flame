@@ -1,4 +1,4 @@
-module Flame.Serialization (class SerializeState, serialize, class UnserializeState, unserialize, unsafeUnserialize) where
+module Flame.Serialization (class Serializable, serialize, unserialize, unsafeUnserialize) where
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode (JsonDecodeError)
@@ -18,30 +18,30 @@ import Partial.Unsafe as PU
 import Prelude (bind, show, (<<<), ($))
 import Prim.RowList (class RowToList)
 
-class UnserializeState m where
+-- | Models that can be serialized to a string (for server side rendering and custom events) and read back from it
+-- |
+-- | Records and types with a `Generic` instance are supported out of the box
+class Serializable m where
+      serialize ∷ m → String
       unserialize ∷ String → Either String m
 
-instance recordUnserializeState ∷ (GDecodeJson m list, RowToList m list) ⇒ UnserializeState (Record m) where
+instance (GEncodeJson m list, GDecodeJson m list, RowToList m list) ⇒ Serializable (Record m) where
+      serialize = DAC.stringify <<< DAE.encodeJson
       unserialize model = jsonStringError do
             json ← DAD.parseJson model
             DAD.decodeJson json
-else instance genericUnserializeState ∷ (Generic m r, DecodeRep r) ⇒ UnserializeState m where
+else instance (Generic m r, EncodeRep r, DecodeRep r) ⇒ Serializable m where
+      serialize = DAC.stringify <<< DAEG.genericEncodeJson
       unserialize model = jsonStringError do
             json ← DAD.parseJson model
             DADEG.genericDecodeJson json
 
-class SerializeState m where
-      serialize ∷ m → String
-
-instance encodeJsonSerializeState ∷ (GEncodeJson m list, RowToList m list) ⇒ SerializeState (Record m) where
-      serialize = DAC.stringify <<< DAE.encodeJson
-else instance genericSerializeState ∷ (Generic m r, EncodeRep r) ⇒ SerializeState m where
-      serialize = DAC.stringify <<< DAEG.genericEncodeJson
-
+-- | Renders decoding errors as plain strings
 jsonStringError ∷ ∀ a. Either JsonDecodeError a → Either String a
 jsonStringError = DB.lmap DAD.printJsonDecodeError
 
-unsafeUnserialize ∷ ∀ m. UnserializeState m ⇒ String → m
+-- | Unserializes the given string, crashing if it is not valid
+unsafeUnserialize ∷ ∀ m. Serializable m ⇒ String → m
 unsafeUnserialize str = PU.unsafePartial case unserialize str of
       Right m → m
       Left err → P.crashWith $ show err

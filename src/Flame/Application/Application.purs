@@ -26,13 +26,14 @@ import Flame.Application.Internal.Dom as FAD
 import Flame.Application.Internal.PreMount as FAP
 import Flame.Internal.Equality as FIE
 import Flame.Renderer.Internal.Dom as FRD
-import Flame.Serialization (class UnserializeState)
+import Flame.Serialization (class Serializable)
 import Flame.Subscription.Internal.Listener as FSIL
 import Flame.Types (AppId(..), ApplicationId, DomNode, DomRenderingState, Html, Subscription)
 import Prelude (class Show, Unit, bind, discard, map, pure, show, unit, when, ($), (<>))
 import Unsafe.Coerce as UC
 import Web.DOM.ParentNode (QuerySelector(..))
 
+-- | `update` functions take the current model and a message, and return the new model plus a list of effects that may raise further messages
 type Update model message = model → message → Tuple model (Array (Aff (Maybe message)))
 
 -- | Abstracts over common fields of an `Application`
@@ -60,6 +61,7 @@ type ResumedApplication model message = App model message
       ( update ∷ Update model message
       )
 
+-- | Helper for `update` branches that change the model without running effects
 noMessages ∷ ∀ model message. model → Tuple model (Array (Aff (Maybe message)))
 noMessages model = model /\ []
 
@@ -70,15 +72,15 @@ showId ∷ ∀ id message. Show id ⇒ (AppId id message) → String
 showId (AppId id) = show id
 
 -- | Mount a Flame application on the given selector which was rendered server-side
-resumeMount_ ∷ ∀ model message. UnserializeState model ⇒ QuerySelector → ResumedApplication model message → Effect model
+resumeMount_ ∷ ∀ model message. Serializable model ⇒ QuerySelector → ResumedApplication model message → Effect model
 resumeMount_ selector = resumeMountWith selector noAppId
 
 -- | Mount on the given selector a Flame application which was rendered server-side and can be fed arbitrary external messages
-resumeMount ∷ ∀ id model message. UnserializeState model ⇒ Show id ⇒ QuerySelector → AppId id message → ResumedApplication model message → Effect model
+resumeMount ∷ ∀ id model message. Serializable model ⇒ Show id ⇒ QuerySelector → AppId id message → ResumedApplication model message → Effect model
 resumeMount selector appId = resumeMountWith selector (Just appId)
 
 -- | Mount on the given selector a Flame application which was rendered server-side and can be fed arbitrary external messages
-resumeMountWith ∷ ∀ id model message. UnserializeState model ⇒ Show id ⇒ QuerySelector → Maybe (AppId id message) → ResumedApplication model message → Effect model
+resumeMountWith ∷ ∀ id model message. Serializable model ⇒ Show id ⇒ QuerySelector → Maybe (AppId id message) → ResumedApplication model message → Effect model
 resumeMountWith (QuerySelector selector) appId resumed = do
       model ← FAP.serializedState selector
       maybeElement ← FAD.querySelector selector

@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Flame.Application.Internal.Dom as FAID
-import Flame.Serialization (class UnserializeState)
+import Flame.Serialization (class Serializable)
 import Flame.Serialization as FS
 import Flame.Types (AppId(..), Source(..), Subscription)
 import Foreign as F
@@ -28,5 +28,5 @@ onCustomEvent (EventType eventName) message = Custom /\ eventName /\ pure <<< Ju
 -- | Subscribe to a `CustomEvent`
 -- |
 -- | `arg` must be serializable since it might come from external JavaScript
-onCustomEvent' ∷ ∀ arg message. UnserializeState arg ⇒ EventType → (arg → Effect (Maybe message)) → Subscription message
+onCustomEvent' ∷ ∀ arg message. Serializable arg ⇒ EventType → (arg → Effect (Maybe message)) → Subscription message
 onCustomEvent' (EventType eventName) message = Custom /\ eventName /\ message <<< FS.unsafeUnserialize <<< F.unsafeFromForeign

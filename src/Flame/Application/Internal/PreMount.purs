@@ -11,30 +11,37 @@ import Flame.Application.Internal.Dom as FAD
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
-import Flame.Serialization (class UnserializeState, class SerializeState)
+import Flame.Serialization (class Serializable)
 import Flame.Serialization as FS
 import Flame.Types (Html, PreApplication)
 import Prelude (bind, discard, pure, ($), (<>))
 import Web.DOM.ParentNode (QuerySelector(..))
 
+-- | Adds the serialized state node as the first child of the given markup (or of `body` for full pages)
 foreign import injectState ∷ ∀ message. Html message → Html message → Html message
 
+-- | Tag of the element that carries the serialized state
 tagSerializedState ∷ String
 tagSerializedState = "template-state"
 
+-- | Id of the element that carries the serialized state for the given (sanitized) selector
 idSerializedState ∷ String → String
 idSerializedState = ("pre-mount-" <> _)
 
+-- | Attribute that ties the serialized state to the given (sanitized) selector
 attributeSerializedState ∷ String → String
 attributeSerializedState = ("__pre-mount-" <> _)
 
+-- | Strips everything but ASCII letters so a selector can be used in an id
 onlyLetters ∷ String → String
-onlyLetters = DSR.replace (DSRU.unsafeRegex "[^aA-zZ]" global) ""
+onlyLetters = DSR.replace (DSRU.unsafeRegex "[^a-zA-Z]" global) ""
 
+-- | Selector that finds the serialized state element for the given (sanitized) selector
 selectorSerializedState ∷ String → String
 selectorSerializedState selector = tagSerializedState <> "#" <> idSerializedState selector <> "[" <> attributeSerializedState selector <> "=" <> selector <> "]"
 
-serializedState ∷ ∀ model. UnserializeState model ⇒ String → Effect model
+-- | Reads, unserializes and removes from the DOM the state rendered by `preMount` for the given selector
+serializedState ∷ ∀ model. Serializable model ⇒ String → Effect model
 serializedState selector = do
       maybeElement ← FAD.querySelector stateSelector
       case maybeElement of
@@ -49,7 +56,8 @@ serializedState selector = do
       where
       stateSelector = selectorSerializedState $ onlyLetters selector
 
-preMount ∷ ∀ model message. SerializeState model ⇒ QuerySelector → PreApplication model message → Effect String
+-- | Renders the application markup to a string with its serialized model embedded, so it can later be hydrated with `resumeMount`
+preMount ∷ ∀ model message. Serializable model ⇒ QuerySelector → PreApplication model message → Effect String
 preMount (QuerySelector selector) application = do
       let html = injectState state $ application.view application.model
       FRS.render html
