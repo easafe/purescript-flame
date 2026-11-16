@@ -33,11 +33,11 @@ module Counter.Main where
 import Prelude
 
 import Effect (Effect)
-import Web.DOM.ParentNode (QuerySelector(..))
-import Flame (Html, Update, Subscription)
+import Flame (Html, Update)
 import Flame as F
-import Flame.Html.Element as HE
 import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
+import Web.DOM.ParentNode (QuerySelector(..))
 
 -- | The model represents the state of the app
 type Model = Int
@@ -46,35 +46,31 @@ type Model = Int
 data Message = Increment | Decrement
 
 -- | Initial state of the app
-model :: Model
-model = 0
+init :: Model
+init = 0
 
 -- | `update` is called to handle events
 update :: Update Model Message
-update model = case _ of
-      Increment -> model + 1 /\ []
-      Decrement -> model - 1 /\ []
+update model = F.noMessages <<< case _ of
+      Increment -> model + 1
+      Decrement -> model - 1
 
 -- | `view` is called whenever the model is updated
 view :: Model -> Html Message
-view model = HE.main [HA.id "main"] [
-      HE.button [HA.onClick Decrement] [HE.text "-"],
-      HE.text $ show model,
-      HE.button [HA.onClick Increment] [HE.text "+"]
-]
-
--- | Events that come from outside the `view`
-subscribe :: Array (Subscription Message)
-subscribe = []
+view model = HE.main [ HA.id "main" ]
+      [ HE.button [ HA.onClick Decrement ] [ HE.text "-" ]
+      , HE.text $ show model
+      , HE.button [ HA.onClick Increment ] [ HE.text "+" ]
+      ]
 
 -- | Mount the application on the given selector
 main :: Effect Unit
-main = F.mount_ (QuerySelector "body") {
-      model,
-      view,
-      update,
-      subscribe
-}
+main = F.mount_ (QuerySelector "body")
+      { model: init
+      , subscribe: [] -- events that come from outside the `view`
+      , update
+      , view
+      }
 ```
 
 <a href="/concepts" class="direction">Next: Main concepts</a>

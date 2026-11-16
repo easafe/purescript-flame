@@ -110,7 +110,7 @@ More often than not, a real world application needs to handle events that don't 
 
 * External event handlers
 
-When mounting the application, `subscribe` can be used to specify `message`s as a list of subscriptions. The modules under `Flame.Subscription` define `on` event handlers similar to those used in views
+When mounting the application, `subscribe` can be used to specify `message`s as a list of subscriptions. The modules under `Flame.Subscription` define `on` event handlers similar to those used in views, in the same three shapes: `onClick message`, `onClick' (Event -> message)` and `onClick_ (Event -> Effect (Maybe message))`
 
 ```haskell
 F.mount_ (QuerySelector "body") {
@@ -126,7 +126,7 @@ F.mount_ (QuerySelector "body") {
 The only restriction is that `CustomEvent` messages payloads must be JSON serializable
 
 ```haskell
-onCustomEvent :: forall arg message. UnserializeState arg => EventType -> (arg -> message) -> Subscription message
+onCustomEvent' :: forall arg message. Serializable arg => EventType -> (arg -> message) -> Subscription message
 ```
 
 since they might come from external JavaScript that is not guaranteed to match PureScript data types.
@@ -143,7 +143,7 @@ mount :: forall id model message. Show id => QuerySelector -> AppId id message -
 send :: forall id message. Show id => AppId id message -> message -> Effect Unit
 ```
 
-Anything that has a `Show` instance can be an id, but the application will crash while mounting if the id isn't unique. That being said, passing `message` to an application is straightforward
+Anything that has a `Show` instance can be an id, but the application will crash while mounting if the id isn't unique. Messages sent to an application before it is mounted are queued and processed as soon as it is. That being said, passing `message` to an application is straightforward
 
 ```haskell
 import Flame as F
@@ -196,7 +196,7 @@ main = do
 Flame also provides a way to "broadcast" `CustomEvent`s for all listeners. `Flame.Subscription.Unsafe.CustomEvent` provides the following function
 
 ```haskell
-broadcast :: forall arg. SerializeState arg => EventType -> arg -> Effect Unit
+broadcast :: forall arg. Serializable arg => EventType -> arg -> Effect Unit
 ```
 
 whose events can be handled with `onCustomEvent` on your `subscribe` list. Broadcasting events is considered unsafe as it is user code responsibility to make sure all listeners expect the same `message` payload.

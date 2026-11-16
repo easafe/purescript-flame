@@ -55,7 +55,7 @@ type PreApplication model message = {
       view :: model -> Html message
 }
 
-preMount :: forall model message. SerializeState model => QuerySelector -> PreApplication model message -> Effect String
+preMount :: forall model message. Serializable model => QuerySelector -> PreApplication model message -> Effect String
 ```
 
 which can used to render server-side the initial state of an application. On client side, we can use
@@ -67,12 +67,12 @@ type ResumedApplication model message = {
       subscribe :: Array (Subscription message) -- subscriptions are only available client side
 }
 
-resumeMount_ :: forall model message. UnserializeState model => QuerySelector -> ResumedApplication model message -> Effect model
+resumeMount_ :: forall model message. Serializable model => QuerySelector -> ResumedApplication model message -> Effect model
 --or
-resumeMount :: forall id model message. UnserializeState model => Show id => QuerySelector -> AppId id message -> ResumedApplication model message -> Effect model
+resumeMount :: forall id model message. Serializable model => Show id => QuerySelector -> AppId id message -> ResumedApplication model message -> Effect model
 ```
 
-to install event handlers in the pre rendered markup. The `SerializeState`/`UnserializeState` type class automatically parses the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well. To make initialization logic easier, `resumeMount` returns the initial parsed model.
+to install event handlers in the pre rendered markup. The `Serializable` type class automatically parses the initial state as JSON in case of records or `Generic` instances. The `QuerySelector` passed to `preMount` and `resumeMount` must match -- otherwise the application will crash with an exception. To avoid diffing issues, the same `view` function should be used on the server and client side as well. To make initialization logic easier, `resumeMount` returns the initial parsed model.
 
 See the [Dice application](https://github.com/easafe/purescript-flame/tree/master/examples/ServerSideRendering) for an example of how to pre render an application on server-side.
 

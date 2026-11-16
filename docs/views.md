@@ -196,6 +196,16 @@ HE.div' [HA.onClick Message1, HA.onClick Message2]
 
 will result on the `update` function being called with `Message1` and after once again with `Message2`.
 
+Every event comes in three shapes, named by suffix
+
+```haskell
+HA.onClick :: forall message. message -> NodeData message -- raises a fixed message
+HA.onClick' :: forall message. (Event -> message) -> NodeData message -- builds the message from the DOM event
+HA.onClick_ :: forall message. (Event -> Effect (Maybe message)) -> NodeData message -- effectful handler that may not raise a message
+```
+
+Helpers such as `HA.nodeValue`, `HA.checkedValue`, `HA.pressedKey`, `HA.selection` and `HA.preventDefault` can be used in the latter two to extract values from the event. Subscriptions under `Flame.Subscription` follow the same naming.
+
 ### View logic
 
 A `view` is just a regular PureScript function: we can compose it or pass it around as any other value. For example, we can use the model in attributes
