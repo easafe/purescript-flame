@@ -11,16 +11,25 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Flame.Application.Internal.Dom as FAID
+import Flame.Subscription.Internal.Listener as FSIL
 import Flame.Serialization (class Serializable)
 import Flame.Serialization as FS
 import Flame.Types (AppId(..), Source(..), Subscription)
 import Foreign as F
-import Prelude (class Show, Unit, const, pure, show, (<<<))
+import Prelude (class Show, Unit, bind, const, pure, show, (<<<))
 import Web.Event.Event (EventType(..))
 
 -- | Raises an arbitrary message on the given application
+-- |
+-- | Messages sent before the application is mounted are queued until it is
 send ∷ ∀ id message. Show id ⇒ AppId id message → message → Effect Unit
-send (AppId id) message = FAID.dispatchCustomEvent (show id) message
+send (AppId id) message = do
+      let applicationId = show id
+      initialized ← FSIL.isApplicationInitialized applicationId
+      if initialized then
+            FAID.dispatchCustomEvent applicationId message
+      else
+            FSIL.queueMessage applicationId message
 
 -- | Subscribe to a `CustomEvent` that has no data associated
 onCustomEvent ∷ ∀ message. EventType → message → Subscription message

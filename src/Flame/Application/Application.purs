@@ -108,7 +108,7 @@ mountWith (QuerySelector selector) appId application = do
       maybeElement ← FAD.querySelector selector
       case maybeElement of
             Just parent → run parent false (map showId appId) application
-            Nothing → EE.throw $ "Error mounting application"
+            Nothing → EE.throw $ "Error mounting application: no element matching selector " <> selector <> " found!"
 
 -- | Keeps the state in a `Ref` and call `Flame.Renderer.render` for every update
 run ∷ ∀ model message. DomNode → Boolean → Maybe ApplicationId → Application model message → Effect Unit
@@ -120,7 +120,10 @@ run parent isResumed appId application = do
             runUpdate message = do
                   currentModel ← ER.read modelState
                   let Tuple model affs = application.update currentModel message
-                  when (FIE.modelHasChanged currentModel model) $ render model
+                  --the model is saved before rendering so handlers that fire while patching see the current one
+                  when (FIE.modelHasChanged currentModel model) do
+                        ER.write model modelState
+                        render model
                   DF.for_ affs $ EA.runAff_
                         ( case _ of
                                 Left error → EC.log $ EE.message error
@@ -132,7 +135,6 @@ run parent isResumed appId application = do
             render model = do
                   rendering ← ER.read renderingState
                   FRD.resume rendering $ application.view model
-                  ER.write model modelState
 
       rendering ←
             if isResumed then
